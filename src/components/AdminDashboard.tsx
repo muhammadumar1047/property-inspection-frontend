@@ -40,6 +40,10 @@ import {
   CreditCard,
   Shield,
   Plug,
+  PanelLeftClose,
+  PanelLeft,
+  Menu,
+  X,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -199,6 +203,8 @@ export default function AdminDashboard() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [propertyResults, setPropertyResults] = useState<any[]>([]);
   const [inspectionResults, setInspectionResults] = useState<any[]>([]);
   const [inspectionCount, setInspectionCount] = useState(0);
@@ -575,17 +581,17 @@ export default function AdminDashboard() {
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Card key={i} className="animate-pulse">
                     <CardContent className="p-6 pt-4">
-                      <div className="h-3 w-32 bg-muted rounded" />
-                      <div className="mt-3 h-8 w-20 bg-muted rounded" />
-                      <div className="mt-3 h-3 w-16 bg-muted rounded" />
+                      <div className="h-3 w-32 bg-[var(--muted-200)] rounded-lg" />
+                      <div className="mt-3 h-8 w-20 bg-[var(--muted-200)] rounded-lg" />
+                      <div className="mt-3 h-3 w-16 bg-[var(--muted-200)] rounded-lg" />
                     </CardContent>
                   </Card>
                 ))}
               </div>
               <Card className="animate-pulse">
                 <CardContent className="p-6">
-                  <div className="h-4 w-48 bg-muted rounded" />
-                  <div className="mt-4 h-24 w-full bg-muted rounded" />
+                  <div className="h-4 w-48 bg-[var(--muted-200)] rounded-lg" />
+                  <div className="mt-4 h-24 w-full bg-[var(--muted-200)] rounded-lg" />
                 </CardContent>
               </Card>
             </div>
@@ -593,55 +599,59 @@ export default function AdminDashboard() {
         }
 
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in">
             {/* Filters */}
-            <div className="flex flex-wrap items-center gap-4 p-4 border border-border rounded-lg bg-card/50">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Range</span>
-                <div className="flex items-center gap-2">
-                  <Button variant={selectedRange === 'current' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedRange('current')}>Current</Button>
-                  <Button variant={selectedRange === '3m' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedRange('3m')}>3M</Button>
-                  <Button variant={selectedRange === '6m' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedRange('6m')}>6M</Button>
-                  <Button variant={selectedRange === '12m' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedRange('12m')}>12M</Button>
-                  <Button variant={selectedRange === 'custom' ? 'default' : 'outline'} size="sm" onClick={() => setSelectedRange('custom')}>Custom</Button>
+            <Card className="!shadow-none border border-[var(--border)]">
+              <CardContent className="p-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-[var(--muted-400)] uppercase tracking-wider">Range</span>
+                    <div className="flex items-center gap-1.5 bg-[var(--muted-100)] p-1 rounded-lg">
+                      <Button variant={selectedRange === 'current' ? 'default' : 'ghost'} size="sm" onClick={() => setSelectedRange('current')} className="h-8 text-xs">Current</Button>
+                      <Button variant={selectedRange === '3m' ? 'default' : 'ghost'} size="sm" onClick={() => setSelectedRange('3m')} className="h-8 text-xs">3M</Button>
+                      <Button variant={selectedRange === '6m' ? 'default' : 'ghost'} size="sm" onClick={() => setSelectedRange('6m')} className="h-8 text-xs">6M</Button>
+                      <Button variant={selectedRange === '12m' ? 'default' : 'ghost'} size="sm" onClick={() => setSelectedRange('12m')} className="h-8 text-xs">12M</Button>
+                      <Button variant={selectedRange === 'custom' ? 'default' : 'ghost'} size="sm" onClick={() => setSelectedRange('custom')} className="h-8 text-xs">Custom</Button>
+                    </div>
+                  </div>
+                  <div className="w-px h-5 bg-[var(--border)]" />
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium text-[var(--muted-400)] uppercase tracking-wider">Types</span>
+                    <div className="flex items-center gap-4">
+                      {INSPECTION_TYPES.map((t) => (
+                        <label key={t} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox checked={selectedTypes.includes(t)} onCheckedChange={() => toggleType(t)} />
+                          <span className="text-[var(--foreground)]">{t}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  {selectedRange === 'custom' && (
+                    <div className="flex items-center gap-2 ml-auto">
+                      <span className="text-xs text-[var(--muted-foreground)]">From</span>
+                      <Input type="date" value={customStart} onChange={(e) => { setCustomStart(e.target.value); }} className="h-8 w-36" />
+                      <span className="text-xs text-[var(--muted-foreground)]">To</span>
+                      <Input type="date" value={customEnd} onChange={(e) => { setCustomEnd(e.target.value); }} className="h-8 w-36" />
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="w-px h-5 bg-border" />
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">Types</span>
-                <div className="flex items-center gap-4">
-                  {INSPECTION_TYPES.map((t) => (
-                    <label key={t} className="flex items-center gap-2 text-sm">
-                      <Checkbox checked={selectedTypes.includes(t)} onCheckedChange={() => toggleType(t)} />
-                      <span className="text-foreground">{t}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              {selectedRange === 'custom' && (
-                <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-xs text-muted-foreground">From</span>
-                  <Input type="date" value={customStart} onChange={(e) => { setCustomStart(e.target.value); }} className="h-8" />
-                  <span className="text-xs text-muted-foreground">To</span>
-                  <Input type="date" value={customEnd} onChange={(e) => { setCustomEnd(e.target.value); }} className="h-8" />
-                </div>
-              )}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              </CardContent>
+            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger-children">
               {stats.map((stat) => (
-                <Card key={stat.title} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6 pt-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                        <p className="text-3xl font-bold">{stat.value}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <TrendingUp className="w-4 h-4 text-secondary" />
-                          <span className="text-sm text-secondary font-medium">{stat.change}</span>
+                <Card key={stat.title} className="group">
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium uppercase tracking-wider text-[var(--muted-400)]">{stat.title}</p>
+                        <p className="text-3xl font-bold tracking-tight text-[var(--foreground)]">{stat.value}</p>
+                        <div className="flex items-center gap-1.5 pt-1">
+                          <TrendingUp className="w-3.5 h-3.5 text-[var(--secondary)]" />
+                          <span className="text-xs font-semibold text-[var(--secondary)]">{stat.change}</span>
                         </div>
                       </div>
-                      <div className={`p-3 rounded-xl bg-muted ${stat.color}`}>
-                        <stat.icon className="w-6 h-6" />
+                      <div className={`p-3 rounded-xl bg-[var(--muted-100)] group-hover:scale-110 transition-transform duration-200 ${stat.color}`}>
+                        <stat.icon className="w-5 h-5" />
                       </div>
                     </div>
                   </CardContent>
@@ -859,116 +869,192 @@ export default function AdminDashboard() {
     }
   };
 
-  return (
-    <div className="flex min-h-screen bg-background">
-      <div className="w-64 bg-card border-r border-border flex flex-col">
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold">PropertyInspect</h1>
-              <p className="text-xs text-muted-foreground">Pro Dashboard</p>
-            </div>
+  const sidebarWidth = isSidebarCollapsed ? 'w-[72px]' : 'w-[272px]';
+
+  const renderSidebarContent = (isMobile = false) => (
+    <>
+      {/* Logo */}
+      <div className={`border-b border-[var(--sidebar-border)] ${isSidebarCollapsed && !isMobile ? 'px-3 py-5' : 'px-5 py-5'}`}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center shrink-0 shadow-md">
+            <Building2 className="w-5 h-5 text-white" />
           </div>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-6">
-          <div>
-            <div className="px-2 text-xs uppercase tracking-wide text-muted-foreground mb-2">Main</div>
-            <ul className="space-y-2">
-              {sidebarItems.map((item) => (
-                  <li key={item.label}>
-                    <Button
-                      variant={activeSection === item.label.toLowerCase() ? "default" : "ghost"}
-                      className="w-full justify-start gap-3 h-11"
-                      onClick={() => handleNavigation(item.label.toLowerCase())}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="flex-1 text-left">{item.label}</span>
-                      {item.label === 'Properties' && (
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">{propertyCount}</span>
-                      )}
-                      {item.label === 'Inspections' && (
-                        <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
-                          {inspectionCount}
-                        </span>
-                      )}
-                    </Button>
-                  </li>
-              ))}
-            </ul>
-          </div>
-
-          {showAgencyView && (
-            <div>
-              <div className="px-2 text-xs uppercase tracking-wide text-muted-foreground mb-2">Manage</div>
-              <ul className="space-y-2">
-                <li>
-                  <Button
-                    variant={activeSection === 'layout management' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3 h-11"
-                    onClick={() => handleNavigation('layout management')}
-                  >
-                    <SettingsIcon className="w-5 h-5" />
-                    <span className="flex-1 text-left">Layout Management</span>
-                  </Button>
-                </li>
-
-                {/* Collapsible Settings Section */}
-                <li>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start gap-3 h-11"
-                    onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
-                  >
-                    <SettingsIcon className="w-5 h-5" />
-                    <span className="flex-1 text-left">Settings</span>
-                    {isSettingsExpanded ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </Button>
-
-                  {/* Settings Sub-menu */}
-                  {isSettingsExpanded && (
-                    <ul className="ml-6 mt-2 space-y-1">
-                      {settingsMenuItems.map((item) => (
-                        <li key={item.label}>
-                          <Button
-                            variant={activeSection === item.label.toLowerCase() ? "default" : "ghost"}
-                            className="w-full justify-start gap-3 h-9 text-sm"
-                            onClick={() => handleNavigation(item.label.toLowerCase())}
-                          >
-                            <item.icon className="w-4 h-4" />
-                            <span className="flex-1 text-left">{item.label}</span>
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-
-                {/* Integration Item */}
-                <li>
-                  <Button
-                    variant={activeSection === 'integration' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3 h-11"
-                    onClick={() => handleNavigation('integration')}
-                  >
-                    <Plug className="w-5 h-5" />
-                    <span className="flex-1 text-left">Integration</span>
-                  </Button>
-                </li>
-              </ul>
+          {(!isSidebarCollapsed || isMobile) && (
+            <div className="overflow-hidden">
+              <h1 className="text-base font-bold text-[var(--foreground)] truncate">PropCheck360</h1>
+              <p className="text-[11px] text-[var(--muted-400)] truncate">Pro Dashboard</p>
             </div>
           )}
-        </nav>
+        </div>
       </div>
 
-      <div className="flex-1 flex flex-col overflow-visible">
+      {/* Navigation */}
+      <nav className={`flex-1 overflow-y-auto scrollbar-thin ${isSidebarCollapsed && !isMobile ? 'px-2 py-4' : 'px-3 py-4'} space-y-6`}>
+        <div>
+          {(!isSidebarCollapsed || isMobile) && <div className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--muted-400)]">Main</div>}
+          <ul className="space-y-1">
+            {sidebarItems.map((item) => {
+              const isActive = activeSection === item.label.toLowerCase();
+              return (
+                <li key={item.label}>
+                  <button
+                    onClick={() => { handleNavigation(item.label.toLowerCase()); if (isMobile) setIsMobileSidebarOpen(false); }}
+                    title={isSidebarCollapsed && !isMobile ? item.label : undefined}
+                    className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                      isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                    } ${
+                      isActive
+                        ? 'bg-[var(--primary)] text-white shadow-sm font-semibold'
+                        : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
+                    }`}
+                  >
+                    <item.icon className="w-[18px] h-[18px] shrink-0" />
+                    {(!isSidebarCollapsed || isMobile) && (
+                      <>
+                        <span className="flex-1 text-left text-sm truncate">{item.label}</span>
+                        {item.label === 'Properties' && (
+                          <span className={`px-2 py-0.5 text-[10px] rounded-full font-semibold ${
+                            isActive ? 'bg-white/20 text-white' : 'bg-[var(--primary-50)] text-[var(--primary)]'
+                          }`}>{propertyCount}</span>
+                        )}
+                        {item.label === 'Inspections' && (
+                          <span className={`px-2 py-0.5 text-[10px] rounded-full font-semibold ${
+                            isActive ? 'bg-white/20 text-white' : 'bg-[var(--primary-50)] text-[var(--primary)]'
+                          }`}>{inspectionCount}</span>
+                        )}
+                      </>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {showAgencyView && (
+          <div>
+            {(!isSidebarCollapsed || isMobile) && <div className="px-3 mb-2 text-[11px] font-semibold uppercase tracking-widest text-[var(--muted-400)]">Manage</div>}
+            <ul className="space-y-1">
+              <li>
+                <button
+                  onClick={() => { handleNavigation('layout management'); if (isMobile) setIsMobileSidebarOpen(false); }}
+                  title={isSidebarCollapsed && !isMobile ? 'Layout Management' : undefined}
+                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                    isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                  } ${
+                    activeSection === 'layout management'
+                      ? 'bg-[var(--primary)] text-white shadow-sm font-semibold'
+                      : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
+                  }`}
+                >
+                  <SettingsIcon className="w-[18px] h-[18px] shrink-0" />
+                  {(!isSidebarCollapsed || isMobile) && <span className="flex-1 text-left text-sm truncate">Layout Management</span>}
+                </button>
+              </li>
+
+              {/* Collapsible Settings Section */}
+              <li>
+                <button
+                  onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
+                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)] ${
+                    isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                  }`}
+                >
+                  <SettingsIcon className="w-[18px] h-[18px] shrink-0" />
+                  {(!isSidebarCollapsed || isMobile) && (
+                    <>
+                      <span className="flex-1 text-left text-sm">Settings</span>
+                      {isSettingsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </>
+                  )}
+                </button>
+
+                {/* Settings Sub-menu */}
+                {isSettingsExpanded && (!isSidebarCollapsed || isMobile) && (
+                  <ul className="ml-4 mt-1 space-y-0.5 border-l-2 border-[var(--border)] pl-3">
+                    {settingsMenuItems.map((item) => {
+                      const isActive = activeSection === item.label.toLowerCase();
+                      return (
+                        <li key={item.label}>
+                          <button
+                            onClick={() => { handleNavigation(item.label.toLowerCase()); if (isMobile) setIsMobileSidebarOpen(false); }}
+                            className={`w-full flex items-center gap-2.5 h-9 px-2.5 rounded-lg text-[13px] transition-all duration-150 cursor-pointer ${
+                              isActive
+                                ? 'bg-[var(--primary-50)] text-[var(--primary)] font-semibold'
+                                : 'text-[var(--muted-500)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
+                            }`}
+                          >
+                            <item.icon className="w-4 h-4 shrink-0" />
+                            <span className="flex-1 text-left truncate">{item.label}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+
+              {/* Integration Item */}
+              <li>
+                <button
+                  onClick={() => { handleNavigation('integration'); if (isMobile) setIsMobileSidebarOpen(false); }}
+                  title={isSidebarCollapsed && !isMobile ? 'Integration' : undefined}
+                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
+                    isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                  } ${
+                    activeSection === 'integration'
+                      ? 'bg-[var(--primary)] text-white shadow-sm font-semibold'
+                      : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
+                  }`}
+                >
+                  <Plug className="w-[18px] h-[18px] shrink-0" />
+                  {(!isSidebarCollapsed || isMobile) && <span className="flex-1 text-left text-sm">Integration</span>}
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
+      </nav>
+
+      {/* Collapse toggle (desktop only) */}
+      {!isMobile && (
+        <div className="border-t border-[var(--sidebar-border)] p-3">
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="w-full flex items-center justify-center gap-2 h-9 rounded-lg text-[var(--muted-400)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)] transition-all duration-200 cursor-pointer"
+            title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isSidebarCollapsed ? <PanelLeft className="w-[18px] h-[18px]" /> : <PanelLeftClose className="w-[18px] h-[18px]" />}
+            {!isSidebarCollapsed && <span className="text-xs">Collapse</span>}
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="flex min-h-screen bg-[var(--background)]">
+      {/* Mobile sidebar overlay */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setIsMobileSidebarOpen(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-[272px] bg-white shadow-2xl flex flex-col animate-slide-down">
+            <div className="flex items-center justify-end p-2">
+              <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 rounded-lg text-[var(--muted-400)] hover:bg-[var(--muted-100)] transition-colors cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {renderSidebarContent(true)}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <div className={`hidden lg:flex ${sidebarWidth} bg-white border-r border-[var(--sidebar-border)] flex-col shrink-0 transition-all duration-300 ease-in-out`}>
+        {renderSidebarContent()}
+      </div>
+
+      <div className="flex-1 flex flex-col overflow-visible min-w-0">
         {impersonatedAgencyId && (
           <div className="bg-amber-500 text-white px-6 py-3 flex items-center justify-between shadow-md z-50 shrink-0 relative">
             <div className="flex items-center gap-2 font-medium text-sm">
@@ -988,138 +1074,146 @@ export default function AdminDashboard() {
             </Button>
           </div>
         )}
-        <header className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              {/* Left side - Page title */}
-              <div className="flex items-center gap-6">
-                <h1 className="text-2xl font-semibold text-gray-900 capitalize">{activeSection}</h1>
-                <div className="hidden md:block w-px h-6 bg-gray-300"></div>
-                <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
-                  <span>Analytics</span>
-                  <span>/</span>
-                  <span className="text-gray-900 capitalize">{activeSection}</span>
-                </div>
-              </div>
+        <header className="bg-white/80 backdrop-blur-md border-b border-[var(--border)] sticky top-0 z-30">
+          <div className="px-4 lg:px-6 h-16 flex items-center justify-between gap-4">
+            {/* Left side — Mobile menu + Page title */}
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="lg:hidden p-2 -ml-2 rounded-lg text-[var(--muted-500)] hover:bg-[var(--muted-100)] transition-colors cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <h1 className="text-lg font-semibold text-[var(--foreground)] capitalize truncate">{activeSection}</h1>
+            </div>
 
-              {/* Center - Search bar (hidden for pure SuperAdmin, shown when impersonating) */}
-              {(!isSuperAdmin || !!impersonatedAgencyId) && (
-                <div className="flex-1 max-w-2xl mx-8">
-                  <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
-                      <Input
-                        placeholder="Search properties, inspections, landlords, and tenants..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { setIsSearchOpen(true); runSearch(searchQuery); } }}
-                        onFocus={() => { setIsSearchOpen(true); if (searchQuery.trim()) runSearch(searchQuery); }}
-                        className="pl-12 pr-16 py-3 w-full cursor-pointer bg-gray-50/50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 placeholder:text-gray-500 text-gray-900 font-medium"
-                        onClick={() => { setIsSearchOpen(true); if (searchQuery.trim()) runSearch(searchQuery); }}
-                      />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <kbd className="px-2 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded shadow-sm">
-                          ⌘K
-                        </kbd>
-                      </div>
-                    </div>
+            {/* Center — Search bar */}
+            {(!isSuperAdmin || !!impersonatedAgencyId) && (
+              <div className="flex-1 max-w-xl hidden md:block">
+                <div className="relative">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-400)]" />
+                  <Input
+                    placeholder="Search properties, inspections..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { setIsSearchOpen(true); runSearch(searchQuery); } }}
+                    onFocus={() => { setIsSearchOpen(true); if (searchQuery.trim()) runSearch(searchQuery); }}
+                    className="pl-10 pr-14 h-10 bg-[var(--muted-50)] border-[var(--border)] rounded-xl text-sm"
+                    onClick={() => { setIsSearchOpen(true); if (searchQuery.trim()) runSearch(searchQuery); }}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-[var(--muted-400)] bg-white border border-[var(--border)] rounded-md">
+                      ⌘K
+                    </kbd>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Right side — Actions */}
+            <div className="flex items-center gap-2">
+              {/* Mobile search trigger */}
+              {(!isSuperAdmin || !!impersonatedAgencyId) && (
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="md:hidden p-2 rounded-lg text-[var(--muted-500)] hover:bg-[var(--muted-100)] transition-colors cursor-pointer"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
               )}
 
-              {/* Right side - Actions */}
-              <div className="flex items-center gap-3">
-                {!isSuperAdmin && <NotificationsBell />}
+              {!isSuperAdmin && <NotificationsBell />}
 
-                <div className="w-px h-6 bg-gray-300"></div>
+              <div className="w-px h-6 bg-[var(--border)] mx-1" />
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20" aria-label="Open profile menu">
-                      <Avatar className="h-8 w-8">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl hover:bg-[var(--muted-100)] transition-all duration-200 cursor-pointer focus:outline-none" aria-label="Open profile menu">
+                    <Avatar className="h-8 w-8">
+                      {(() => {
+                        const src = (user as any)?.profileImage || (user as any)?.ProfileImage || undefined;
+                        return src ? <AvatarImage src={src} alt="Profile" /> : null;
+                      })()}
+                      <AvatarFallback>
                         {(() => {
-                          const src = (user as any)?.profileImage || (user as any)?.ProfileImage || undefined;
-                          return src ? <AvatarImage src={src} alt="Profile" /> : null;
+                          if (!user) return 'U';
+                          const first = ((user as any).firstName || (user as any).FirstName || '').toString().trim();
+                          const last = ((user as any).lastName || (user as any).LastName || '').toString().trim();
+                          const initials = `${first.charAt(0) || ''}${last.charAt(0) || ''}`.toUpperCase();
+                          if (initials) return initials;
+                          const email = ((user as any).email || '').toString();
+                          return email ? email.slice(0, 2).toUpperCase() : 'U';
                         })()}
-                        <AvatarFallback className="bg-blue-100 text-blue-700 font-semibold">
-                          {(() => {
-                            if (!user) return 'U';
-                            const first = ((user as any).firstName || (user as any).FirstName || '').toString().trim();
-                            const last = ((user as any).lastName || (user as any).LastName || '').toString().trim();
-                            const initials = `${first.charAt(0) || ''}${last.charAt(0) || ''}`.toUpperCase();
-                            if (initials) return initials;
-                            const email = ((user as any).email || '').toString();
-                            return email ? email.slice(0, 2).toUpperCase() : 'U';
-                          })()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="hidden md:block text-left">
-                        <div className="text-sm font-medium text-gray-900">
-                          {(() => {
-                            if (!user) return 'User';
-                            const first = ((user as any).firstName || (user as any).FirstName || '').toString().trim();
-                            const last = ((user as any).lastName || (user as any).LastName || '').toString().trim();
-                            const full = `${first} ${last}`.trim();
-                            return full || ((user as any).username || (user as any).Username || 'User');
-                          })()}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {user ? ((user as any).role || (user as any).Role || 'User') : 'User'}
-                        </div>
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden lg:block text-left">
+                      <div className="text-sm font-medium text-[var(--foreground)] leading-tight">
+                        {(() => {
+                          if (!user) return 'User';
+                          const first = ((user as any).firstName || (user as any).FirstName || '').toString().trim();
+                          const last = ((user as any).lastName || (user as any).LastName || '').toString().trim();
+                          const full = `${first} ${last}`.trim();
+                          return full || ((user as any).username || (user as any).Username || 'User');
+                        })()}
                       </div>
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end">
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {(() => {
-                            if (!user) return 'User';
-                            const first = ((user as any).firstName || (user as any).FirstName || '').toString().trim();
-                            const last = ((user as any).lastName || (user as any).LastName || '').toString().trim();
-                            const full = `${first} ${last}`.trim();
-                            return full || ((user as any).username || (user as any).Username || 'User');
-                          })()}
-                        </p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          Role: {user ? ((user as any).role || (user as any).Role || 'User') : 'User'}
-                        </p>
+                      <div className="text-[11px] text-[var(--muted-400)]">
+                        {user ? ((user as any).role || (user as any).Role || 'User') : 'User'}
                       </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setActiveSection('profile');
-                        if (typeof window !== 'undefined') {
-                          localStorage.setItem('dashboard-active-section', 'profile');
-                        }
-                      }}
-                    >
-                      <div className="flex w-full items-center">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <SettingsIcon className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                    </div>
+                    <ChevronDown className="w-3.5 h-3.5 text-[var(--muted-400)] hidden lg:block" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <p className="text-sm font-semibold leading-tight">
+                        {(() => {
+                          if (!user) return 'User';
+                          const first = ((user as any).firstName || (user as any).FirstName || '').toString().trim();
+                          const last = ((user as any).lastName || (user as any).LastName || '').toString().trim();
+                          const full = `${first} ${last}`.trim();
+                          return full || ((user as any).username || (user as any).Username || 'User');
+                        })()}
+                      </p>
+                      <p className="text-xs text-[var(--muted-400)] mt-0.5">
+                        {user ? ((user as any).role || (user as any).Role || 'User') : 'User'}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setActiveSection('profile');
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem('dashboard-active-section', 'profile');
+                      }
+                    }}
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <SettingsIcon className="w-4 h-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-[var(--destructive)] hover:!bg-[var(--destructive-50)]">
+                    <LogOut className="w-4 h-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
 
         {/* profile now on a dedicated page */}
 
-        <main className="flex-1 overflow-visible p-6">{renderMainContent()}</main>
+        <main className="flex-1 overflow-visible p-4 lg:p-6">
+          <div className="max-w-[1600px] mx-auto">
+            {renderMainContent()}
+          </div>
+        </main>
 
         {/* Global Search Dialog */}
         <Modal isOpen={isSearchOpen} onClose={clearAllSearch} title={searchQuery ? `Search results for "${searchQuery}"` : 'Search'} widthClassName="max-w-4xl">

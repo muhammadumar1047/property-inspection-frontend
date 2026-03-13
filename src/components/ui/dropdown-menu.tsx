@@ -85,7 +85,6 @@ export function DropdownMenuContent({ className = "", align = "end", forceMount,
     };
   }, [ctx]);
 
-  // Compute fixed-position portal coordinates so menus aren't clipped by overflow containers
   const computePosition = React.useCallback(() => {
     if (!ctx?.isOpen) return;
     const triggerEl = (ctx.triggerRef.current as unknown as HTMLElement | null);
@@ -145,7 +144,6 @@ export function DropdownMenuContent({ className = "", align = "end", forceMount,
     if (!container) return;
     const items = Array.from(container.querySelectorAll('[data-dm-item]')) as HTMLElement[];
     if (items.length) {
-      // prepare items to be focusable programmatically
       items.forEach((el) => el.setAttribute('tabindex', '-1'));
       items[0].focus();
     }
@@ -181,14 +179,9 @@ export function DropdownMenuContent({ className = "", align = "end", forceMount,
   const node = (
     <div
       ref={ref}
-      className={`fixed z-[1000] min-w-[12rem] max-h-72 overflow-auto rounded-xl border border-[var(--border)] bg-white/98 backdrop-blur-sm p-2 shadow-2xl ring-1 ring-black/5 transition-[opacity,transform] duration-120 ease-out ${placement === 'bottom' ? 'origin-top' : 'origin-bottom'} ${anim ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-95'} ${className}`}
+      className={`fixed z-[1000] min-w-[13rem] max-h-72 overflow-auto rounded-xl border border-[var(--border)] bg-white p-1.5 shadow-xl ring-1 ring-black/5 transition-[opacity,transform] duration-150 ease-out ${placement === 'bottom' ? 'origin-top' : 'origin-bottom'} ${anim ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1 scale-95'} ${className}`}
       style={{ top: position.top, left: position.left, width: position.minWidth }}
     >
-      {placement === 'bottom' ? (
-        <span className="pointer-events-none absolute -top-1.5 right-4 block h-3 w-3 rotate-45 rounded-[2px] bg-white border-l border-t border-[var(--border)]"></span>
-      ) : (
-        <span className="pointer-events-none absolute -bottom-1.5 right-4 block h-3 w-3 rotate-45 rounded-[2px] bg-white border-r border-b border-[var(--border)]"></span>
-      )}
       {children}
     </div>
   );
@@ -200,7 +193,7 @@ export function DropdownMenuContent({ className = "", align = "end", forceMount,
 }
 
 export function DropdownMenuLabel({ className = "", children }: { className?: string; children?: React.ReactNode }) {
-  return <div className={`px-2 py-1.5 text-sm font-semibold ${className}`}>{children}</div>;
+  return <div className={`px-2.5 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--muted-400)] ${className}`}>{children}</div>;
 }
 
 export function DropdownMenuSeparator() {
@@ -214,10 +207,12 @@ export function DropdownMenuItem({ className = "", onClick, children }: { classN
     ctx?.setIsOpen(false);
   };
   return (
-    <button data-dm-item="1" onClick={handleClick} className={`flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-3 py-2 text-sm outline-none transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/15 ${className}`}>
+    <button
+      data-dm-item="1"
+      onClick={handleClick}
+      className={`flex w-full cursor-pointer select-none items-center gap-2 rounded-lg px-3 py-2 text-sm text-[var(--foreground)] outline-none transition-colors duration-150 hover:bg-[var(--muted-100)] focus:bg-[var(--muted-100)] ${className}`}
+    >
       {children}
     </button>
   );
 }
-
-

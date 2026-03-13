@@ -55,17 +55,17 @@ const LoginForm: React.FC = () => {
   const slides = [
     {
       title: "Professional Property Inspections",
-      description: "Comprehensive inspections with detailed reporting and documentation",
+      description: "Comprehensive inspections with detailed reporting and documentation for every property",
       image: "/property-inspection.jpg",
     },
     {
       title: "Advanced Reporting Tools",
-      description: "Generate professional reports with photos, notes, and recommendations",
+      description: "Generate professional reports with photos, notes, and recommendations in minutes",
       image: "/inspection-report.jpg",
     },
     {
       title: "Real-time Collaboration",
-      description: "Work seamlessly with your team and clients in real-time",
+      description: "Work seamlessly with your team and clients across all devices in real-time",
       image: "/team-collaboration.jpg",
     },
   ];
@@ -73,7 +73,7 @@ const LoginForm: React.FC = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4000);
+    }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
@@ -81,40 +81,69 @@ const LoginForm: React.FC = () => {
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Left visual panel */}
       <div className="hidden lg:block relative overflow-hidden">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] via-[#00538A] to-[var(--secondary)]" />
+
+        {/* Decorative shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] rounded-full bg-white/5 animate-float" />
+          <div className="absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] rounded-full bg-white/5 animate-float" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute top-1/3 left-1/4 w-[200px] h-[200px] rounded-full bg-white/5 animate-float" style={{ animationDelay: '0.8s' }} />
+          {/* Grid pattern */}
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+              backgroundSize: '32px 32px',
+            }}
+          />
+        </div>
+
         {/* Slides */}
         <div className="absolute inset-0">
           {slides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
+              className={`absolute inset-0 transition-all duration-700 ease-in-out ${index === currentSlide ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
             >
-              <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                  backgroundImage: `url('${slide.image}')`,
-                  backgroundColor: "var(--primary)", // Primary color fallback
-                }}
-              />
-              <div className="absolute inset-0 bg-primary/85" />
-
               {/* Slide content */}
-              <div className="relative z-10 h-full flex flex-col justify-center gap-6 px-12 text-white">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <div className="w-7 h-7 bg-white rounded" />
+              <div className="relative z-10 h-full flex flex-col justify-between px-12 py-12 text-white">
+                {/* Logo */}
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
                   </div>
-                  <h1 className="text-3xl font-bold">PropCheck360</h1>
+                  <span className="text-xl font-bold tracking-tight">PropCheck360</span>
                 </div>
-                <h2 className="text-4xl font-bold text-balance">{slide.title}</h2>
-                <p className="text-lg text-white/90 max-w-xl text-pretty">{slide.description}</p>
+
+                {/* Main content */}
+                <div className="space-y-5 max-w-lg">
+                  <h2 className="text-4xl font-bold leading-tight text-balance">{slide.title}</h2>
+                  <p className="text-lg text-white/80 leading-relaxed text-pretty">{slide.description}</p>
+
+                  {/* Feature pills */}
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {['Inspections', 'Reports', 'Analytics', 'Multi-tenant'].map((tag) => (
+                      <span key={tag} className="px-3 py-1 text-xs font-medium bg-white/10 rounded-full border border-white/15 backdrop-blur-sm">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Indicators */}
-                <div className="flex gap-2 mt-4">
+                <div className="flex items-center gap-3">
                   {slides.map((_, dotIndex) => (
                     <button
                       key={dotIndex}
                       onClick={() => setCurrentSlide(dotIndex)}
-                      className={`w-3 h-3 rounded-full transition-all ${dotIndex === currentSlide ? "bg-white" : "bg-white/40"}`}
+                      className={`transition-all duration-300 rounded-full ${
+                        dotIndex === currentSlide
+                          ? "w-8 h-2 bg-white"
+                          : "w-2 h-2 bg-white/40 hover:bg-white/60"
+                      }`}
                       aria-label={`Go to slide ${dotIndex + 1}`}
                       type="button"
                     />
@@ -127,83 +156,62 @@ const LoginForm: React.FC = () => {
       </div>
 
       {/* Right auth panel */}
-      <div className="flex items-center justify-center bg-background p-6 md:p-10">
-        <div className="w-full max-w-md">
+      <div className="flex items-center justify-center bg-[var(--background)] p-6 md:p-10">
+        <div className="w-full max-w-[420px] animate-fade-in">
+          {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <div className="w-6 h-6 bg-white rounded" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center shadow-md">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">PropCheck360</h1>
+            <h1 className="text-xl font-bold text-[var(--foreground)]">PropCheck360</h1>
           </div>
 
-          <Card className="glass-card shadow-2xl">
-            <CardHeader className="text-center space-y-1">
-              <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <Card className="glass-card !rounded-2xl !shadow-[var(--shadow-modal)]">
+            <CardHeader className="text-center space-y-1 pb-2">
+              <CardTitle className="!text-2xl font-bold">Welcome Back</CardTitle>
               <CardDescription>Sign in to your account to continue</CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-5" onSubmit={handleSubmit}>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
                     required
-                    placeholder="Enter your email"
+                    placeholder="name@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       required
-                      placeholder="Enter your password"
+                      placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pr-10"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                       onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
                     >
                       {showPassword ? (
-                        <svg
-                          className="h-4 w-4 text-gray-400 hover:text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
-                          />
+                        <svg className="h-4 w-4 text-[var(--muted-400)] hover:text-[var(--foreground)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                         </svg>
                       ) : (
-                        <svg
-                          className="h-4 w-4 text-gray-400 hover:text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
+                        <svg className="h-4 w-4 text-[var(--muted-400)] hover:text-[var(--foreground)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       )}
                     </button>
@@ -217,29 +225,47 @@ const LoginForm: React.FC = () => {
                       checked={rememberMe}
                       onCheckedChange={(checked) => setRememberMe(!!checked)}
                     />
-                    <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                    <Label htmlFor="remember" className="!text-sm !text-[var(--muted-foreground)] !font-normal">
                       Remember me
                     </Label>
                   </div>
-                  <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                  <Link href="/forgot-password" className="text-sm text-[var(--primary)] hover:text-[var(--primary-hover)] font-medium transition-colors">
                     Forgot password?
                   </Link>
                 </div>
 
-                {error && <div className="text-destructive text-sm text-center">{error}</div>}
+                {error && (
+                  <div className="flex items-center gap-2 text-sm text-[var(--destructive)] bg-[var(--destructive-50)] rounded-lg px-3 py-2.5 border border-[var(--destructive)]/20">
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    {error}
+                  </div>
+                )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing in..." : "Sign in"}
+                <Button type="submit" className="w-full h-11" disabled={isLoading}>
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign in"
+                  )}
                 </Button>
               </form>
 
-              <div className="mt-6 text-sm text-muted-foreground">
-                <p>Test credentials:</p>
-                <p>SuperAdmin: super@gmail.com / Super123</p>
-                <p>Or create an agency first to get user credentials</p>
+              <div className="mt-6 pt-5 border-t border-[var(--border)] text-center">
+                <p className="text-xs text-[var(--muted-400)]">
+                  Test: super@gmail.com / Super123
+                </p>
               </div>
             </CardContent>
           </Card>
+
+          <p className="text-center text-xs text-[var(--muted-400)] mt-6">
+            © 2026 PropCheck360. All rights reserved.
+          </p>
         </div>
       </div>
     </div>
@@ -247,7 +273,3 @@ const LoginForm: React.FC = () => {
 };
 
 export default LoginForm;
-
-
-
-
