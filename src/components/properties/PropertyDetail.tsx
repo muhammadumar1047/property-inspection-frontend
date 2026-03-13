@@ -1,0 +1,250 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { propertyApi } from "@/lib/api/property";
+import { layoutApi } from "@/lib/api/propertyLayout";
+import type { PropertyResponse, LandlordDto, TenancyDto, TenantDto } from "@/types/api";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Building2, ArrowLeft, Bell, User, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+export default function PropertyDetail({ id }: { id: number }) {
+  const [data, setData] = useState<PropertyResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<any>({});
+  const [layoutName, setLayoutName] = useState<string>("");
+  const router = useRouter();
+
+  const load = async () => {
+    setLoading(true); setError("");
+    try {
+      const p = await propertyApi.getById(id);
+      setData(p);
+      setForm({
+        address1: p.address1,
+        address2: p.address2 || "",
+        cityOrSuburb: p.cityOrSuburb,
+        postcode: p.postcode,
+        keyNo: p.keyNo || "",
+        alarmCode: p.alarmCode || "",
+        propertyNotes: p.propertyNotes || "",
+      });
+      if (p.PropertyLayoutId) {
+        try {
+          const layout = await layoutApi.getById(p.PropertyLayoutId);
+          setLayoutName(layout.layoutName || `Layout #${p.PropertyLayoutId}`);
+        } catch {}
+      } else {
+        setLayoutName("");
+      }
+    } catch (e: any) {
+      setError(e?.response?.data || e?.message || "Failed to load property");
+    } finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, [id]);
+
+  const save = async () => {
+    if (!data) return;
+    setLoading(true); setError("");
+    try {
+      await propertyApi.update(data.propertyId, {
+        address1: form.address1,
+        address2: form.address2 || undefined,
+        cityOrSuburb: form.cityOrSuburb,
+        stateId: data.stateId,
+        postcode: form.postcode,
+        propertyTypeId: data.propertyTypeId,
+        propertyManagerId: data.propertyManagerId,
+        inspectionFrequencyType: data.inspectionFrequencyType,
+        inspectionFrequencyNumber: data.inspectionFrequencyNumber,
+        keyNo: form.keyNo || undefined,
+        alarmCode: form.alarmCode || undefined,
+        propertyNotes: form.propertyNotes || undefined,
+        PropertyLayoutId: data.PropertyLayoutId || undefined,
+      } as any);
+      setEditing(false);
+      await load();
+    } catch (e: any) {
+      setError(e?.response?.data || e?.message || "Failed to save");
+      setLoading(false);
+    }
+  };
+
+  if (loading && !data) return <div className="p-6">Loading...</div>;
+  if (error && !data) return <div className="p-6 text-red-600">{error}</div>;
+  if (!data) return null;
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="flex items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-3">
+            <button className="w-9 h-9 rounded-md bg-primary/10 text-primary flex items-center justify-center" onClick={() => router.push('/dashboard')} aria-label="Back to properties">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div>
+              <p className="text-base font-semibold text-foreground">PropertyInspect</p>
+              <p className="text-xs text-muted-foreground">Property details</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" aria-label="Notifications"><Bell className="w-5 h-5" /></Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative h-10 w-10 rounded-full focus:outline-none" aria-label="Open profile menu">
+                  <Avatar className="h-10 w-10">
+                    {(() => {
+                      try {
+                        const u = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+                        const src = u.profileImage || u.ProfileImage || undefined;
+                        return <AvatarImage src={src} alt="Profile" />;
+                      } catch {
+                        return <AvatarImage src={undefined} alt="Profile" />;
+                      }
+                    })()}
+                    <AvatarFallback>
+                      {(() => {
+                        if (typeof window === 'undefined') return 'U';
+                        const u = JSON.parse(localStorage.getItem('user') || '{}');
+                        const first = (u.firstName || u.FirstName || '').toString().trim();
+                        const last = (u.lastName || u.LastName || '').toString().trim();
+                        const initials = `${first.charAt(0) || ''}${last.charAt(0) || ''}`.toUpperCase();
+                        if (initials) return initials;
+                        const email = (u.email || '').toString();
+                        return email ? email.slice(0, 2).toUpperCase() : 'U';
+                      })()}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}')?.email || 'User') : 'User'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">Viewing Property #{data.propertyId}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem><User className="mr-2 h-4 w-4" />Profile</DropdownMenuItem>
+                <DropdownMenuItem><LogOut className="mr-2 h-4 w-4" />Logout</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </header>
+
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Property #{data.propertyId}</h1>
+          {!editing ? (
+            <Button onClick={() => setEditing(true)}>Edit</Button>
+          ) : (
+            <div className="space-x-2">
+              <Button onClick={save} disabled={loading}>Save</Button>
+              <Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
+            </div>
+          )}
+        </div>
+
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-primary">Basic Information</CardTitle>
+          <CardDescription>Core details of the property</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label>Address</Label>
+            <Input disabled={!editing} value={form.address1} onChange={(e) => setForm({ ...form, address1: e.target.value })} />
+          </div>
+          <div>
+            <Label>Address 2</Label>
+            <Input disabled={!editing} value={form.address2} onChange={(e) => setForm({ ...form, address2: e.target.value })} />
+          </div>
+          <div>
+            <Label>City/Suburb</Label>
+            <Input disabled={!editing} value={form.cityOrSuburb} onChange={(e) => setForm({ ...form, cityOrSuburb: e.target.value })} />
+          </div>
+          <div>
+            <Label>Postcode</Label>
+            <Input disabled={!editing} value={form.postcode} onChange={(e) => setForm({ ...form, postcode: e.target.value })} />
+          </div>
+          <div>
+            <Label>Key No</Label>
+            <Input disabled={!editing} value={form.keyNo} onChange={(e) => setForm({ ...form, keyNo: e.target.value })} />
+          </div>
+          <div>
+            <Label>Alarm Code</Label>
+            <Input disabled={!editing} value={form.alarmCode} onChange={(e) => setForm({ ...form, alarmCode: e.target.value })} />
+          </div>
+          <div className="md:col-span-2">
+            <Label>Notes</Label>
+            <Input disabled={!editing} value={form.propertyNotes} onChange={(e) => setForm({ ...form, propertyNotes: e.target.value })} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-primary">Layout</CardTitle>
+          <CardDescription>{data.PropertyLayoutId ? layoutName : "No layout linked"}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {data.PropertyLayoutId ? (
+            <div className="text-sm text-muted-foreground">Layout ID: {data.PropertyLayoutId}</div>
+          ) : (
+            <div className="text-sm text-muted-foreground">You can link a layout from the creation wizard.</div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-primary">Landlords ({data.landlords.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {data.landlords.map((l: LandlordDto) => (
+            <div key={l.landlordId} className="text-sm">{l.name} • {l.email}{l.phone ? ` • ${l.phone}` : ''}</div>
+          ))}
+          {data.landlords.length === 0 && <div className="text-sm text-muted-foreground">No landlords.</div>}
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-primary">Tenancies ({data.tenancies.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {data.tenancies.map((t: TenancyDto) => (
+            <div key={t.tenancyId} className="text-sm">
+              <div className="font-medium">{t.fullName} • {t.email}</div>
+              <div className="text-muted-foreground">{new Date(t.leaseStartDate).toLocaleString()} → {new Date(t.leaseEndDate).toLocaleString()}</div>
+              <div className="text-muted-foreground">Rent: <span>${t.currentRentAmount}</span> {t.rentFrequency}</div>
+              <div className="mt-2 ml-4 space-y-1">
+                {(t.tenants || []).map((tn: TenantDto) => (
+                  <div key={tn.tenantId} className="text-xs">- {tn.firstName} {tn.lastName} • {tn.email}{tn.phone ? ` • ${tn.phone}` : ''}</div>
+                ))}
+                {(!t.tenants || t.tenants.length === 0) && <div className="text-xs text-muted-foreground">No tenants.</div>}
+              </div>
+            </div>
+          ))}
+          {data.tenancies.length === 0 && <div className="text-sm text-muted-foreground">No tenancies.</div>}
+        </CardContent>
+      </Card>
+      </div>
+    </div>
+  );
+};
+
+

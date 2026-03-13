@@ -1,0 +1,457 @@
+@import "tailwindcss";
+
+
+
+:root {
+  /* PropCheck360 Professional Color Theme */
+  --background: #F9FAFB; /* Light Gray */
+  --foreground: #0F172A; /* Slate-900 */
+
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+
+  /* Primary Colors - Deep Blue */
+  --primary: #1E3A8A;     /* Deep Blue */
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #162A64; /* Darker Blue for hover states */
+  --primary-light: #3B82F6; /* Lighter Blue for accents */
+  --primary-50: #EFF6FF;   /* Very light blue backgrounds */
+  --primary-100: #DBEAFE;  /* Light blue backgrounds */
+  --primary-600: #2563EB;  /* Medium blue */
+  --primary-700: #1D4ED8;  /* Dark blue */
+  --primary-800: #1E3A8A;  /* Main primary */
+  --primary-900: #1E40AF;  /* Darkest blue */
+
+  /* Secondary Colors - Emerald Green */
+  --secondary: #059669;   /* Emerald Green */
+  --secondary-foreground: #FFFFFF;
+  --secondary-hover: #047857; /* Darker Green for hover states */
+  --secondary-light: #10B981; /* Lighter Green */
+  --secondary-50: #ECFDF5;   /* Very light green backgrounds */
+  --secondary-100: #D1FAE5;  /* Light green backgrounds */
+  --secondary-600: #059669;  /* Main secondary */
+  --secondary-700: #047857;  /* Dark green */
+  --secondary-800: #065F46;  /* Darker green */
+
+  /* Accent Colors - Warm Yellow */
+  --accent: #FACC15;      /* Warm Yellow */
+  --accent-foreground: #1F2937; /* Gray-800 */
+  --accent-hover: #EAB308; /* Darker Yellow for hover states */
+  --accent-light: #FDE047; /* Lighter Yellow */
+  --accent-50: #FEFCE8;    /* Very light yellow backgrounds */
+  --accent-100: #FEF3C7;   /* Light yellow backgrounds */
+  --accent-600: #D97706;   /* Orange-yellow */
+  --accent-700: #B45309;   /* Dark orange-yellow */
+
+  /* Neutral Colors */
+  --muted: #F3F4F6;       /* Gray-100 */
+  --muted-foreground: #475569; /* Slate-600 */
+  --muted-50: #F9FAFB;    /* Very light gray */
+  --muted-100: #F3F4F6;   /* Light gray */
+  --muted-200: #E5E7EB;   /* Border gray */
+  --muted-300: #D1D5DB;   /* Medium light gray */
+  --muted-400: #9CA3AF;   /* Medium gray */
+  --muted-500: #6B7280;   /* Medium dark gray */
+  --muted-600: #475569;   /* Dark gray */
+  --muted-700: #374151;   /* Darker gray */
+  --muted-800: #1F2937;   /* Very dark gray */
+  --muted-900: #111827;   /* Darkest gray */
+
+  /* Status Colors */
+  --destructive: #EF4444; /* Red */
+  --destructive-foreground: #FFFFFF;
+  --destructive-hover: #DC2626; /* Darker red for hover */
+  --destructive-50: #FEF2F2; /* Very light red backgrounds */
+  --destructive-100: #FEE2E2; /* Light red backgrounds */
+  --destructive-600: #DC2626; /* Medium red */
+  --destructive-700: #B91C1C; /* Dark red */
+
+  --success: #059669;     /* Same as secondary green */
+  --success-foreground: #FFFFFF;
+  --success-50: #ECFDF5;  /* Very light green backgrounds */
+  --success-100: #D1FAE5; /* Light green backgrounds */
+
+  --warning: #F59E0B;     /* Amber */
+  --warning-foreground: #FFFFFF;
+  --warning-50: #FFFBEB;  /* Very light amber backgrounds */
+  --warning-100: #FEF3C7; /* Light amber backgrounds */
+
+  --info: #0EA5E9;        /* Sky Blue */
+  --info-foreground: #FFFFFF;
+  --info-50: #F0F9FF;     /* Very light blue backgrounds */
+  --info-100: #E0F2FE;    /* Light blue backgrounds */
+
+  /* UI Colors */
+  --border: #E5E7EB;      /* Gray-200 */
+  --input: #FFFFFF;
+  --ring: #1E3A8A;
+
+  /* Chart Colors */
+  --chart-1: #1E3A8A;     /* Primary Blue */
+  --chart-2: #059669;     /* Secondary Green */
+  --chart-3: #0EA5E9;     /* Info Blue */
+  --chart-4: #F59E0B;     /* Warning Amber */
+  --chart-5: #EF4444;     /* Destructive Red */
+
+  --radius: 0.5rem;
+  
+  /* Custom brand tokens requested */
+  --color-green-800: lab(37.4616% -36.7971 22.9692);
+  --color-yes: lab(59 -54.91 35.06);
+  
+  /* Sidebar Colors */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #1E3A8A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #059669;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #1E3A8A;
+}
+
+.dark {
+  /* Dark Theme - PropCheck360 */
+  --background: #111827;
+  --foreground: #f9fafb;
+  --card: #1f2937;
+  --card-foreground: #f9fafb;
+  --popover: #1f2937;
+  --popover-foreground: #f9fafb;
+
+  /* Primary Colors - Deep Blue (same in dark) */
+  --primary: #1E3A8A;
+  --primary-foreground: #ffffff;
+  --primary-hover: #2563EB; /* Lighter for dark mode hover */
+  --primary-light: #3B82F6;
+  --primary-50: #1E3A8A;   /* Darker for dark mode */
+  --primary-100: #1E40AF;
+  --primary-600: #3B82F6;
+  --primary-700: #2563EB;
+  --primary-800: #1E3A8A;
+  --primary-900: #1E40AF;
+
+  /* Secondary Colors - Emerald Green (same in dark) */
+  --secondary: #059669;
+  --secondary-foreground: #ffffff;
+  --secondary-hover: #10B981; /* Lighter for dark mode hover */
+  --secondary-light: #10B981;
+  --secondary-50: #059669;   /* Darker for dark mode */
+  --secondary-100: #047857;
+  --secondary-600: #059669;
+  --secondary-700: #10B981;
+  --secondary-800: #047857;
+
+  /* Accent Colors - Warm Yellow (same in dark) */
+  --accent: #FACC15;
+  --accent-foreground: #111827;
+  --accent-hover: #FDE047; /* Lighter for dark mode hover */
+  --accent-light: #FDE047;
+  --accent-50: #FACC15;    /* Darker for dark mode */
+  --accent-100: #EAB308;
+  --accent-600: #F59E0B;
+  --accent-700: #D97706;
+
+  /* Neutral Colors - Dark Theme */
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
+  --muted-50: #111827;     /* Darkest */
+  --muted-100: #1f2937;    /* Very dark */
+  --muted-200: #374151;    /* Dark */
+  --muted-300: #4b5563;    /* Medium dark */
+  --muted-400: #6b7280;    /* Medium */
+  --muted-500: #9ca3af;    /* Medium light */
+  --muted-600: #d1d5db;    /* Light */
+  --muted-700: #e5e7eb;    /* Very light */
+  --muted-800: #f3f4f6;    /* Lightest */
+  --muted-900: #f9fafb;    /* White */
+
+  /* Status Colors - Dark Theme */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --destructive-hover: #f87171; /* Lighter for dark mode hover */
+  --destructive-50: #ef4444;    /* Darker for dark mode */
+  --destructive-100: #dc2626;
+  --destructive-600: #f87171;
+  --destructive-700: #ef4444;
+
+  --success: #059669;
+  --success-foreground: #ffffff;
+  --success-50: #059669;   /* Darker for dark mode */
+  --success-100: #047857;
+
+  --warning: #F59E0B;
+  --warning-foreground: #ffffff;
+  --warning-50: #F59E0B;   /* Darker for dark mode */
+  --warning-100: #D97706;
+
+  --info: #0EA5E9;
+  --info-foreground: #ffffff;
+  --info-50: #0EA5E9;      /* Darker for dark mode */
+  --info-100: #0284c7;
+
+  /* UI Colors - Dark Theme */
+  --border: #374151;
+  --input: #374151;
+  --ring: #1E3A8A;
+
+  /* Chart Colors - Dark Theme */
+  --chart-1: #1E3A8A;
+  --chart-2: #059669;
+  --chart-3: #9ca3af;
+  --chart-4: #ef4444;
+  --chart-5: #F59E0B;
+
+  /* Sidebar Colors - Dark Theme */
+  --sidebar: #1f2937;
+  --sidebar-foreground: #f9fafb;
+  --sidebar-primary: #1E3A8A;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #374151;
+  --sidebar-accent-foreground: #f9fafb;
+  --sidebar-border: #374151;
+  --sidebar-ring: #1E3A8A;
+}
+
+@theme inline {
+  --font-sans: Inter, "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  
+  /* Base Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  
+  /* Primary Colors */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  
+  /* Secondary Colors */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-light: var(--secondary-light);
+  --color-secondary-50: var(--secondary-50);
+  --color-secondary-100: var(--secondary-100);
+  --color-secondary-600: var(--secondary-600);
+  --color-secondary-700: var(--secondary-700);
+  --color-secondary-800: var(--secondary-800);
+  
+  /* Accent Colors */
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  
+  /* Neutral Colors */
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-50: var(--muted-50);
+  --color-muted-100: var(--muted-100);
+  --color-muted-200: var(--muted-200);
+  --color-muted-300: var(--muted-300);
+  --color-muted-400: var(--muted-400);
+  --color-muted-500: var(--muted-500);
+  --color-muted-600: var(--muted-600);
+  --color-muted-700: var(--muted-700);
+  --color-muted-800: var(--muted-800);
+  --color-muted-900: var(--muted-900);
+  
+  /* Status Colors */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-50: var(--destructive-50);
+  --color-destructive-100: var(--destructive-100);
+  --color-destructive-600: var(--destructive-600);
+  --color-destructive-700: var(--destructive-700);
+  
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-50: var(--success-50);
+  --color-success-100: var(--success-100);
+  
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-50: var(--warning-50);
+  --color-warning-100: var(--warning-100);
+  
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-50: var(--info-50);
+  --color-info-100: var(--info-100);
+  
+  /* UI Colors */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  /* Chart Colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  
+  /* Border Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Sidebar Colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Report styling (aligned with reporting project) */
+@layer base {
+  .report-header {
+    @apply bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-primary/20;
+  }
+
+  .report-section {
+    @apply bg-white shadow-sm border border-border/50 rounded-lg overflow-hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Footer that repeats on every printed page */
+  .report-footer {
+    background: white;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: rgba(15, 23, 42, 0.8);
+    height: 96px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+  }
+
+  /* Reserve space under content so footer doesn't overlap in browser view */
+  .print-content { padding-bottom: 96px; }
+
+  .report-table {
+    @apply w-full border-collapse;
+    table-layout: fixed;
+  }
+
+  .report-table th,
+  .report-table td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .report-table th {
+    @apply bg-muted/50 text-foreground font-semibold text-sm px-4 py-3 text-left border-b border-border;
+  }
+
+  .report-table td {
+    @apply px-4 py-3 text-sm border-b border-border/30 last:border-b-0;
+  }
+
+  .report-table tr:hover {
+    @apply bg-muted/20 transition-colors duration-150;
+  }
+
+  .status-indicator {
+    @apply inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold;
+  }
+
+  .status-yes {
+    @apply bg-green-100 text-green-800 border border-green-200;
+  }
+
+  .status-no {
+    @apply bg-red-100 text-red-800 border border-red-200;
+  }
+
+  .status-na {
+    @apply bg-gray-100 text-gray-600 border border-gray-200;
+  }
+
+  @media print {
+    @page { margin: 0.75in; size: A4; }
+    html, body, * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { font-size: 11pt; line-height: 1.4; }
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    .page-break-inside-avoid { page-break-inside: avoid; }
+    .report-section { @apply shadow-none; break-inside: avoid; }
+    .report-table { font-size: 10pt; }
+    /* Keep on-screen colors and backgrounds for exact visual parity */
+    h1, h2, h3 { page-break-after: avoid; }
+    .page-number:after { counter-increment: page; content: counter(page) "/" counter(pages); }
+    .report-footer { position: fixed !important; }
+    /* Reserve space so fixed footer doesn't overlap content */
+    .print-content { padding-bottom: 96px !important; }
+  }
+}
+
+/* Enhanced glassmorphism and modern utility classes */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.property-gradient {
+  /* PropCheck360 primary gradient */
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-900) 100%);
+}
+
+.step-indicator {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300;
+}
+
+.step-indicator.active {
+  @apply bg-primary text-primary-foreground;
+}
+
+.step-indicator.completed {
+  @apply bg-secondary text-secondary-foreground;
+}
+
+.step-indicator.inactive {
+  @apply bg-muted text-muted-foreground;
+}
