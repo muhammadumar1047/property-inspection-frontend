@@ -2641,7 +2641,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
 
       {/* Edit Inspection Modal */}
       <Modal isOpen={showEditInspectionModal} onClose={() => setShowEditInspectionModal(false)} title="Edit Inspection">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 rounded-lg border border-blue-100/50 shadow-inner">
           <form onSubmit={handleUpdateInspection} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Property Search */}
@@ -2804,7 +2804,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
               <button
                 type="submit"
                 disabled={loading || !selectedEditProperty}
-                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-blue-500/20 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 font-semibold active:scale-[0.98]"
               >
                 {loading ? (
                   <>

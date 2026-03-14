@@ -889,38 +889,38 @@ const LayoutManagement: React.FC = () => {
         const itemName = (item.itemName || '').toLowerCase();
         if (itemName.includes('bed')) {
           const count = itemName.match(/\d+/)?.[0] || '1';
-          components.push({text: `${count} Bed`, color: 'bg-purple-100 text-purple-800 border-purple-200'});
+          components.push({text: `${count} Bed`, color: 'bg-primary/10 text-primary border-primary/20'});
         } else if (itemName.includes('bath')) {
           const count = itemName.match(/\d+/)?.[0] || '1';
-          components.push({text: `${count} Bath`, color: 'bg-blue-100 text-blue-800 border-blue-200'});
+          components.push({text: `${count} Bath`, color: 'bg-secondary/10 text-secondary border-secondary/20'});
         } else if (itemName.includes('kitchen')) {
           components.push({text: '1 Kitchen', color: 'bg-orange-100 text-orange-800 border-orange-200'});
         } else if (itemName.includes('lounge') || itemName.includes('living')) {
-          components.push({text: '1 Lounge', color: 'bg-green-100 text-green-800 border-green-200'});
+          components.push({text: '1 Lounge', color: 'bg-emerald-100 text-emerald-800 border-emerald-200'});
         } else if (itemName.includes('dining')) {
-          components.push({text: '1 Dining Room', color: 'bg-yellow-100 text-yellow-800 border-yellow-200'});
+          components.push({text: '1 Dining Room', color: 'bg-amber-100 text-amber-800 border-amber-200'});
         } else if (itemName.includes('laundry')) {
           components.push({text: '1 Laundry', color: 'bg-gray-100 text-gray-800 border-gray-200'});
         } else if (itemName.includes('garage')) {
           components.push({text: '1 Garage', color: 'bg-slate-100 text-slate-800 border-slate-200'});
         } else if (itemName.includes('balcony')) {
-          components.push({text: '1 Balcony', color: 'bg-sky-100 text-sky-800 border-sky-200'});
+          components.push({text: '1 Balcony', color: 'bg-primary/5 text-primary-hover border-primary/10'});
         } else if (itemName.includes('garden')) {
-          components.push({text: '1 Garden', color: 'bg-emerald-100 text-emerald-800 border-emerald-200'});
+          components.push({text: '1 Garden', color: 'bg-emerald-50 text-emerald-700 border-emerald-100'});
         } else if (itemName.includes('pool')) {
-          components.push({text: '1 Pool', color: 'bg-cyan-100 text-cyan-800 border-cyan-200'});
+          components.push({text: '1 Pool', color: 'bg-primary/10 text-primary border-primary/20'});
         } else if (itemName.includes('entrance')) {
-          components.push({text: '1 Entrance', color: 'bg-indigo-100 text-indigo-800 border-indigo-200'});
+          components.push({text: '1 Entrance', color: 'bg-primary/10 text-primary border-primary/20'});
         } else if (itemName.includes('ensuite')) {
-          components.push({text: '1 Ensuite', color: 'bg-pink-100 text-pink-800 border-pink-200'});
+          components.push({text: '1 Ensuite', color: 'bg-secondary/10 text-secondary border-secondary/20'});
         } else if (itemName.includes('toilet')) {
-          components.push({text: '1 Toilet', color: 'bg-teal-100 text-teal-800 border-teal-200'});
+          components.push({text: '1 Toilet', color: 'bg-secondary/5 text-secondary-hover border-secondary/10'});
         } else if (itemName.includes('study')) {
-          components.push({text: '1 Study', color: 'bg-amber-100 text-amber-800 border-amber-200'});
+          components.push({text: '1 Study', color: 'bg-amber-50 text-amber-700 border-amber-100'});
         } else if (itemName.includes('exterior')) {
-          components.push({text: '1 Exterior', color: 'bg-stone-100 text-stone-800 border-stone-200'});
+          components.push({text: '1 Exterior', color: 'bg-stone-50 text-stone-700 border-stone-100'});
         } else {
-          components.push({text: `1 ${item.itemName}`, color: 'bg-gray-100 text-gray-800 border-gray-200'});
+          components.push({text: `1 ${item.itemName}`, color: 'bg-gray-50 text-gray-700 border-gray-100'});
         }
       });
     });
@@ -949,7 +949,7 @@ const LayoutManagement: React.FC = () => {
                 });
                 setShowCreateModal(true);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm"
+              className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-all"
         >
               <Plus className="w-4 h-4 mr-2" />
               Create Layout
@@ -978,11 +978,11 @@ const LayoutManagement: React.FC = () => {
                     placeholder="Search by layout name..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="flex-1 border-gray-300 focus:border-primary focus:ring-primary"
                   />
                   <Button 
                     size="sm" 
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4"
+                    className="bg-primary hover:bg-primary/90 text-white px-4"
                   >
                     <Search className="w-4 h-4" />
                   </Button>
@@ -994,7 +994,7 @@ const LayoutManagement: React.FC = () => {
                 <select
                   value={selectedLayoutType}
                   onChange={(e) => setSelectedLayoutType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="">All Types</option>
                   {layoutTypes.map(type => (
@@ -1014,7 +1014,7 @@ const LayoutManagement: React.FC = () => {
                         type="checkbox"
                         checked={selectedBathrooms.includes(option)}
                         onChange={() => toggleBathroomFilter(option)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-700">{option}</span>
                     </label>
@@ -1031,7 +1031,7 @@ const LayoutManagement: React.FC = () => {
                         type="checkbox"
                         checked={selectedRooms.includes(option)}
                         onChange={() => toggleRoomFilter(option)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-700">{option}</span>
                     </label>
@@ -1081,7 +1081,7 @@ const LayoutManagement: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={5} className="px-6 py-12 text-center">
                       <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         <span className="ml-3 text-gray-500">Loading layouts...</span>
                       </div>
                     </TableCell>
@@ -1109,7 +1109,7 @@ const LayoutManagement: React.FC = () => {
                         <TableCell className="px-6 py-4 whitespace-nowrap">
                           <Badge
                             variant="outline"
-                            className="bg-blue-50 text-blue-700 border-blue-200"
+                            className="bg-primary/10 text-primary border-primary/20"
                           >
                             {layoutType?.name || 'Unknown'}
                           </Badge>
@@ -1126,7 +1126,7 @@ const LayoutManagement: React.FC = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => openViewModal(layout)}
-                              className="h-9 w-9 p-0 text-blue-600 border-blue-200 hover:text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all"
+                              className="h-9 w-9 p-0 text-primary border-primary/20 hover:text-primary-hover hover:bg-primary/10 hover:border-primary/30 transition-all"
                               title="View Layout"
                             >
                               <Eye className="w-4 h-4" />
@@ -1135,7 +1135,7 @@ const LayoutManagement: React.FC = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => openEditModal(layout)}
-                              className="h-9 w-9 p-0 text-green-600 border-green-200 hover:text-green-700 hover:bg-green-50 hover:border-green-300 transition-all"
+                              className="h-9 w-9 p-0 text-secondary border-secondary/20 hover:text-secondary-hover hover:bg-secondary/10 hover:border-secondary/30 transition-all"
                               title="Edit Layout"
                             >
                               <Edit className="w-4 h-4" />
@@ -1166,21 +1166,20 @@ const LayoutManagement: React.FC = () => {
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col border border-gray-100 animate-in zoom-in-95 duration-300">
           {/* Header with gradient */}
-          <div className="relative px-8 py-6 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-t-2xl flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-indigo-700/90 rounded-t-2xl"></div>
+          <div className="relative px-8 py-6 bg-gradient-to-r from-primary-800 to-primary-900 rounded-t-2xl flex-shrink-0">
             <div className="relative flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">Create New Layout</h2>
-                  <p className="text-blue-100 mt-1">Design a new property layout template</p>
+                  <p className="text-blue-100/80 mt-1">Design a new property layout template</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all duration-200 hover:scale-105"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all duration-200 hover:scale-105 border border-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1188,14 +1187,14 @@ const LayoutManagement: React.FC = () => {
           </div>
 
           {/* Content */}
-          <div className="p-8 overflow-y-auto flex-1 min-h-0 bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="p-8 overflow-y-auto flex-1 min-h-0 bg-gradient-to-br from-blue-50 to-blue-100/50">
             <div className="space-y-8">
               {/* Basic Information Card */}
               <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <LayoutDashboard className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <LayoutDashboard className="w-4 h-4 text-primary" />
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
                   </div>
@@ -1210,7 +1209,7 @@ const LayoutManagement: React.FC = () => {
                           value={createFormData.LayoutName}
                           onChange={(e) => setCreateFormData(prev => ({ ...prev, LayoutName: e.target.value }))}
                           placeholder="Enter a descriptive layout name"
-                          className="pl-4 pr-4 py-3 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl transition-all duration-200"
+                          className="pl-4 pr-4 py-3 border-gray-200 focus:border-primary focus:ring-primary rounded-xl transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -1221,7 +1220,7 @@ const LayoutManagement: React.FC = () => {
                           id="create-layout-type"
                           value={createFormData.LayoutTypeId}
                           onChange={(e) => setCreateFormData(prev => ({ ...prev, LayoutTypeId: parseInt(e.target.value) }))}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                         >
                           {layoutTypes.map(type => (
                             <option key={type.id} value={type.id}>{type.name}</option>
@@ -1238,14 +1237,14 @@ const LayoutManagement: React.FC = () => {
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Layers className="w-4 h-4 text-green-600" />
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Layers className="w-4 h-4 text-primary" />
                       </div>
                       <CardTitle className="text-lg font-semibold text-gray-900">Areas & Components</CardTitle>
                     </div>
                     <Button
                       onClick={() => addArea(false)}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      className="bg-gradient-to-r from-primary-800 to-primary-900 hover:from-primary-900 hover:to-black text-white px-6 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add Area
@@ -1263,7 +1262,7 @@ const LayoutManagement: React.FC = () => {
                         <p className="text-gray-500 mb-4">Start by adding areas to define the layout structure</p>
                         <Button
                           onClick={() => addArea(false)}
-                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-xl"
+                          className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-6 py-2 rounded-xl"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Add First Area
@@ -1281,11 +1280,11 @@ const LayoutManagement: React.FC = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-3">
                                 <div
-                                  className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center cursor-move"
+                                  className="w-6 h-6 bg-primary/10 rounded-lg flex items-center justify-center cursor-move"
                                   draggable
                                   onDragStart={(e) => onAreaDragStart(e, 'create', areaIndex)}
                                 >
-                                  <GripVertical className="w-3 h-3 text-blue-600" />
+                                  <GripVertical className="w-3 h-3 text-primary" />
                                 </div>
                                 <span className="text-sm font-medium text-gray-500">Area {areaIndex + 1}</span>
                               </div>
@@ -1322,11 +1321,11 @@ const LayoutManagement: React.FC = () => {
                                   value={area.AreaName}
                                   onChange={(e) => handleAreaNameChange(areaIndex, e.target.value, false)}
                                   placeholder="Enter area name (e.g., Living Room, Kitchen, Bedroom)"
-                                  className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  className="border-gray-200 focus:border-primary focus:ring-primary rounded-xl"
                                 />
                                 {area.AreaName.trim().length > 2 && (
                                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                    <Wand2 className="w-4 h-4 text-blue-500" />
+                                    <Wand2 className="w-4 h-4 text-primary" />
                                   </div>
                                 )}
                               </div>
@@ -1334,18 +1333,18 @@ const LayoutManagement: React.FC = () => {
                             
                             {/* AI Suggestions */}
                             {showSuggestions[`create-${areaIndex}`] && aiSuggestions[`create-${areaIndex}`] && (
-                              <div className="mt-3 p-4 bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-300 rounded-xl shadow-md">
+                              <div className="mt-3 p-4 bg-gradient-to-r from-primary-50 to-primary-100 border-2 border-primary/20 rounded-xl shadow-sm">
                                 <div className="flex items-center justify-between mb-3">
                                   <div className="flex items-center space-x-2">
-                                    <Lightbulb className="w-5 h-5 text-blue-700" />
-                                    <span className="text-sm font-semibold text-blue-900">AI Suggestions</span>
-                                    <Badge className="bg-blue-200 text-blue-800 text-xs font-medium border border-blue-300">
+                                    <Lightbulb className="w-5 h-5 text-primary" />
+                                    <span className="text-sm font-semibold text-primary">AI Suggestions</span>
+                                    <Badge className="bg-primary/20 text-primary text-xs font-medium border border-primary/30">
                                       {aiSuggestions[`create-${areaIndex}`].length} items
                                     </Badge>
                                   </div>
                                   <button
                                     onClick={() => dismissSuggestions(areaIndex, false)}
-                                    className="text-blue-500 hover:text-blue-700 transition-colors p-1 hover:bg-blue-200 rounded"
+                                    className="text-primary hover:text-primary-hover transition-colors p-1 hover:bg-primary/20 rounded"
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
@@ -1354,7 +1353,7 @@ const LayoutManagement: React.FC = () => {
                                   {aiSuggestions[`create-${areaIndex}`].map((item, index) => (
                                     <Badge 
                                       key={index} 
-                                      className="bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 hover:border-blue-800 transition-colors font-semibold shadow-lg px-3 py-1 cursor-pointer hover:scale-105"
+                                      className="bg-primary text-white border-2 border-primary-hover hover:bg-primary-hover transition-colors font-semibold shadow-lg px-3 py-1 cursor-pointer hover:scale-105"
                                       onClick={() => addSingleSuggestion(areaIndex, item, false)}
                                     >
                                       {item}
@@ -1364,7 +1363,7 @@ const LayoutManagement: React.FC = () => {
                                 <Button
                                   size="sm"
                                   onClick={() => applyAISuggestions(areaIndex, false)}
-                                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
+                                  className="bg-primary text-white text-xs px-4 py-2 rounded-lg font-medium shadow-sm hover:bg-primary/90 transition-all"
                                 >
                                   <Wand2 className="w-3 h-3 mr-1" />
                                   Apply All Suggestions
@@ -1381,7 +1380,7 @@ const LayoutManagement: React.FC = () => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => addItem(areaIndex, false)}
-                                    className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 rounded-lg"
+                                    className="text-primary border-primary/20 hover:bg-primary/10 hover:border-primary/30 rounded-lg"
                                   >
                                     <Plus className="w-4 h-4 mr-1" />
                                     Add Item
@@ -1456,7 +1455,7 @@ const LayoutManagement: React.FC = () => {
                 <Button
                   onClick={handleCreateLayout}
                   disabled={loading || !createFormData.LayoutName.trim()}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="bg-gradient-to-r from-primary-800 to-primary-900 hover:from-primary-900 hover:to-black text-white px-8 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">
@@ -1482,21 +1481,20 @@ const LayoutManagement: React.FC = () => {
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col border border-gray-100 animate-in zoom-in-95 duration-300">
           {/* Header with gradient */}
-          <div className="relative px-8 py-6 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-t-2xl flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-indigo-700/90 rounded-t-2xl"></div>
+          <div className="relative px-8 py-6 bg-gradient-to-r from-primary-800 to-primary-900 rounded-t-2xl flex-shrink-0">
             <div className="relative flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">Edit Layout</h2>
-                  <p className="text-blue-100 mt-1">Modify layout details and components</p>
+                  <p className="text-blue-100/80 mt-1">Modify layout details and components</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowEditModal(false)}
-                className="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all duration-200 hover:scale-105"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all duration-200 hover:scale-105 border border-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1504,14 +1502,14 @@ const LayoutManagement: React.FC = () => {
           </div>
 
           {/* Content */}
-          <div className="p-8 overflow-y-auto flex-1 min-h-0 bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="p-8 overflow-y-auto flex-1 min-h-0 bg-gradient-to-br from-blue-50 to-blue-100/50">
             <div className="space-y-8">
               {/* Basic Information Card */}
               <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <LayoutDashboard className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <LayoutDashboard className="w-4 h-4 text-primary" />
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
                   </div>
@@ -1526,7 +1524,7 @@ const LayoutManagement: React.FC = () => {
                           value={editFormData.LayoutName}
                           onChange={(e) => setEditFormData(prev => ({ ...prev, LayoutName: e.target.value }))}
                           placeholder="Enter a descriptive layout name"
-                          className="pl-4 pr-4 py-3 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl transition-all duration-200"
+                          className="pl-4 pr-4 py-3 border-gray-200 focus:border-primary focus:ring-primary rounded-xl transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -1537,7 +1535,7 @@ const LayoutManagement: React.FC = () => {
                           id="edit-layout-type"
                           value={editFormData.LayoutTypeId}
                           onChange={(e) => setEditFormData(prev => ({ ...prev, LayoutTypeId: parseInt(e.target.value) }))}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                         >
                           {layoutTypes.map(type => (
                             <option key={type.id} value={type.id}>{type.name}</option>
@@ -1554,14 +1552,14 @@ const LayoutManagement: React.FC = () => {
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Layers className="w-4 h-4 text-blue-600" />
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Layers className="w-4 h-4 text-primary" />
                       </div>
                       <CardTitle className="text-lg font-semibold text-gray-900">Areas & Components</CardTitle>
                     </div>
                     <Button
                       onClick={() => addArea(true)}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      className="bg-gradient-to-r from-primary-800 to-primary-900 hover:from-primary-900 hover:to-black text-white px-6 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add Area
@@ -1579,7 +1577,7 @@ const LayoutManagement: React.FC = () => {
                         <p className="text-gray-500 mb-4">Add areas to define the layout structure</p>
                         <Button
                           onClick={() => addArea(true)}
-                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-xl"
+                          className="bg-gradient-to-r from-primary-800 to-primary-900 hover:from-primary-900 hover:to-black text-white px-6 py-2 rounded-xl"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Add First Area
@@ -1597,11 +1595,11 @@ const LayoutManagement: React.FC = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-3">
                                 <div
-                                  className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center cursor-move"
+                                  className="w-6 h-6 bg-primary/10 rounded-lg flex items-center justify-center cursor-move"
                                   draggable
                                   onDragStart={(e) => onAreaDragStart(e, 'edit', areaIndex)}
                                 >
-                                  <GripVertical className="w-3 h-3 text-blue-600" />
+                                  <GripVertical className="w-3 h-3 text-primary" />
                                 </div>
                                 <span className="text-sm font-medium text-gray-500">Area {areaIndex + 1}</span>
                               </div>
@@ -1638,11 +1636,11 @@ const LayoutManagement: React.FC = () => {
                                   value={area.AreaName}
                                   onChange={(e) => handleAreaNameChange(areaIndex, e.target.value, true)}
                                   placeholder="Enter area name (e.g., Living Room, Kitchen, Bedroom)"
-                                  className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  className="border-gray-200 focus:border-primary focus:ring-primary rounded-xl"
                                 />
                                 {area.AreaName.trim().length > 2 && (
                                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                                    <Wand2 className="w-4 h-4 text-blue-500" />
+                                    <Wand2 className="w-4 h-4 text-primary" />
                                   </div>
                                 )}
                               </div>
@@ -1650,18 +1648,18 @@ const LayoutManagement: React.FC = () => {
                             
                             {/* AI Suggestions */}
                             {showSuggestions[`edit-${areaIndex}`] && aiSuggestions[`edit-${areaIndex}`] && (
-                              <div className="mt-3 p-4 bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-300 rounded-xl shadow-md">
+                              <div className="mt-3 p-4 bg-gradient-to-r from-primary-50 to-primary-100 border-2 border-primary/20 rounded-xl shadow-sm">
                                 <div className="flex items-center justify-between mb-3">
                                   <div className="flex items-center space-x-2">
-                                    <Lightbulb className="w-5 h-5 text-blue-700" />
-                                    <span className="text-sm font-semibold text-blue-900">AI Suggestions</span>
-                                    <Badge className="bg-blue-200 text-blue-800 text-xs font-medium border border-blue-300">
+                                    <Lightbulb className="w-5 h-5 text-primary" />
+                                    <span className="text-sm font-semibold text-primary">AI Suggestions</span>
+                                    <Badge className="bg-primary/20 text-primary text-xs font-medium border border-primary/30">
                                       {aiSuggestions[`edit-${areaIndex}`].length} items
                                     </Badge>
                                   </div>
                                   <button
                                     onClick={() => dismissSuggestions(areaIndex, true)}
-                                    className="text-blue-500 hover:text-blue-700 transition-colors p-1 hover:bg-blue-200 rounded"
+                                    className="text-primary hover:text-primary-hover transition-colors p-1 hover:bg-primary/20 rounded"
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
@@ -1670,7 +1668,7 @@ const LayoutManagement: React.FC = () => {
                                   {aiSuggestions[`edit-${areaIndex}`].map((item, index) => (
                                     <Badge 
                                       key={index} 
-                                      className="bg-blue-600 text-white border-2 border-blue-700 hover:bg-blue-700 hover:border-blue-800 transition-colors font-semibold shadow-lg px-3 py-1 cursor-pointer hover:scale-105"
+                                      className="bg-primary text-white border-2 border-primary-hover hover:bg-primary-hover transition-colors font-semibold shadow-lg px-3 py-1 cursor-pointer hover:scale-105"
                                       onClick={() => addSingleSuggestion(areaIndex, item, true)}
                                     >
                                       {item}
@@ -1680,7 +1678,7 @@ const LayoutManagement: React.FC = () => {
                                 <Button
                                   size="sm"
                                   onClick={() => applyAISuggestions(areaIndex, true)}
-                                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-all"
+                                  className="bg-primary text-white text-xs px-4 py-2 rounded-lg font-medium shadow-sm hover:bg-primary/90 transition-all"
                                 >
                                   <Wand2 className="w-3 h-3 mr-1" />
                                   Apply All Suggestions
@@ -1697,7 +1695,7 @@ const LayoutManagement: React.FC = () => {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => addItem(areaIndex, true)}
-                                    className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 rounded-lg"
+                                    className="text-primary border-primary/20 hover:bg-primary/10 hover:border-primary/30 rounded-lg"
                                   >
                                     <Plus className="w-4 h-4 mr-1" />
                                     Add Item
@@ -1772,7 +1770,7 @@ const LayoutManagement: React.FC = () => {
                 <Button
                   onClick={handleEditLayout}
                   disabled={loading || !editFormData.LayoutName.trim()}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="bg-gradient-to-r from-primary-800 to-primary-900 hover:from-primary-900 hover:to-black text-white px-8 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">
@@ -1798,25 +1796,24 @@ const LayoutManagement: React.FC = () => {
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col border border-gray-100">
           {/* Header */}
-          <div className="relative px-8 py-6 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-t-2xl flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-indigo-700/90 rounded-t-2xl" />
+          <div className="relative px-8 py-6 bg-gradient-to-r from-primary-800 to-primary-900 rounded-t-2xl flex-shrink-0">
             <div className="relative flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
                   <Layers className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">
                     {selectedLayout.name}
                   </h2>
-                  <p className="text-blue-100 mt-1">
+                  <p className="text-blue-100/80 mt-1">
                     Full property layout structure and components
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowViewModal(false)}
-                className="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all duration-200 hover:scale-105"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-white transition-all duration-200 hover:scale-105 border border-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1824,14 +1821,14 @@ const LayoutManagement: React.FC = () => {
           </div>
 
           {/* Content */}
-          <div className="p-8 overflow-y-auto flex-1 min-h-0 bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="p-8 overflow-y-auto flex-1 min-h-0 bg-gradient-to-br from-blue-50 to-blue-100/50">
             <div className="space-y-8">
               {/* Summary card */}
               <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <LayoutDashboard className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <LayoutDashboard className="w-4 h-4 text-primary" />
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-900">
                       Layout Details
@@ -1874,8 +1871,8 @@ const LayoutManagement: React.FC = () => {
               <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                      <Layers className="w-4 h-4 text-indigo-600" />
+                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Layers className="w-4 h-4 text-primary" />
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-900">
                       Areas & Components ({selectedLayout.layoutArea?.length || 0} areas)
@@ -1896,7 +1893,7 @@ const LayoutManagement: React.FC = () => {
                                 Display order: {area.displayOrder}
                               </p>
                             </div>
-                            <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
                               {(area.layoutItem ?? []).length} item{(area.layoutItem ?? []).length !== 1 ? 's' : ''}
                             </Badge>
                           </div>

@@ -73,6 +73,8 @@ import LayoutManagement from "@/components/LayoutManagement";
 import UserProfile from "@/components/UserProfile";
 import ReferenceData from "@/components/ReferenceData";
 import PropertyCreation from "@/components/PropertyCreation";
+import GlobalSearch from "@/components/GlobalSearch";
+
 
 type StatCard = {
   title: string;
@@ -195,23 +197,26 @@ function getStatusBadge(status: string) {
 
 export default function AdminDashboard() {
   const pathname = usePathname();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showProfile, setShowProfile] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [analytics, setAnalytics] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  // Initialize activeSection from localStorage or default to "inspections" for first time
   const [activeSection, setActiveSection] = useState<string>('inspections');
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const savedSection = localStorage.getItem('dashboard-active-section');
     if (savedSection) {
       setActiveSection(savedSection);
     }
   }, []);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchLoading, setSearchLoading] = useState(false);
+
+  
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
+
+
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [propertyResults, setPropertyResults] = useState<any[]>([]);
@@ -300,25 +305,7 @@ export default function AdminDashboard() {
     };
   }, [showAgencyView, isSuperAdminRoute]);
 
-  // Keyboard shortcut for search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsSearchOpen(true);
-        // Focus the search input in the modal
-        setTimeout(() => {
-          const searchInput = document.querySelector('input[placeholder*="Search"]') as HTMLInputElement;
-          if (searchInput) {
-            searchInput.focus();
-          }
-        }, 100);
-      }
-    };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   const handleLogout = () => {
     logout();
@@ -360,85 +347,11 @@ export default function AdminDashboard() {
     }
   }, [isSuperAdmin, impersonatedAgencyId, activeSection, isSuperAdminRoute]);
 
+
+
   const clearSearchResults = () => {
     setShowingSearchResults({ type: null, query: '' });
   };
-
-  const clearAllSearch = () => {
-    console.log('clearAllSearch called - clearing all search data');
-    setSearchQuery('');
-    setPropertyResults([]);
-    setInspectionResults([]);
-    setIsSearchOpen(false);
-    setShowingSearchResults({ type: null, query: '' });
-    console.log('clearAllSearch completed');
-  };
-
-  const clearSearchModal = () => {
-    setSearchQuery('');
-    setIsSearchOpen(false);
-  };
-
-  const runSearch = async (q: string) => {
-    const query = q.trim();
-    console.log('runSearch called with query:', query);
-
-    if (!query) {
-      clearAllSearch();
-      return;
-    }
-
-    setSearchLoading(true);
-    console.log('Starting search for:', query);
-
-    try {
-      // Use the main search API that returns both properties and inspections
-      console.log('Calling inspectionApi.search...');
-      const searchResults = await inspectionApi.search(query, effectiveAgencyId ? String(effectiveAgencyId) : undefined);
-      console.log('Search API response:', searchResults);
-
-      setPropertyResults(searchResults.properties || []);
-      setInspectionResults(searchResults.inspections || []);
-      setIsSearchOpen(true);
-      console.log('Search completed successfully');
-    } catch (error: any) {
-      console.error('Search error:', error);
-      console.error('Error details:', error.response?.data || error.message);
-      setPropertyResults([]);
-      setInspectionResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-  const handlePropertyClick = async (propertyId: string) => {
-    try {
-      // Call Property/{id} API to get the specific property
-      console.log('handlePropertyClick called with propertyId:', propertyId);
-      console.log('Calling propertyApi.getById...');
-      const propertyDetails = await propertyApi.getById(propertyId);
-      console.log('Property details received:', propertyDetails);
-
-      // Navigate to Properties section and show the specific property
-      console.log('Setting active section to properties...');
-      setActiveSection('properties');
-      // Save the active section to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('dashboard-active-section', 'properties');
-      }
-      setShowingSearchResults({ type: 'properties', query: searchQuery });
-      setPropertyResults([propertyDetails]); // Show only the selected property
-
-      // Clear the search modal but keep the results for display
-      clearSearchModal();
-      console.log('Property click handler completed successfully');
-    } catch (error: any) {
-      console.error('Error fetching property details:', error);
-      console.error('Error details:', error.response?.data || error.message);
-    }
-  };
-
-
 
   const handleInspectionClick = async (inspectionId: string | number) => {
     try {
@@ -453,15 +366,14 @@ export default function AdminDashboard() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('dashboard-active-section', 'inspections');
       }
-      setShowingSearchResults({ type: 'inspections', query: searchQuery });
+      setShowingSearchResults({ type: 'inspections', query: '' });
       setInspectionResults([inspectionDetails]); // Show only the selected inspection
-
-      // Clear the search modal but keep the results for display
-      clearSearchModal();
     } catch (error) {
       console.error('Error fetching inspection details:', error);
     }
   };
+
+
 
   const renderMainContent = () => {
     switch (activeSection) {
@@ -885,16 +797,17 @@ export default function AdminDashboard() {
       {/* Logo */}
       <div className={`border-b border-[var(--sidebar-border)] ${isSidebarCollapsed && !isMobile ? 'px-3 py-5' : 'px-5 py-5'}`}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center shrink-0 shadow-md">
-            <Building2 className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 flex items-center justify-center shrink-0">
+            <img src="/icon-logo.png" alt="PropCheck360" className="w-9 h-9 rounded-xl shadow-sm" />
           </div>
           {(!isSidebarCollapsed || isMobile) && (
             <div className="overflow-hidden">
-              <h1 className="text-base font-bold text-[var(--foreground)] truncate">PropCheck360</h1>
-              <p className="text-[11px] text-[var(--muted-400)] truncate">Pro Dashboard</p>
+              <h1 className="text-lg font-bold text-primary tracking-tight leading-none">PropCheck <span className="text-muted-400">360</span></h1>
+              <p className="text-[10px] font-semibold text-muted-400 uppercase tracking-widest mt-1">Enterprise</p>
             </div>
           )}
         </div>
+
       </div>
 
       {/* Navigation */}
@@ -909,27 +822,23 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => { handleNavigation(item.label.toLowerCase()); if (isMobile) setIsMobileSidebarOpen(false); }}
                     title={isSidebarCollapsed && !isMobile ? item.label : undefined}
-                    className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                      isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
-                    } ${
-                      isActive
+                    className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                      } ${isActive
                         ? 'bg-[var(--primary)] text-white shadow-sm font-semibold'
                         : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
-                    }`}
+                      }`}
                   >
                     <item.icon className="w-[18px] h-[18px] shrink-0" />
                     {(!isSidebarCollapsed || isMobile) && (
                       <>
                         <span className="flex-1 text-left text-sm truncate">{item.label}</span>
                         {item.label === 'Properties' && (
-                          <span className={`px-2 py-0.5 text-[10px] rounded-full font-semibold ${
-                            isActive ? 'bg-white/20 text-white' : 'bg-[var(--primary-50)] text-[var(--primary)]'
-                          }`}>{propertyCount}</span>
+                          <span className={`px-2 py-0.5 text-[10px] rounded-full font-semibold ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--primary-50)] text-[var(--primary)]'
+                            }`}>{propertyCount}</span>
                         )}
                         {item.label === 'Inspections' && (
-                          <span className={`px-2 py-0.5 text-[10px] rounded-full font-semibold ${
-                            isActive ? 'bg-white/20 text-white' : 'bg-[var(--primary-50)] text-[var(--primary)]'
-                          }`}>{inspectionCount}</span>
+                          <span className={`px-2 py-0.5 text-[10px] rounded-full font-semibold ${isActive ? 'bg-white/20 text-white' : 'bg-[var(--primary-50)] text-[var(--primary)]'
+                            }`}>{inspectionCount}</span>
                         )}
                       </>
                     )}
@@ -948,13 +857,11 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => { handleNavigation('layout management'); if (isMobile) setIsMobileSidebarOpen(false); }}
                   title={isSidebarCollapsed && !isMobile ? 'Layout Management' : undefined}
-                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                    isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
-                  } ${
-                    activeSection === 'layout management'
+                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                    } ${activeSection === 'layout management'
                       ? 'bg-[var(--primary)] text-white shadow-sm font-semibold'
                       : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
-                  }`}
+                    }`}
                 >
                   <SettingsIcon className="w-[18px] h-[18px] shrink-0" />
                   {(!isSidebarCollapsed || isMobile) && <span className="flex-1 text-left text-sm truncate">Layout Management</span>}
@@ -965,9 +872,8 @@ export default function AdminDashboard() {
               <li>
                 <button
                   onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
-                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)] ${
-                    isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
-                  }`}
+                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)] ${isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                    }`}
                 >
                   <SettingsIcon className="w-[18px] h-[18px] shrink-0" />
                   {(!isSidebarCollapsed || isMobile) && (
@@ -987,11 +893,10 @@ export default function AdminDashboard() {
                         <li key={item.label}>
                           <button
                             onClick={() => { handleNavigation(item.label.toLowerCase()); if (isMobile) setIsMobileSidebarOpen(false); }}
-                            className={`w-full flex items-center gap-2.5 h-9 px-2.5 rounded-lg text-[13px] transition-all duration-150 cursor-pointer ${
-                              isActive
-                                ? 'bg-[var(--primary-50)] text-[var(--primary)] font-semibold'
-                                : 'text-[var(--muted-500)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
-                            }`}
+                            className={`w-full flex items-center gap-2.5 h-9 px-2.5 rounded-lg text-[13px] transition-all duration-150 cursor-pointer ${isActive
+                              ? 'bg-[var(--primary-50)] text-[var(--primary)] font-semibold'
+                              : 'text-[var(--muted-500)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
+                              }`}
                           >
                             <item.icon className="w-4 h-4 shrink-0" />
                             <span className="flex-1 text-left truncate">{item.label}</span>
@@ -1008,13 +913,11 @@ export default function AdminDashboard() {
                 <button
                   onClick={() => { handleNavigation('integration'); if (isMobile) setIsMobileSidebarOpen(false); }}
                   title={isSidebarCollapsed && !isMobile ? 'Integration' : undefined}
-                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                    isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
-                  } ${
-                    activeSection === 'integration'
+                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
+                    } ${activeSection === 'integration'
                       ? 'bg-[var(--primary)] text-white shadow-sm font-semibold'
                       : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
-                  }`}
+                    }`}
                 >
                   <Plug className="w-[18px] h-[18px] shrink-0" />
                   {(!isSidebarCollapsed || isMobile) && <span className="flex-1 text-left text-sm">Integration</span>}
@@ -1041,7 +944,23 @@ export default function AdminDashboard() {
     </>
   );
 
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen bg-[var(--background)] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center animate-pulse">
+            <img src="/icon-logo.png" alt="Logo" className="w-8 h-8 opacity-50" />
+          </div>
+          <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+            <div className="w-1/2 h-full bg-primary animate-[shimmer_1.5s_infinite]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="flex min-h-screen bg-[var(--background)]">
       {/* Mobile sidebar overlay */}
       {isMobileSidebarOpen && (
@@ -1098,38 +1017,21 @@ export default function AdminDashboard() {
 
             {/* Center — Search bar */}
             {(!isSuperAdmin || !!impersonatedAgencyId) && (
-              <div className="flex-1 max-w-xl hidden md:block">
-                <div className="relative">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-400)]" />
-                  <Input
-                    placeholder="Search properties, inspections..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { setIsSearchOpen(true); runSearch(searchQuery); } }}
-                    onFocus={() => { setIsSearchOpen(true); if (searchQuery.trim()) runSearch(searchQuery); }}
-                    className="pl-10 pr-14 h-10 bg-[var(--muted-50)] border-[var(--border)] rounded-xl text-sm"
-                    onClick={() => { setIsSearchOpen(true); if (searchQuery.trim()) runSearch(searchQuery); }}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-[var(--muted-400)] bg-white border border-[var(--border)] rounded-md">
-                      ⌘K
-                    </kbd>
-                  </div>
-                </div>
+              <div className="flex-1 max-w-xl transition-all duration-300">
+                <GlobalSearch 
+                  setActiveSection={setActiveSection}
+                  setShowingSearchResults={setShowingSearchResults}
+                  setPropertyResults={setPropertyResults}
+                  setInspectionResults={setInspectionResults}
+                />
               </div>
             )}
 
+
+
             {/* Right side — Actions */}
             <div className="flex items-center gap-2">
-              {/* Mobile search trigger */}
-              {(!isSuperAdmin || !!impersonatedAgencyId) && (
-                <button
-                  onClick={() => setIsSearchOpen(true)}
-                  className="md:hidden p-2 rounded-lg text-[var(--muted-500)] hover:bg-[var(--muted-100)] transition-colors cursor-pointer"
-                >
-                  <Search className="w-5 h-5" />
-                </button>
-              )}
+
 
               {!isSuperAdmin && <NotificationsBell />}
 
@@ -1224,165 +1126,7 @@ export default function AdminDashboard() {
           </div>
         </main>
 
-        {/* Global Search Dialog */}
-        <Modal isOpen={isSearchOpen} onClose={clearAllSearch} title={searchQuery ? `Search results for "${searchQuery}"` : 'Search'} widthClassName="max-w-4xl">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  autoFocus
-                  placeholder="Type to search properties and inspections..."
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); runSearch(e.target.value); }}
-                  className="pl-12 pr-12 py-3 w-full bg-white/90 backdrop-blur-sm border-2 border-gray-200/50 rounded-xl shadow-lg focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 placeholder:text-gray-400 text-gray-700 font-medium"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={clearAllSearch}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 hover:text-gray-600 transition-colors"
-                    title="Clear search"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-            {searchLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Building2 className="w-4 h-4 text-primary" />
-                    <h3 className="text-sm font-semibold text-foreground">Properties ({propertyResults.length})</h3>
-                  </div>
-                  <div className="border border-border rounded-lg divide-y divide-border bg-white shadow-sm">
-                    {propertyResults.length === 0 ? (
-                      <div className="p-4 text-sm text-muted-foreground text-center">No properties found</div>
-                    ) : (
-                      propertyResults.map((p: any) => {
-                        console.log('Rendering property:', p);
-                        const propertyId = p.id || p.propertyId || p.PropertyId;
-                        console.log('Property ID to use:', propertyId);
-                        return (
-                          <button
-                            key={propertyId || `property-${propertyId}`}
-                            className="w-full text-left p-4 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-200 border-l-4 border-transparent hover:border-primary"
-                            onClick={() => handlePropertyClick(propertyId)}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="font-semibold text-foreground text-sm">#{p.id} • {p.address1}{p.address2 ? `, ${p.address2}` : ''}</div>
-                                <div className="text-xs text-muted-foreground mt-1">{p.suburb || p.cityOrSuburb}</div>
 
-                                {/* Property Details */}
-                                <div className="mt-2 space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{p.type}</span>
-                                    {p.landlordName && (
-                                      <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">{p.landlordName}</span>
-                                    )}
-                                    {p.tenantName && (
-                                      <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">{p.tenantName}</span>
-                                    )}
-                                  </div>
-
-                                  {/* Additional Property Info */}
-                                  <div className="text-xs text-gray-500 space-y-0.5">
-                                    <div>Type: {p.type}</div>
-                                    <div>ID: {p.id}</div>
-                                    {p.landlordName && <div>Landlord: {p.landlordName}</div>}
-                                    {p.tenantName && <div>Tenant: {p.tenantName}</div>}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="ml-2">
-                                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <ClipboardList className="w-4 h-4 text-primary" />
-                    <h3 className="text-sm font-semibold text-foreground">Inspections ({inspectionResults.length})</h3>
-                  </div>
-                  <div className="border border-border rounded-lg divide-y divide-border bg-white shadow-sm">
-                    {inspectionResults.length === 0 ? (
-                      <div className="p-4 text-sm text-muted-foreground text-center">No inspections found</div>
-                    ) : (
-                      inspectionResults.map((i: any) => (
-                        <button
-                          key={i.id || `inspection-${i.id}`}
-                          className="w-full text-left p-4 hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-200 border-l-4 border-transparent hover:border-primary"
-                          onClick={() => handleInspectionClick(i.id)}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="font-semibold text-foreground text-sm">#{i.id} • {i.address1}{i.address2 ? `, ${i.address2}` : ''}</div>
-                              <div className="text-xs text-muted-foreground mt-1">
-                                {i.inspectionType} • {new Date(i.inspectionDate).toISOString().split('T')[0]}
-                              </div>
-
-                              {/* Inspection Details */}
-                              <div className="mt-2 space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                    {
-                                      {
-                                        1: 'Entry',
-                                        2: 'Exit',
-                                        3: 'Routine'
-                                      }[Number(i.inspectionType || i.inspectionTypeId)] || i.inspectionType || i.type || 'Unknown'
-                                    }
-                                  </span>
-                                  {i.landlordName && (
-                                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">{i.landlordName}</span>
-                                  )}
-                                  {i.tenantName && (
-                                    <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">{i.tenantName}</span>
-                                  )}
-                                </div>
-
-                                {/* Additional Inspection Info */}
-                                <div className="text-xs text-gray-500 space-y-0.5">
-                                  <div>Type: {i.type}</div>
-                                  <div>ID: {i.id}</div>
-                                  <div>Inspection Type: {i.inspectionType}</div>
-                                  <div>Date: {new Date(i.inspectionDate).toISOString().split('T')[0]}</div>
-                                  {i.landlordName && <div>Landlord: {i.landlordName}</div>}
-                                  {i.tenantName && <div>Tenant: {i.tenantName}</div>}
-                                  <div>Suburb: {i.subhurb}</div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="ml-2">
-                              <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
-                            </div>
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </Modal>
 
       </div>
     </div>

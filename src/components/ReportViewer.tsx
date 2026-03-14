@@ -30,9 +30,9 @@ function DefaultTemplate({ report, editable, onSave }: { report: InspectionRepor
   const property = report?.inspection?.property as any;
   const agency = report?.inspection?.agency as any;
   const themeVars = useMemo(() => ({
-    '--report-primary': whitelabel.primaryColor || '#1E40AF',
-    '--report-secondary': whitelabel.secondaryColor || whitelabel.accentColor || '#2563EB',
-    '--report-accent': whitelabel.accentColor || whitelabel.secondaryColor || '#3B82F6',
+    '--report-primary': whitelabel.primaryColor || '#003B73',
+    '--report-secondary': whitelabel.secondaryColor || whitelabel.accentColor || '#0058AD',
+    '--report-accent': whitelabel.accentColor || whitelabel.secondaryColor || '#339DFF',
     '--report-text': whitelabel.textColor || '#0f172a',
     '--report-bg': whitelabel.backgroundColor || '#ffffff',
   } as React.CSSProperties), [whitelabel]);

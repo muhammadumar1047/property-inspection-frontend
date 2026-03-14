@@ -548,7 +548,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
       </div>
 
       {/* Fancy Filter Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -788,11 +788,11 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                 </span>
               )}
               {filters.dateFrom && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200/50">
                   From: {filters.dateFrom}
                   <button
                     onClick={() => handleFilterChange('dateFrom', '')}
-                    className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500"
+                    className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
                       <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
@@ -801,11 +801,11 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                 </span>
               )}
               {filters.dateTo && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200/50">
                   To: {filters.dateTo}
                   <button
                     onClick={() => handleFilterChange('dateTo', '')}
-                    className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-indigo-400 hover:bg-indigo-200 hover:text-indigo-500"
+                    className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
                       <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
@@ -851,7 +851,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
       )}
 
       <Modal isOpen={showCreateForm} onClose={() => setShowCreateForm(false)} title="Create New Inspection">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 rounded-lg border border-blue-100/50 shadow-inner">
           <form onSubmit={handleCreateInspection} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Property Search */}
@@ -1023,7 +1023,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
               <button
                 type="submit"
                 disabled={loading || !selectedProperty}
-                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-blue-500/20 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 font-semibold active:scale-[0.98]"
               >
                 {loading ? (
                   <>
@@ -1049,7 +1049,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
 
       {/* Edit Inspection Modal */}
       <Modal isOpen={showEditForm} onClose={() => setShowEditForm(false)} title="Edit Inspection">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-lg">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 rounded-lg border border-blue-100/50 shadow-inner">
           <form onSubmit={handleUpdateInspection} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Property Search */}
@@ -1223,7 +1223,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
               <button
                 type="submit"
                 disabled={loading || !selectedEditProperty}
-                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-lg shadow-sm hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-blue-500/20 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 font-semibold active:scale-[0.98]"
               >
                 {loading ? (
                   <>

@@ -77,7 +77,7 @@ const ReferenceData: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-indigo-600 truncate">
+                  <p className="text-sm font-medium text-blue-800 font-bold truncate">
                     {item.name}
                   </p>
                   <div className="ml-2 flex-shrink-0 flex">
@@ -132,7 +132,7 @@ const ReferenceData: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
-                  ? 'border-indigo-500 text-indigo-600'
+                  ? 'border-blue-600 text-blue-800 font-bold'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -160,8 +160,8 @@ const ReferenceData: React.FC = () => {
         <Card className="border-0 shadow-sm bg-white overflow-hidden">
           <CardContent className="p-5">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                <Map className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                <Map className="w-5 h-5 text-blue-700" />
               </div>
               <div className="ml-5 flex-1">
                 <p className="text-sm font-medium text-gray-500 truncate">States</p>
@@ -188,8 +188,8 @@ const ReferenceData: React.FC = () => {
         <Card className="border-0 shadow-sm bg-white overflow-hidden">
           <CardContent className="p-5">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                <ClipboardCheck className="w-5 h-5 text-yellow-600" />
+              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <ClipboardCheck className="w-5 h-5 text-blue-800" />
               </div>
               <div className="ml-5 flex-1">
                 <p className="text-sm font-medium text-gray-500 truncate">Inspection Types</p>
@@ -202,8 +202,8 @@ const ReferenceData: React.FC = () => {
         <Card className="border-0 shadow-sm bg-white overflow-hidden">
           <CardContent className="p-5">
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-secondary-100 rounded-xl flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-secondary-700" />
               </div>
               <div className="ml-5 flex-1">
                 <p className="text-sm font-medium text-gray-500 truncate">Inspection Statuses</p>

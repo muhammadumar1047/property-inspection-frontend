@@ -589,7 +589,7 @@ const AgencyManagement: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
             <select
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
               value={filters.countryId || ''}
               onChange={(e) => { const val = e.target.value || undefined; setFilters((p) => ({ ...p, countryId: val, stateId: undefined })); setPage(1); }}
             >
@@ -605,7 +605,7 @@ const AgencyManagement: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
             <select
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
               value={filters.stateId || ''}
               onChange={(e) => { const val = e.target.value || undefined; setFilters((p) => ({ ...p, stateId: val })); setPage(1); }}
               disabled={!filters.countryId || lookupLoading.states}
@@ -621,7 +621,7 @@ const AgencyManagement: React.FC = () => {
             <input
               type="text"
               placeholder="Search by name..."
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
               value={filters.name || ''}
               onChange={(e) => { const v = e.target.value; setFilters((p) => ({ ...p, name: v || undefined })); setPage(1); }}
             />
@@ -631,7 +631,7 @@ const AgencyManagement: React.FC = () => {
             <input
               type="text"
               placeholder="Search by suburb..."
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
               value={filters.suburb || ''}
               onChange={(e) => { const v = e.target.value; setFilters((p) => ({ ...p, suburb: v || undefined })); setPage(1); }}
             />
@@ -641,7 +641,7 @@ const AgencyManagement: React.FC = () => {
             <input
               type="text"
               placeholder="Search by city..."
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
               value={filters.city || ''}
               onChange={(e) => { const v = e.target.value; setFilters((p) => ({ ...p, city: v || undefined })); setPage(1); }}
             />

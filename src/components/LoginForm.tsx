@@ -4,11 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Building2, 
-  Eye, 
-  EyeOff, 
-  AlertCircle 
+import {
+  Building2,
+  Eye,
+  EyeOff,
+  AlertCircle
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,7 @@ const LoginForm: React.FC = () => {
       {/* Left visual panel */}
       <div className="hidden lg:block relative overflow-hidden">
         {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] via-[#00538A] to-[var(--secondary)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)] via-[#0058AD] to-[var(--secondary)]" />
 
         {/* Decorative shapes */}
         <div className="absolute inset-0 overflow-hidden">
@@ -110,17 +110,32 @@ const LoginForm: React.FC = () => {
           {slides.map((slide, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-all duration-700 ease-in-out ${index === currentSlide ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"}`}
             >
+              {/* Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] ease-out"
+                style={{ 
+                  backgroundImage: `url(${slide.image})`,
+                  transform: index === currentSlide ? 'scale(1.1)' : 'scale(1)'
+                }}
+              />
+              {/* Overlay for readability */}
+              <div className="absolute inset-0 bg-black/40" />
               {/* Slide content */}
               <div className="relative z-10 h-full flex flex-col justify-between px-12 py-12 text-white">
                 {/* Logo */}
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20">
-                    <Building2 className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-lg shrink-0">
+                    <img src="/icon-logo.png" alt="" className="w-8 h-8 rounded-lg" />
                   </div>
-                  <span className="text-xl font-bold tracking-tight">PropCheck360</span>
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-bold tracking-tight text-white leading-none">PropCheck</span>
+                    <span className="text-sm font-medium text-white/60 tracking-[0.2em] uppercase mt-0.5">360 Dashboard</span>
+                  </div>
                 </div>
+
+
 
                 {/* Main content */}
                 <div className="space-y-5 max-w-lg">
@@ -143,11 +158,10 @@ const LoginForm: React.FC = () => {
                     <button
                       key={dotIndex}
                       onClick={() => setCurrentSlide(dotIndex)}
-                      className={`transition-all duration-300 rounded-full ${
-                        dotIndex === currentSlide
+                      className={`transition-all duration-300 rounded-full ${dotIndex === currentSlide
                           ? "w-8 h-2 bg-white"
                           : "w-2 h-2 bg-white/40 hover:bg-white/60"
-                      }`}
+                        }`}
                       aria-label={`Go to slide ${dotIndex + 1}`}
                       type="button"
                     />
@@ -163,12 +177,14 @@ const LoginForm: React.FC = () => {
       <div className="flex items-center justify-center bg-[var(--background)] p-6 md:p-10">
         <div className="w-full max-w-[420px] animate-fade-in">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center shadow-md">
-              <Building2 className="w-5 h-5 text-white" />
+          <div className="lg:hidden flex items-center justify-center mb-8 gap-3">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md shrink-0">
+              <img src="/icon-logo.png" alt="" className="w-6 h-6 rounded-md" />
             </div>
-            <h1 className="text-xl font-bold text-[var(--foreground)]">PropCheck360</h1>
+            <h1 className="text-2xl font-bold text-primary tracking-tight">PropCheck360</h1>
           </div>
+
+
 
           <Card className="glass-card !rounded-2xl !shadow-[var(--shadow-modal)]">
             <CardHeader className="text-center space-y-1 pb-2">

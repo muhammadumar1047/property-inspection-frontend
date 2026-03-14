@@ -42,12 +42,12 @@ const AgencySettings: React.FC = () => {
     addressColor?: string;
     accentFontFamily?: string;
   }>>({
-    agencyNameColor: "#1E40AF",
-    addressColor: "#1E40AF",
+    agencyNameColor: "#003B73",
+    addressColor: "#003B73",
     accentColor: "#10B981",
     accentFontFamily: "Arial, sans-serif",
     logoUrl: "/assets/default-logo.png",
-    primaryColor: "#1E40AF",
+    primaryColor: "#003B73",
     secondaryColor: "#EF4444",
     fontFamily: "Arial, sans-serif",
   });
@@ -480,7 +480,7 @@ const AgencySettings: React.FC = () => {
                     </div>
                     <div>
                       <Label>Primary Color</Label>
-                      <Input type="color" value={whitelabelSettings.primaryColor || '#1E40AF'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, primaryColor: e.target.value })} />
+                      <Input type="color" value={whitelabelSettings.primaryColor || '#003B73'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, primaryColor: e.target.value })} />
                     </div>
                     <div>
                       <Label>Secondary Color</Label>
@@ -492,11 +492,11 @@ const AgencySettings: React.FC = () => {
                     </div>
                     <div>
                       <Label>Agency Name Color</Label>
-                      <Input type="color" value={(whitelabelSettings as any).agencyNameColor || '#1E40AF'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, agencyNameColor: e.target.value })} />
+                      <Input type="color" value={(whitelabelSettings as any).agencyNameColor || '#003B73'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, agencyNameColor: e.target.value })} />
                     </div>
                     <div>
                       <Label>Address Color</Label>
-                      <Input type="color" value={(whitelabelSettings as any).addressColor || '#1E40AF'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, addressColor: e.target.value })} />
+                      <Input type="color" value={(whitelabelSettings as any).addressColor || '#003B73'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, addressColor: e.target.value })} />
                     </div>
                     <div>
                       <Label>Font Family</Label>
