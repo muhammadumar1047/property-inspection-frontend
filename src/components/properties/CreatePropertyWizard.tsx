@@ -120,7 +120,7 @@ export default function CreatePropertyWizard() {
           if (saved.tenants) setTenants(saved.tenants);
         }
       }
-    } catch {}
+    } catch { }
 
     const load = async () => {
       try {
@@ -174,7 +174,7 @@ export default function CreatePropertyWizard() {
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       }
-    } catch {}
+    } catch { }
   }, [activeStep, propertyData, createdPropertyId, tenants]);
 
   const steps: { id: WizardStep; title: string; description: string }[] = [
@@ -299,7 +299,7 @@ export default function CreatePropertyWizard() {
         };
 
         await propertyApi.create(payload as any);
-        try { localStorage.removeItem(STORAGE_KEY); } catch {}
+        try { localStorage.removeItem(STORAGE_KEY); } catch { }
         router.push("/dashboard");
       }
     } catch (e: any) {
@@ -416,13 +416,12 @@ export default function CreatePropertyWizard() {
                         <li key={s.id} className="relative flex items-start gap-3">
                           <button
                             type="button"
-                            className={`absolute -left-6 top-0 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border shadow-sm ${
-                              isActive
+                            className={`absolute -left-6 top-0 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border shadow-sm ${isActive
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : isCompleted
-                                ? "bg-primary/10 text-primary border-primary/30"
-                                : "bg-muted text-muted-foreground border-border"
-                            }`}
+                                  ? "bg-primary/10 text-primary border-primary/30"
+                                  : "bg-muted text-muted-foreground border-border"
+                              }`}
                             onClick={() => {
                               if (i <= currentIdx) setActiveStep(s.id);
                             }}
@@ -443,402 +442,402 @@ export default function CreatePropertyWizard() {
 
               <section className="md:col-span-8">
 
-              {activeStep === "property" && (
-                <div className="space-y-6">
-                  {/* Property Basic Information */}
-                  <div className="bg-muted/50 p-6 rounded-lg">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Property Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                        <Label>Address *</Label>
-                        <Input value={propertyData.address1} onChange={(e) => setPropertyData({ ...propertyData, address1: e.target.value })} placeholder="Enter address" />
-                </div>
-                <div>
-                  <Label>Address 2</Label>
-                        <Input value={propertyData.address2 || ''} onChange={(e) => setPropertyData({ ...propertyData, address2: e.target.value || null })} placeholder="Enter address line 2" />
-                </div>
-                <div>
-                        <Label>City/Suburb *</Label>
-                        <Input value={propertyData.cityOrSuburb} onChange={(e) => setPropertyData({ ...propertyData, cityOrSuburb: e.target.value })} placeholder="Enter city or suburb" />
-                </div>
-                <div>
-                        <Label>Postcode *</Label>
-                        <Input value={propertyData.postcode} onChange={(e) => setPropertyData({ ...propertyData, postcode: e.target.value })} placeholder="Enter postcode" />
-                </div>
-                <div>
-                        <Label>State *</Label>
-                  <select className="h-11 w-full rounded-md border border-border bg-white px-3 py-2" value={propertyData.stateLookupId} onChange={(e) => setPropertyData({ ...propertyData, stateLookupId: e.target.value })}>
-                    {states.map((s: any) => (
-                      <option key={s.id} value={s.id}>{s.name || s.stateName || s.StateName}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                        <Label>Property Type *</Label>
-                  <select
-                    className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
-                    value={propertyData.type}
-                    onChange={(e) => setPropertyData({ ...propertyData, type: parseInt(e.target.value) as any })}
-                  >
-                    {propertyTypes.map((t) => (
-                      <option key={t.propertyTypeId} value={t.propertyTypeId}>
-                        {(t.name || t.typeName || t.TypeName || "").toString()}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                        <Label>Property Manager *</Label>
-                  <select className="h-11 w-full rounded-md border border-border bg-white px-3 py-2" value={propertyData.propertyManagerId} onChange={(e) => setPropertyData({ ...propertyData, propertyManagerId: e.target.value })}>
-                    {managers.map((m) => (
-                      <option key={m.userId || m.UserId} value={m.userId || m.UserId}>
-                        {`${(m.firstName || m.FirstName || '').toString().trim()} ${(m.lastName || m.LastName || '').toString().trim()}`.trim() || m.username || m.Username}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
-                          <Label>Inspection Frequency *</Label>
-                          <Input type="number" min={1} value={propertyData.inspectionFrequencyNumber} onChange={(e) => setPropertyData({ ...propertyData, inspectionFrequencyNumber: parseInt(e.target.value) || 1 })} placeholder="Frequency number" />
-                  </div>
-                  <div>
-                    <Label>&nbsp;</Label>
-                    <select className="h-11 w-40 rounded-md border border-border bg-white px-3 py-2" value={propertyData.inspectionFrequencyType} onChange={(e) => setPropertyData({ ...propertyData, inspectionFrequencyType: parseInt(e.target.value) as any })}>
-                      <option value={InspectionFrequencyType.Day}>Days</option>
-                      <option value={InspectionFrequencyType.Week}>Weeks</option>
-                      <option value={InspectionFrequencyType.Month}>Months</option>
-                      <option value={InspectionFrequencyType.Year}>Years</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <Label>Key Number</Label>
-                  <Input value={propertyData.keyNo || ''} onChange={(e) => setPropertyData({ ...propertyData, keyNo: e.target.value || null })} placeholder="Enter key number" />
-                </div>
-                <div>
-                  <Label>Alarm Code</Label>
-                  <Input value={propertyData.alarmCode || ''} onChange={(e) => setPropertyData({ ...propertyData, alarmCode: e.target.value || null })} placeholder="Enter alarm code" />
-                </div>
-                <div>
-                  <Label>Property Images URL</Label>
-                  <Input value={propertyData.propertyImages || ''} onChange={(e) => setPropertyData({ ...propertyData, propertyImages: e.target.value || null })} placeholder="Enter property images URL" />
-                </div>
-                <div className="md:col-span-2">
-                  <Label>Property Notes</Label>
-                  <textarea 
-                    className="h-20 w-full rounded-md border border-border bg-white px-3 py-2" 
-                    value={propertyData.propertyNotes || ''} 
-                    onChange={(e) => setPropertyData({ ...propertyData, propertyNotes: e.target.value || null })} 
-                    placeholder="Enter property notes"
-                  />
-                </div>
-                    </div>
-                  </div>
-              </div>
-            )}
-
-
-            {/* Structure step removed; handled in layout */}
-
-            {activeStep === "landlord" && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <Label>Name</Label>
-                  <Input value={landlord.name} onChange={(e) => setLandlord({ ...landlord, name: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input type="email" value={landlord.email} onChange={(e) => setLandlord({ ...landlord, email: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Phone</Label>
-                  <Input value={landlord.phone} onChange={(e) => setLandlord({ ...landlord, phone: e.target.value })} />
-                </div>
-              </div>
-            )}
-
-            {activeStep === "tenancy" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <Label>Full Name</Label>
-                  <Input value={tenancy.fullName} onChange={(e) => setTenancy({ ...tenancy, fullName: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input type="email" value={tenancy.email} onChange={(e) => setTenancy({ ...tenancy, email: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Mobile</Label>
-                  <Input value={tenancy.mobile} onChange={(e) => setTenancy({ ...tenancy, mobile: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Lease Start</Label>
-                  <Input type="datetime-local" value={tenancy.leaseStartDate} onChange={(e) => setTenancy({ ...tenancy, leaseStartDate: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Lease End</Label>
-                  <Input type="datetime-local" value={tenancy.leaseEndDate} onChange={(e) => setTenancy({ ...tenancy, leaseEndDate: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Current Rent Amount</Label>
-                  <Input type="number" min={0} step="0.01" value={tenancy.currentRentAmount as any} onChange={(e) => setTenancy({ ...tenancy, currentRentAmount: parseFloat(e.target.value) })} />
-                </div>
-                <div>
-                  <Label>Rent Frequency</Label>
-                  <select
-                    className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
-                    value={tenancy.rentFrequency}
-                    onChange={(e) => setTenancy({ ...tenancy, rentFrequency: parseInt(e.target.value) as RentFrequency })}
-                  >
-                    <option value={RentFrequency.Day}>Day</option>
-                    <option value={RentFrequency.Week}>Week</option>
-                    <option value={RentFrequency.Fortnight}>Fortnight</option>
-                    <option value={RentFrequency.Month}>Month</option>
-                    <option value={RentFrequency.Quarter}>Quarter</option>
-                    <option value={RentFrequency.Year}>Year</option>
-                  </select>
-                </div>
-                <div>
-                  <Label>Original Lease Date</Label>
-                  <Input type="datetime-local" value={tenancy.originalLeaseDate} onChange={(e) => setTenancy({ ...tenancy, originalLeaseDate: e.target.value })} />
-                </div>
-                <div>
-                  <Label>Next Inspection Date</Label>
-                  <Input type="datetime-local" value={tenancy.newInspectionDate} onChange={(e) => setTenancy({ ...tenancy, newInspectionDate: e.target.value })} />
-                </div>
-                <div className="md:col-span-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-md font-semibold text-foreground">Tenants</h4>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowAddTenantForm(!showAddTenantForm)}
-                    >
-                      {showAddTenantForm ? "Cancel" : "Add Tenant"}
-                    </Button>
-                  </div>
-
-                  {/* Display existing tenants */}
-                  {tenants.length > 0 && (
-                    <div className="space-y-2 mb-4">
-                      {tenants.map((tenant, index) => (
-                        <div key={index} className="bg-muted/50 p-3 rounded-lg flex items-center justify-between">
-                          <div>
-                            <span className="font-medium">{tenant.firstName} {tenant.lastName}</span>
-                            <span className="text-muted-foreground ml-2">• {tenant.email}</span>
-                            {tenant.phone && <span className="text-muted-foreground ml-2">• {tenant.phone}</span>}
-                          </div>
-                          <Button 
-                            type="button" 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleRemoveTenant(index)}
-                            className="text-destructive-600 hover:text-destructive-700"
+                {activeStep === "property" && (
+                  <div className="space-y-6">
+                    {/* Property Basic Information */}
+                    <div className="bg-muted/50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Property Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label>Address *</Label>
+                          <Input value={propertyData.address1} onChange={(e) => setPropertyData({ ...propertyData, address1: e.target.value })} placeholder="Enter address" />
+                        </div>
+                        <div>
+                          <Label>Address 2</Label>
+                          <Input value={propertyData.address2 || ''} onChange={(e) => setPropertyData({ ...propertyData, address2: e.target.value || null })} placeholder="Enter address line 2" />
+                        </div>
+                        <div>
+                          <Label>City/Suburb *</Label>
+                          <Input value={propertyData.cityOrSuburb} onChange={(e) => setPropertyData({ ...propertyData, cityOrSuburb: e.target.value })} placeholder="Enter city or suburb" />
+                        </div>
+                        <div>
+                          <Label>Postcode *</Label>
+                          <Input value={propertyData.postcode} onChange={(e) => setPropertyData({ ...propertyData, postcode: e.target.value })} placeholder="Enter postcode" />
+                        </div>
+                        <div>
+                          <Label>State *</Label>
+                          <select className="h-11 w-full rounded-md border border-border bg-white px-3 py-2" value={propertyData.stateLookupId} onChange={(e) => setPropertyData({ ...propertyData, stateLookupId: e.target.value })}>
+                            {states.map((s: any) => (
+                              <option key={s.id} value={s.id}>{s.name || s.stateName || s.StateName}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <Label>Property Type *</Label>
+                          <select
+                            className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
+                            value={propertyData.type}
+                            onChange={(e) => setPropertyData({ ...propertyData, type: parseInt(e.target.value) as any })}
                           >
-                            Remove
-                          </Button>
+                            {propertyTypes.map((t) => (
+                              <option key={t.propertyTypeId} value={t.propertyTypeId}>
+                                {(t.name || t.typeName || t.TypeName || "").toString()}
+                              </option>
+                            ))}
+                          </select>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                        <div>
+                          <Label>Property Manager *</Label>
+                          <select className="h-11 w-full rounded-md border border-border bg-white px-3 py-2" value={propertyData.propertyManagerId} onChange={(e) => setPropertyData({ ...propertyData, propertyManagerId: e.target.value })}>
+                            {managers.map((m) => (
+                              <option key={m.userId || m.UserId} value={m.userId || m.UserId}>
+                                {`${(m.firstName || m.FirstName || '').toString().trim()} ${(m.lastName || m.LastName || '').toString().trim()}`.trim() || m.username || m.Username}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
 
-                  {/* Add tenant form */}
-                  {showAddTenantForm && (
-                    <div className="bg-muted/30 p-4 rounded-lg border border-border">
-                      <h5 className="text-sm font-medium text-foreground mb-3">Add New Tenant</h5>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <Label>First Name *</Label>
-                          <Input 
-                            value={newTenant.firstName} 
-                            onChange={(e) => setNewTenant({ ...newTenant, firstName: e.target.value })} 
-                            placeholder="Enter first name"
-                          />
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <Label>Inspection Frequency *</Label>
+                            <Input type="number" min={1} value={propertyData.inspectionFrequencyNumber} onChange={(e) => setPropertyData({ ...propertyData, inspectionFrequencyNumber: parseInt(e.target.value) || 1 })} placeholder="Frequency number" />
+                          </div>
+                          <div>
+                            <Label>&nbsp;</Label>
+                            <select className="h-11 w-40 rounded-md border border-border bg-white px-3 py-2" value={propertyData.inspectionFrequencyType} onChange={(e) => setPropertyData({ ...propertyData, inspectionFrequencyType: parseInt(e.target.value) as any })}>
+                              <option value={InspectionFrequencyType.Day}>Days</option>
+                              <option value={InspectionFrequencyType.Week}>Weeks</option>
+                              <option value={InspectionFrequencyType.Month}>Months</option>
+                              <option value={InspectionFrequencyType.Year}>Years</option>
+                            </select>
+                          </div>
                         </div>
                         <div>
-                          <Label>Last Name *</Label>
-                          <Input 
-                            value={newTenant.lastName} 
-                            onChange={(e) => setNewTenant({ ...newTenant, lastName: e.target.value })} 
-                            placeholder="Enter last name"
-                          />
+                          <Label>Key Number</Label>
+                          <Input value={propertyData.keyNo || ''} onChange={(e) => setPropertyData({ ...propertyData, keyNo: e.target.value || null })} placeholder="Enter key number" />
                         </div>
                         <div>
-                          <Label>Email *</Label>
-                          <Input 
-                            type="email" 
-                            value={newTenant.email} 
-                            onChange={(e) => setNewTenant({ ...newTenant, email: e.target.value })} 
-                            placeholder="Enter email"
-                          />
+                          <Label>Alarm Code</Label>
+                          <Input value={propertyData.alarmCode || ''} onChange={(e) => setPropertyData({ ...propertyData, alarmCode: e.target.value || null })} placeholder="Enter alarm code" />
                         </div>
                         <div>
-                          <Label>Phone</Label>
-                          <Input 
-                            value={newTenant.phone} 
-                            onChange={(e) => setNewTenant({ ...newTenant, phone: e.target.value })} 
-                            placeholder="Enter phone number"
+                          <Label>Property Images URL</Label>
+                          <Input value={propertyData.propertyImages || ''} onChange={(e) => setPropertyData({ ...propertyData, propertyImages: e.target.value || null })} placeholder="Enter property images URL" />
+                        </div>
+                        <div className="md:col-span-2">
+                          <Label>Property Notes</Label>
+                          <textarea
+                            className="h-20 w-full rounded-md border border-border bg-white px-3 py-2"
+                            value={propertyData.propertyNotes || ''}
+                            onChange={(e) => setPropertyData({ ...propertyData, propertyNotes: e.target.value || null })}
+                            placeholder="Enter property notes"
                           />
                         </div>
                       </div>
-                      <div className="flex gap-2 mt-3">
-                        <Button 
-                          type="button" 
-                          size="sm"
-                          onClick={handleAddTenant}
-                          disabled={!newTenant.firstName.trim() || !newTenant.lastName.trim() || !newTenant.email.trim()}
-                        >
-                          Add Tenant
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            setShowAddTenantForm(false);
-                            setNewTenant({ firstName: "", lastName: "", email: "", phone: "" });
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {tenants.length === 0 && !showAddTenantForm && (
-                    <div className="text-center py-6 text-muted-foreground">
-                      <p>No tenants added yet.</p>
-                      <p className="text-sm">Click "Add Tenant" to add tenants to this tenancy.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
-            {activeStep === "layout" && (
-              <div className="space-y-6">
-                <div className="bg-muted/50 p-6 rounded-lg">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Select Layout</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Structure step removed; handled in layout */}
+
+                {activeStep === "landlord" && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div>
-                      <Label>Layout *</Label>
+                      <Label>Name</Label>
+                      <Input value={landlord.name} onChange={(e) => setLandlord({ ...landlord, name: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Email</Label>
+                      <Input type="email" value={landlord.email} onChange={(e) => setLandlord({ ...landlord, email: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Phone</Label>
+                      <Input value={landlord.phone} onChange={(e) => setLandlord({ ...landlord, phone: e.target.value })} />
+                    </div>
+                  </div>
+                )}
+
+                {activeStep === "tenancy" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <Label>Full Name</Label>
+                      <Input value={tenancy.fullName} onChange={(e) => setTenancy({ ...tenancy, fullName: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Email</Label>
+                      <Input type="email" value={tenancy.email} onChange={(e) => setTenancy({ ...tenancy, email: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Mobile</Label>
+                      <Input value={tenancy.mobile} onChange={(e) => setTenancy({ ...tenancy, mobile: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Lease Start</Label>
+                      <Input type="datetime-local" value={tenancy.leaseStartDate} onChange={(e) => setTenancy({ ...tenancy, leaseStartDate: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Lease End</Label>
+                      <Input type="datetime-local" value={tenancy.leaseEndDate} onChange={(e) => setTenancy({ ...tenancy, leaseEndDate: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Current Rent Amount</Label>
+                      <Input type="number" min={0} step="0.01" value={tenancy.currentRentAmount as any} onChange={(e) => setTenancy({ ...tenancy, currentRentAmount: parseFloat(e.target.value) })} />
+                    </div>
+                    <div>
+                      <Label>Rent Frequency</Label>
                       <select
                         className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
-                        value={Number(propertyData.propertyLayoutId || 0)}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value);
-                          console.log('Layout selection changed:', value, 'Type:', typeof value);
-                          setPropertyData({ ...propertyData, propertyLayoutId: value ? String(value) : '' });
-                        }}
+                        value={tenancy.rentFrequency}
+                        onChange={(e) => setTenancy({ ...tenancy, rentFrequency: parseInt(e.target.value) as RentFrequency })}
                       >
-                        <option value={0}>Select layout</option>
-                        {layouts.map((l) => (
-                          <option key={l.layoutId} value={l.layoutId}>{l.layoutName}</option>
-                        ))}
+                        <option value={RentFrequency.Day}>Day</option>
+                        <option value={RentFrequency.Week}>Week</option>
+                        <option value={RentFrequency.Fortnight}>Fortnight</option>
+                        <option value={RentFrequency.Month}>Month</option>
+                        <option value={RentFrequency.Quarter}>Quarter</option>
+                        <option value={RentFrequency.Year}>Year</option>
                       </select>
                     </div>
-                    <div className="bg-card border border-border rounded-lg p-4">
-                      <p className="text-sm text-muted-foreground">
-                        Choose a predefined layout. Areas and items come from your layout management and will be used during inspections and reports.
-                      </p>
+                    <div>
+                      <Label>Original Lease Date</Label>
+                      <Input type="datetime-local" value={tenancy.originalLeaseDate} onChange={(e) => setTenancy({ ...tenancy, originalLeaseDate: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Next Inspection Date</Label>
+                      <Input type="datetime-local" value={tenancy.newInspectionDate} onChange={(e) => setTenancy({ ...tenancy, newInspectionDate: e.target.value })} />
+                    </div>
+                    <div className="md:col-span-2">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-md font-semibold text-foreground">Tenants</h4>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAddTenantForm(!showAddTenantForm)}
+                        >
+                          {showAddTenantForm ? "Cancel" : "Add Tenant"}
+                        </Button>
+                      </div>
+
+                      {/* Display existing tenants */}
+                      {tenants.length > 0 && (
+                        <div className="space-y-2 mb-4">
+                          {tenants.map((tenant, index) => (
+                            <div key={index} className="bg-muted/50 p-3 rounded-lg flex items-center justify-between">
+                              <div>
+                                <span className="font-medium">{tenant.firstName} {tenant.lastName}</span>
+                                <span className="text-muted-foreground ml-2">• {tenant.email}</span>
+                                {tenant.phone && <span className="text-muted-foreground ml-2">• {tenant.phone}</span>}
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveTenant(index)}
+                                className="text-destructive-600 hover:text-destructive-700"
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add tenant form */}
+                      {showAddTenantForm && (
+                        <div className="bg-muted/30 p-4 rounded-lg border border-border">
+                          <h5 className="text-sm font-medium text-foreground mb-3">Add New Tenant</h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <Label>First Name *</Label>
+                              <Input
+                                value={newTenant.firstName}
+                                onChange={(e) => setNewTenant({ ...newTenant, firstName: e.target.value })}
+                                placeholder="Enter first name"
+                              />
+                            </div>
+                            <div>
+                              <Label>Last Name *</Label>
+                              <Input
+                                value={newTenant.lastName}
+                                onChange={(e) => setNewTenant({ ...newTenant, lastName: e.target.value })}
+                                placeholder="Enter last name"
+                              />
+                            </div>
+                            <div>
+                              <Label>Email *</Label>
+                              <Input
+                                type="email"
+                                value={newTenant.email}
+                                onChange={(e) => setNewTenant({ ...newTenant, email: e.target.value })}
+                                placeholder="Enter email"
+                              />
+                            </div>
+                            <div>
+                              <Label>Phone</Label>
+                              <Input
+                                value={newTenant.phone}
+                                onChange={(e) => setNewTenant({ ...newTenant, phone: e.target.value })}
+                                placeholder="Enter phone number"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={handleAddTenant}
+                              disabled={!newTenant.firstName.trim() || !newTenant.lastName.trim() || !newTenant.email.trim()}
+                            >
+                              Add Tenant
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setShowAddTenantForm(false);
+                                setNewTenant({ firstName: "", lastName: "", email: "", phone: "" });
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {tenants.length === 0 && !showAddTenantForm && (
+                        <div className="text-center py-6 text-muted-foreground">
+                          <p>No tenants added yet.</p>
+                          <p className="text-sm">Click "Add Tenant" to add tenants to this tenancy.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            {activeStep === "review" && (
-              <div className="space-y-6">
-                {/* Layout Information */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Layout Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div><strong>Selected Layout:</strong> {(() => {
-                      if (!propertyData.propertyLayoutId) {
-                        return "No layout selected";
-                      }
-                      
-                      const layoutId = Number(propertyData.propertyLayoutId);
-                      const foundLayout = layouts.find(l => l.layoutId === layoutId);
-                      
-                      if (foundLayout) {
-                        return foundLayout.layoutName;
-                      }
-                      
-                      // Fallback: try to find by string comparison
-                      const foundLayoutByString = layouts.find(l => String(l.layoutId) === String(propertyData.propertyLayoutId));
-                      if (foundLayoutByString) {
-                        return foundLayoutByString.layoutName;
-                      }
-                      
-                      return `Layout not found (ID: ${propertyData.propertyLayoutId})`;
-                    })()}</div>
-                  </div>
-                </div>
-
-                {/* Property Information */}
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Property Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div><strong>Address:</strong> {propertyData.address1}</div>
-                    {propertyData.address2 && <div><strong>Address 2:</strong> {propertyData.address2}</div>}
-                    <div><strong>City/Suburb:</strong> {propertyData.cityOrSuburb}</div>
-                    <div><strong>Postcode:</strong> {propertyData.postcode}</div>
-                    <div><strong>State:</strong> {states.find(s => String(s.id) === String(propertyData.stateLookupId))?.name || states.find(s => String(s.id) === String(propertyData.stateLookupId))?.stateName || states.find(s => String(s.id) === String(propertyData.stateLookupId))?.StateName}</div>
-                    <div><strong>Property Type:</strong> {propertyTypes.find(t => t.propertyTypeId === Number(propertyData.type))?.name || propertyTypes.find(t => t.propertyTypeId === Number(propertyData.type))?.typeName || propertyTypes.find(t => t.propertyTypeId === Number(propertyData.type))?.TypeName}</div>
-                    <div><strong>Property Manager:</strong> {(() => {
-                      const m = managers.find(m => (m.userId || m.UserId) === propertyData.propertyManagerId);
-                      if (!m) return '';
-                      const full = `${(m.firstName || m.FirstName || '').toString().trim()} ${(m.lastName || m.LastName || '').toString().trim()}`.trim();
-                      return full || m.username || m.Username;
-                    })()}</div>
-                    <div><strong>Inspection Frequency:</strong> {propertyData.inspectionFrequencyNumber} {propertyData.inspectionFrequencyType}</div>
-                    <div><strong>Key Number:</strong> {propertyData.keyNo || "N/A"}</div>
-                    <div><strong>Alarm Code:</strong> {propertyData.alarmCode || "N/A"}</div>
-                    <div><strong>Property Images URL:</strong> {propertyData.propertyImages || "N/A"}</div>
-                    <div><strong>Property Notes:</strong> {propertyData.propertyNotes || "N/A"}</div>
-                    <div><strong>Status:</strong> Active (Default)</div>
-                  </div>
-                </div>
-
-                {/* Landlord and Tenancy Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-card border border-border rounded-lg p-3">
-                  <p className="font-medium text-foreground mb-2">Landlord</p>
-                  <p className="text-muted-foreground">{landlord.name} • {landlord.email}{landlord.phone ? ` • ${landlord.phone}` : ''}</p>
-                </div>
-                <div className="bg-card border border-border rounded-lg p-3">
-                  <p className="font-medium text-foreground mb-2">Tenancy</p>
-                  <p className="text-muted-foreground">{tenancy.fullName} • {tenancy.email}</p>
-                  <p className="text-muted-foreground">{tenancy.leaseStartDate ? new Date(tenancy.leaseStartDate).toLocaleString() : ''} → {tenancy.leaseEndDate ? new Date(tenancy.leaseEndDate).toLocaleString() : ''}</p>
-                  {tenants.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-sm font-medium text-foreground">Tenants ({tenants.length}):</p>
-                      <div className="text-sm text-muted-foreground">
-                        {tenants.map((tenant, index) => (
-                          <div key={index}>
-                            {tenant.firstName} {tenant.lastName} • {tenant.email}
-                            {tenant.phone && ` • ${tenant.phone}`}
-                          </div>
-                        ))}
+                {activeStep === "layout" && (
+                  <div className="space-y-6">
+                    <div className="bg-muted/50 p-6 rounded-lg">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Select Layout</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label>Layout *</Label>
+                          <select
+                            className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
+                            value={Number(propertyData.propertyLayoutId || 0)}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value);
+                              console.log('Layout selection changed:', value, 'Type:', typeof value);
+                              setPropertyData({ ...propertyData, propertyLayoutId: value ? String(value) : '' });
+                            }}
+                          >
+                            <option value={0}>Select layout</option>
+                            {layouts.map((l) => (
+                              <option key={l.layoutId} value={l.layoutId}>{l.layoutName}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="bg-card border border-border rounded-lg p-4">
+                          <p className="text-sm text-muted-foreground">
+                            Choose a predefined layout. Areas and items come from your layout management and will be used during inspections and reports.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  )}
                   </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            <div className="flex items-center justify-between mt-6">
-              <Button variant="outline" onClick={goBack} disabled={activeStep === "property"}>Back</Button>
-              <Button onClick={goNext} disabled={!canProceed || isSubmitting}>
-                {activeStep === "review" ? (isSubmitting ? "Finishing..." : "Finish") : "Next"}
-              </Button>
-            </div>
-            </section>
+                {activeStep === "review" && (
+                  <div className="space-y-6">
+                    {/* Layout Information */}
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Layout Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div><strong>Selected Layout:</strong> {(() => {
+                          if (!propertyData.propertyLayoutId) {
+                            return "No layout selected";
+                          }
+
+                          const layoutId = Number(propertyData.propertyLayoutId);
+                          const foundLayout = layouts.find(l => l.layoutId === layoutId);
+
+                          if (foundLayout) {
+                            return foundLayout.layoutName;
+                          }
+
+                          // Fallback: try to find by string comparison
+                          const foundLayoutByString = layouts.find(l => String(l.layoutId) === String(propertyData.propertyLayoutId));
+                          if (foundLayoutByString) {
+                            return foundLayoutByString.layoutName;
+                          }
+
+                          return `Layout not found (ID: ${propertyData.propertyLayoutId})`;
+                        })()}</div>
+                      </div>
+                    </div>
+
+                    {/* Property Information */}
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-foreground mb-4">Property Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div><strong>Address:</strong> {propertyData.address1}</div>
+                        {propertyData.address2 && <div><strong>Address 2:</strong> {propertyData.address2}</div>}
+                        <div><strong>City/Suburb:</strong> {propertyData.cityOrSuburb}</div>
+                        <div><strong>Postcode:</strong> {propertyData.postcode}</div>
+                        <div><strong>State:</strong> {states.find(s => String(s.id) === String(propertyData.stateLookupId))?.name || states.find(s => String(s.id) === String(propertyData.stateLookupId))?.stateName || states.find(s => String(s.id) === String(propertyData.stateLookupId))?.StateName}</div>
+                        <div><strong>Property Type:</strong> {propertyTypes.find(t => t.propertyTypeId === Number(propertyData.type))?.name || propertyTypes.find(t => t.propertyTypeId === Number(propertyData.type))?.typeName || propertyTypes.find(t => t.propertyTypeId === Number(propertyData.type))?.TypeName}</div>
+                        <div><strong>Property Manager:</strong> {(() => {
+                          const m = managers.find(m => (m.userId || m.UserId) === propertyData.propertyManagerId);
+                          if (!m) return '';
+                          const full = `${(m.firstName || m.FirstName || '').toString().trim()} ${(m.lastName || m.LastName || '').toString().trim()}`.trim();
+                          return full || m.username || m.Username;
+                        })()}</div>
+                        <div><strong>Inspection Frequency:</strong> {propertyData.inspectionFrequencyNumber} {propertyData.inspectionFrequencyType}</div>
+                        <div><strong>Key Number:</strong> {propertyData.keyNo || "N/A"}</div>
+                        <div><strong>Alarm Code:</strong> {propertyData.alarmCode || "N/A"}</div>
+                        <div><strong>Property Images URL:</strong> {propertyData.propertyImages || "N/A"}</div>
+                        <div><strong>Property Notes:</strong> {propertyData.propertyNotes || "N/A"}</div>
+                        <div><strong>Status:</strong> Active (Default)</div>
+                      </div>
+                    </div>
+
+                    {/* Landlord and Tenancy Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-card border border-border rounded-lg p-3">
+                        <p className="font-medium text-foreground mb-2">Landlord</p>
+                        <p className="text-muted-foreground">{landlord.name} • {landlord.email}{landlord.phone ? ` • ${landlord.phone}` : ''}</p>
+                      </div>
+                      <div className="bg-card border border-border rounded-lg p-3">
+                        <p className="font-medium text-foreground mb-2">Tenancy</p>
+                        <p className="text-muted-foreground">{tenancy.fullName} • {tenancy.email}</p>
+                        <p className="text-muted-foreground">{tenancy.leaseStartDate ? new Date(tenancy.leaseStartDate).toLocaleString() : ''} → {tenancy.leaseEndDate ? new Date(tenancy.leaseEndDate).toLocaleString() : ''}</p>
+                        {tenants.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-sm font-medium text-foreground">Tenants ({tenants.length}):</p>
+                            <div className="text-sm text-muted-foreground">
+                              {tenants.map((tenant, index) => (
+                                <div key={index}>
+                                  {tenant.firstName} {tenant.lastName} • {tenant.email}
+                                  {tenant.phone && ` • ${tenant.phone}`}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between mt-6">
+                  <Button variant="outline" onClick={goBack} disabled={activeStep === "property"}>Back</Button>
+                  <Button onClick={goNext} disabled={!canProceed || isSubmitting}>
+                    {activeStep === "review" ? (isSubmitting ? "Finishing..." : "Finish") : "Next"}
+                  </Button>
+                </div>
+              </section>
             </div>
           </CardContent>
         </Card>

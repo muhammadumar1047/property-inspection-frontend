@@ -4,6 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { 
+  Building2, 
+  Eye, 
+  EyeOff, 
+  AlertCircle 
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,17 +62,17 @@ const LoginForm: React.FC = () => {
     {
       title: "Professional Property Inspections",
       description: "Comprehensive inspections with detailed reporting and documentation for every property",
-      image: "/property-inspection.jpg",
+      image: "/property-inspection.png",
     },
     {
       title: "Advanced Reporting Tools",
       description: "Generate professional reports with photos, notes, and recommendations in minutes",
-      image: "/inspection-report.jpg",
+      image: "/inspection-report.png",
     },
     {
       title: "Real-time Collaboration",
       description: "Work seamlessly with your team and clients across all devices in real-time",
-      image: "/team-collaboration.jpg",
+      image: "/team-collaboration.png",
     },
   ];
 
@@ -111,9 +117,7 @@ const LoginForm: React.FC = () => {
                 {/* Logo */}
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20">
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
+                    <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <span className="text-xl font-bold tracking-tight">PropCheck360</span>
                 </div>
@@ -161,9 +165,7 @@ const LoginForm: React.FC = () => {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center shadow-md">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+              <Building2 className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-xl font-bold text-[var(--foreground)]">PropCheck360</h1>
           </div>
@@ -205,14 +207,9 @@ const LoginForm: React.FC = () => {
                       tabIndex={-1}
                     >
                       {showPassword ? (
-                        <svg className="h-4 w-4 text-[var(--muted-400)] hover:text-[var(--foreground)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                        </svg>
+                        <EyeOff className="h-4 w-4 text-[var(--muted-400)] hover:text-[var(--foreground)] transition-colors" />
                       ) : (
-                        <svg className="h-4 w-4 text-[var(--muted-400)] hover:text-[var(--foreground)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                        <Eye className="h-4 w-4 text-[var(--muted-400)] hover:text-[var(--foreground)] transition-colors" />
                       )}
                     </button>
                   </div>
@@ -236,9 +233,7 @@ const LoginForm: React.FC = () => {
 
                 {error && (
                   <div className="flex items-center gap-2 text-sm text-[var(--destructive)] bg-[var(--destructive-50)] rounded-lg px-3 py-2.5 border border-[var(--destructive)]/20">
-                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
+                    <AlertCircle className="w-4 h-4 shrink-0" />
                     {error}
                   </div>
                 )}

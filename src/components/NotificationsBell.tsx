@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, CheckCheck } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationsContext';
 import Modal from '@/components/ui/Modal';
 import { notificationApi } from '@/lib/api/notification';
@@ -46,10 +46,10 @@ const NotificationsBell: React.FC = () => {
       {open && (
         <div className="absolute right-0 mt-2 w-80 bg-white border border-border rounded-md shadow z-50">
           <div className="px-3 py-2 text-sm font-medium border-b flex items-center justify-between">
-            <span>Notifications</span>
+             <span>Notifications</span>
             {notifications.length > 0 && (
               <button
-                className="text-xs text-blue-600 hover:underline"
+                className="text-xs text-[var(--primary)] hover:underline flex items-center gap-1.5 font-medium"
                 onClick={async () => {
                   try {
                     const raw = localStorage.getItem('user');
@@ -60,6 +60,7 @@ const NotificationsBell: React.FC = () => {
                   markAllRead();
                 }}
               >
+                <CheckCheck className="w-3.5 h-3.5" />
                 Mark all read
               </button>
             )}

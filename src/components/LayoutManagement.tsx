@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Minus, Trash2, Edit, Eye, EyeOff, X, Search, Building2, Save, ArrowLeft, ArrowRight, GripVertical, Sparkles, Layers, Home, Zap, Wand2, Lightbulb, Check } from 'lucide-react';
+import { Plus, Minus, Trash2, Edit, Eye, EyeOff, X, Search, Building2, Save, ArrowLeft, ArrowRight, GripVertical, Sparkles, Layers, LayoutDashboard, Zap, Wand2, Lightbulb, Check } from 'lucide-react';
 
 interface CreateLayoutData {
   LayoutName: string;
@@ -884,9 +884,9 @@ const LayoutManagement: React.FC = () => {
   const renderLayoutComponents = (layout: PropertyLayoutResponse) => {
     const components: Array<{text: string, color: string}> = [];
     
-    layout.areas?.forEach(area => {
-      area.items?.forEach(item => {
-        const itemName = item.itemName.toLowerCase();
+    layout.layoutArea?.forEach((area: any) => {
+      area.layoutItem?.forEach((item: any) => {
+        const itemName = (item.itemName || '').toLowerCase();
         if (itemName.includes('bed')) {
           const count = itemName.match(/\d+/)?.[0] || '1';
           components.push({text: `${count} Bed`, color: 'bg-purple-100 text-purple-800 border-purple-200'});
@@ -1195,7 +1195,7 @@ const LayoutManagement: React.FC = () => {
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Home className="w-4 h-4 text-blue-600" />
+                      <LayoutDashboard className="w-4 h-4 text-blue-600" />
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
                   </div>
@@ -1511,7 +1511,7 @@ const LayoutManagement: React.FC = () => {
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Home className="w-4 h-4 text-blue-600" />
+                      <LayoutDashboard className="w-4 h-4 text-blue-600" />
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-900">Basic Information</CardTitle>
                   </div>
@@ -1831,7 +1831,7 @@ const LayoutManagement: React.FC = () => {
                 <CardHeader className="pb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Home className="w-4 h-4 text-blue-600" />
+                      <LayoutDashboard className="w-4 h-4 text-blue-600" />
                     </div>
                     <CardTitle className="text-lg font-semibold text-gray-900">
                       Layout Details

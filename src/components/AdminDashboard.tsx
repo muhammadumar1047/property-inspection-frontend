@@ -18,32 +18,41 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Building2,
+  Building,
   ClipboardList,
   FileText,
+  FileStack,
   Settings as SettingsIcon,
   Search,
   Bell,
   User,
+  UserCircle,
   LogOut,
-  Home,
+  LayoutDashboard,
   Calendar,
-  CheckCircle,
-  Clock,
+  CheckCircle2,
+  Clock3,
   TrendingUp,
   ChevronDown,
   ChevronUp,
   UserCog,
+  Users,
   Mail,
-  FileSignature,
+  PenTool,
   History,
+  Layers,
   MapPin,
   CreditCard,
+  ShieldCheck,
   Shield,
   Plug,
   PanelLeftClose,
   PanelLeft,
   Menu,
   X,
+  Eye,
+  EyeOff,
+  AlertCircle,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -155,18 +164,18 @@ function fmtPct(n: number) {
 const mainSidebarItems = [
   { icon: ClipboardList, label: "Inspections" },
   { icon: Building2, label: "Properties" },
-  { icon: Home, label: "Analytics" },
+  { icon: LayoutDashboard, label: "Analytics" },
 ];
 
 const settingsMenuItems = [
   { icon: SettingsIcon, label: "General Settings" },
-  { icon: UserCog, label: "User Settings" },
-  { icon: Building2, label: "Agency Settings" },
+  { icon: Users, label: "User Settings" },
+  { icon: Building, label: "Agency Settings" },
   { icon: Mail, label: "Email Templates" },
-  { icon: FileSignature, label: "Signatures" },
+  { icon: PenTool, label: "Signatures" },
   { icon: History, label: "Email Logs" },
-  { icon: MapPin, label: "Areas / Items" },
-  { icon: Shield, label: "Account Settings" },
+  { icon: Layers, label: "Areas / Items" },
+  { icon: ShieldCheck, label: "Account Settings" },
 ];
 
 function getStatusBadge(status: string) {
@@ -474,21 +483,21 @@ export default function AdminDashboard() {
             title: "Completed Inspections",
             value: analytics ? String(analytics.completedInspections ?? 0) : "—",
             change: analytics ? fmtPct(Number(analytics.completedInspectionsChangePercent ?? 0)) : "—",
-            icon: CheckCircle,
+            icon: CheckCircle2,
             color: "text-secondary",
           },
           {
             title: "Pending Inspections",
             value: analytics ? String(analytics.pendingInspections ?? 0) : "—",
             change: analytics ? fmtPct(Number(analytics.pendingInspectionsChangePercent ?? 0)) : "—",
-            icon: Clock,
+            icon: Clock3,
             color: "text-accent",
           },
           {
             title: "Reports Generated",
             value: analytics ? String(analytics.reportsGenerated ?? 0) : "—",
             change: analytics ? fmtPct(Number(analytics.reportsGeneratedChangePercent ?? 0)) : "—",
-            icon: FileText,
+            icon: FileStack,
             color: "text-primary",
           },
         ];
@@ -678,9 +687,9 @@ export default function AdminDashboard() {
                     <TableBody>
                       {recentInspections.map((inspection: any) => (
                         <TableRow key={inspection.id}>
-                          <TableCell className="font-medium">{inspection.property}</TableCell>
-                          <TableCell>{inspection.inspector}</TableCell>
-                          <TableCell>{inspection.date}</TableCell>
+                          <TableCell className="font-semibold text-[var(--foreground)]">{inspection.property}</TableCell>
+                          <TableCell className="text-[var(--muted-500)]">{inspection.inspector}</TableCell>
+                          <TableCell className="text-[var(--muted-400)]">{inspection.date}</TableCell>
                           <TableCell>{getStatusBadge(inspection.status)}</TableCell>
                         </TableRow>
                       ))}
@@ -703,11 +712,11 @@ export default function AdminDashboard() {
                           {index < upcomingInspections.length - 1 && <div className="w-px h-12 bg-border mt-2"></div>}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground">{inspection.property}</p>
-                          <p className="text-xs text-muted-foreground">{inspection.inspector}</p>
+                          <p className="text-sm font-semibold text-[var(--foreground)]">{inspection.property}</p>
+                          <p className="text-xs text-[var(--muted-500)]">{inspection.inspector}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <Calendar className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">
+                            <Calendar className="w-3.5 h-3.5 text-[var(--muted-400)]" />
+                            <span className="text-[11px] font-medium text-[var(--muted-400)]">
                               {inspection.date} at {inspection.time}
                             </span>
                           </div>
@@ -1189,7 +1198,7 @@ export default function AdminDashboard() {
                       }
                     }}
                   >
-                    <User className="w-4 h-4" />
+                    <UserCircle className="w-4 h-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem>

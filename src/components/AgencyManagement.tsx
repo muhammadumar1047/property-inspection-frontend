@@ -9,6 +9,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Modal from './ui/Modal';
 import { notificationApi } from '@/lib/api/notification';
 import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Send, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  UserPlus, 
+  Eye, 
+  Filter, 
+  X
+} from 'lucide-react';
 
 const AgencyManagement: React.FC = () => {
   const [agencies, setAgencies] = useState<AgencyResponse[]>([]);
@@ -545,27 +555,32 @@ const AgencyManagement: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={openNotificationModal}
-              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-3 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-colors"
+              className="bg-secondary hover:bg-secondary/90 text-secondary-foreground px-4 py-2.5 rounded-lg text-sm font-medium focus:outline-none transition-all flex items-center gap-2 shadow-sm"
             >
+              <Send className="w-4 h-4" />
               Send Notification
             </button>
             <button
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-medium focus:outline-none transition-all flex items-center gap-2 shadow-sm"
             >
-              {showCreateForm ? 'Cancel' : 'Create New Agency'}
+              {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {showCreateForm ? 'Cancel' : 'New Agency'}
             </button>
           </div>
         )}
       </div>
 
       {/* Filters */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 shadow-sm">
+      <div className="bg-white border border-[var(--border)] rounded-xl p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Filters</h3>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-[var(--primary)]" />
+            <h3 className="text-sm font-bold text-[var(--foreground)]">Filters</h3>
+          </div>
           <button
             onClick={() => { setFilters({}); setPage(1); }}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+            className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
           >
             Clear All
           </button>
@@ -2058,27 +2073,31 @@ const AgencyManagement: React.FC = () => {
                             impersonateAgency(agencyId, agencyName);
                             window.location.href = '/dashboard';
                           }}
-                          className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors shadow-sm"
+                          className="p-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg transition-all border border-green-200"
+                          title="Enter Agency"
                         >
-                          Enter Agency
+                          <UserPlus className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleOpenEdit(agency.id)}
-                          className="px-3 py-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+                          className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-all border border-blue-200"
+                          title="Edit"
                         >
-                          Edit
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(agency)}
-                          className="px-3 py-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground text-xs font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-destructive transition-colors"
+                          className="p-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-all border border-red-200"
+                          title="Delete"
                         >
-                          Delete
+                          <Trash2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => setSelectedAgency(agency)}
-                          className="px-3 py-1 bg-muted-foreground hover:bg-muted-foreground/90 text-background text-xs font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-muted-foreground transition-colors"
+                          className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg transition-all border border-gray-200"
+                          title="Details"
                         >
-                          Details
+                          <Eye className="w-4 h-4" />
                         </button>
                       </div>
                     </TableCell>

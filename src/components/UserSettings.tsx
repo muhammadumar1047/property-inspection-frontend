@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Trash2, Plus, User, Mail, AlertTriangle, MoreVertical, Pencil } from "lucide-react";
+import { Trash2, Plus, User, Mail, AlertTriangle, MoreVertical, Pencil, Search, Filter, ChevronLeft, ChevronRight, Shield, ShieldCheck, UserCheck, UserX } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/contexts/AuthContext";
 import { userApi } from "@/lib/api/user";
@@ -250,7 +250,7 @@ const UserSettings: React.FC = () => {
           <h2 className="text-2xl font-bold">User Management</h2>
           <p className="text-gray-600">Manage users, roles, and permissions</p>
         </div>
-        <Button onClick={() => setShowAddUserModal(true)} className="flex items-center gap-2">
+        <Button onClick={() => setShowAddUserModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 shadow-sm">
           <Plus className="h-4 w-4" />
           Add User
         </Button>
@@ -275,10 +275,8 @@ const UserSettings: React.FC = () => {
           </CardTitle>
           <CardDescription>Search, filter and manage user accounts within the system.</CardDescription>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex-1 min-w-[200px]">
-              <Label htmlFor="user-search" className="sr-only">
-                Search users
-              </Label>
+            <div className="flex-1 min-w-[200px] relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="user-search"
                 placeholder="Search by name or email"
@@ -287,6 +285,7 @@ const UserSettings: React.FC = () => {
                   setPage(1);
                   setSearch(e.target.value);
                 }}
+                className="pl-9"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -308,16 +307,16 @@ const UserSettings: React.FC = () => {
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <Label className="text-sm text-gray-600">Status</Label>
+              <Filter className="h-4 w-4 text-gray-400" />
               <select
-                className="border rounded-md px-2 py-1 text-sm bg-background"
+                className="border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm bg-white focus:ring-2 focus:ring-[var(--primary)] focus:outline-none transition-all shadow-sm"
                 value={statusFilter}
                 onChange={(e) => {
                   setPage(1);
                   setStatusFilter(e.target.value as any);
                 }}
               >
-                <option value="all">All</option>
+                <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
@@ -446,7 +445,9 @@ const UserSettings: React.FC = () => {
               size="sm"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="rounded-lg"
             >
+              <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
             <Button
@@ -454,8 +455,10 @@ const UserSettings: React.FC = () => {
               size="sm"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="rounded-lg"
             >
               Next
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

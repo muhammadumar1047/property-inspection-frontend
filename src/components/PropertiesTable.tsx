@@ -47,7 +47,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
     if (inspector.email) return inspector.email;
     return 'User';
   };
-  
+
   // Filter state
   const [filters, setFilters] = useState<{
     isActive?: boolean;
@@ -57,25 +57,25 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
     owner?: string;
     suburb?: string;
   }>({});
-  
+
   // Pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   // Inspection panel state
   const [expandedPropertyId, setExpandedPropertyId] = useState<string | null>(null);
   const [propertyInspections, setPropertyInspections] = useState<Record<string, InspectionResponse[]>>({});
   const [loadingInspections, setLoadingInspections] = useState<Record<string, boolean>>({});
-  
+
   // Edit inspection modal state
   const [showEditInspectionModal, setShowEditInspectionModal] = useState(false);
   const [editingInspection, setEditingInspection] = useState<any>(null);
-  const [editInspection, setEditInspection] = useState<{ 
+  const [editInspection, setEditInspection] = useState<{
     inspectionId: string;
-    propertyId: string; 
-    inspectorId: number; 
-    inspectionTypeId: number; 
-    inspectionDate: string; 
+    propertyId: string;
+    inspectorId: number;
+    inspectionTypeId: number;
+    inspectionDate: string;
     inspectionTime: string;
     address: string;
   }>({
@@ -91,25 +91,25 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
   const [editPropertySearchResults, setEditPropertySearchResults] = useState<any[]>([]);
   const [showEditPropertyResults, setShowEditPropertyResults] = useState(false);
   const [selectedEditProperty, setSelectedEditProperty] = useState<any>(null);
-  
+
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProperty, setEditingProperty] = useState<PropertyResponse | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
   const [editLoading, setEditLoading] = useState(false);
-  
+
   // Tenancy edit modal state
   const [showTenancyEditModal, setShowTenancyEditModal] = useState(false);
   const [editingTenancy, setEditingTenancy] = useState<any>(null);
   const [tenancyFormData, setTenancyFormData] = useState<any>({});
   const [tenancyEditLoading, setTenancyEditLoading] = useState(false);
-  
+
   // Landlord edit modal state
   const [showLandlordEditModal, setShowLandlordEditModal] = useState(false);
   const [editingLandlord, setEditingLandlord] = useState<any>(null);
   const [landlordFormData, setLandlordFormData] = useState<any>({});
   const [landlordEditLoading, setLandlordEditLoading] = useState(false);
-  
+
   // Tenant management state
   const [tenantFormData, setTenantFormData] = useState<any>({});
   const [tenantEditLoading, setTenantEditLoading] = useState(false);
@@ -121,12 +121,12 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
   const [showAddLandlordForm, setShowAddLandlordForm] = useState(false);
   const [newLandlordFormData, setNewLandlordFormData] = useState<{ name?: string; email?: string; phone?: string }>({});
   const [addLandlordLoading, setAddLandlordLoading] = useState(false);
-  
+
   // New tenancy state
   const [showAddTenancyModal, setShowAddTenancyModal] = useState(false);
   const [newTenancyFormData, setNewTenancyFormData] = useState<any>({});
   const [addTenancyLoading, setAddTenancyLoading] = useState(false);
-  
+
   // Landlord and tenancy detail modals
   const [showLandlordDetailModal, setShowLandlordDetailModal] = useState(false);
   const [showTenancyDetailModal, setShowTenancyDetailModal] = useState(false);
@@ -158,7 +158,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
         setPropertyLayouts(layoutsData || []);
         setStates(statesData || []);
         setPropertyManagers(usersPage?.data || []);
-        
+
         // Normalize types and statuses to stable shape (id and name)
         const normalizedTypes = (typesData || []).map((t: any) => ({
           inspectionTypeId: t.id ?? t.inspectionTypeId ?? t.InspectionTypeId,
@@ -175,7 +175,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
         console.error('Failed to load initial data:', err);
       }
     };
-    
+
     loadInitialData();
     return () => { ignore = true; };
   }, [effectiveAgencyId]);
@@ -227,7 +227,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
 
         setData(response.data);
         setTotalCount(response.totalCount);
-        
+
         // fetch layout names for visible rows
         const uniqueLayoutIds = Array.from(
           new Set(
@@ -264,7 +264,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
         setLoading(false);
       }
     };
-    
+
     loadProperties();
     return () => { ignore = true; };
   }, [page, pageSize, filters.isActive, filters.propertyType, filters.propertyManagerId, filters.tenant, filters.owner, filters.suburb, searchResults]);
@@ -319,7 +319,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
     } else {
       // Open the panel and load inspections if not already loaded
       setExpandedPropertyId(propertyId);
-      
+
       if (!propertyInspections[propertyId]) {
         setLoadingInspections(prev => ({ ...prev, [propertyId]: true }));
         try {
@@ -386,7 +386,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
 
   const handleUpdateProperty = async () => {
     if (!editingProperty) return;
-    
+
     setEditLoading(true);
     try {
       // Map frequency to numeric ID
@@ -462,50 +462,50 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
       await propertyApi.update(editingProperty.id, payload);
       // Reload properties
       const allProperties = await propertyApi.getAll();
-      
+
       // Apply client-side filtering
       let filteredProperties = Array.isArray(allProperties) ? allProperties : [];
-      
+
       if (filters.isActive !== undefined) {
         filteredProperties = filteredProperties.filter(p => p.isActive === filters.isActive);
       }
-    if (filters.propertyType) {
-      filteredProperties = filteredProperties.filter(p => p.type === filters.propertyType);
-    }
+      if (filters.propertyType) {
+        filteredProperties = filteredProperties.filter(p => p.type === filters.propertyType);
+      }
       if (filters.propertyManagerId) {
         filteredProperties = filteredProperties.filter(p => p.propertyManagerId === filters.propertyManagerId);
       }
       if (filters.tenant) {
-        filteredProperties = filteredProperties.filter(p => 
-          (p.tenancies || []).some(t => 
+        filteredProperties = filteredProperties.filter(p =>
+          (p.tenancies || []).some(t =>
             t.fullName?.toLowerCase().includes(filters.tenant!.toLowerCase()) ||
-            (t.tenants || []).some(tenant => 
+            (t.tenants || []).some(tenant =>
               `${tenant.firstName} ${tenant.lastName}`.toLowerCase().includes(filters.tenant!.toLowerCase())
             )
           )
         );
       }
       if (filters.owner) {
-        filteredProperties = filteredProperties.filter(p => 
-          (p.landlords || []).some(l => 
+        filteredProperties = filteredProperties.filter(p =>
+          (p.landlords || []).some(l =>
             l.name?.toLowerCase().includes(filters.owner!.toLowerCase())
           )
         );
       }
       if (filters.suburb) {
-        filteredProperties = filteredProperties.filter(p => 
+        filteredProperties = filteredProperties.filter(p =>
           p.cityOrSuburb?.toLowerCase().includes(filters.suburb!.toLowerCase())
         );
       }
-      
+
       // Apply pagination
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedProperties = filteredProperties.slice(startIndex, endIndex);
-      
+
       setData(paginatedProperties);
       setTotalCount(filteredProperties.length);
-      
+
       setShowEditModal(false);
       setEditingProperty(null);
       alert('Property updated successfully!');
@@ -545,7 +545,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
 
   const handleUpdateTenancy = async () => {
     if (!editingTenancy || !editingProperty) return;
-    
+
     setTenancyEditLoading(true);
     try {
       // Map rent frequency to ID
@@ -587,11 +587,11 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
       setEditingTenancy(null);
     } catch (error: any) {
       console.error('Tenancy update error:', error);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.response?.data || 
-                          error?.message || 
-                          JSON.stringify(error) || 
-                          'Unknown error';
+      const errorMessage = error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        JSON.stringify(error) ||
+        'Unknown error';
       alert('Failed to update tenancy: ' + errorMessage);
     } finally {
       setTenancyEditLoading(false);
@@ -645,8 +645,8 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
     });
 
     // Optionally sync the modal if it is showing a new empty state
-    
-      setNewTenancyFormData({});
+
+    setNewTenancyFormData({});
     setShowAddTenancyModal(false);
   };
 
@@ -662,7 +662,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
 
   const handleUpdateLandlord = () => {
     if (!editingLandlord || !editingProperty) return;
-    
+
     setLandlordEditLoading(true);
     try {
       const updatedLocalLandlords = (editingProperty.landlords || []).map((landlord: any) =>
@@ -675,7 +675,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
         ...editingProperty,
         landlords: updatedLocalLandlords,
       });
-      
+
       setShowLandlordEditModal(false);
       setEditingLandlord(null);
     } finally {
@@ -697,7 +697,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
   const handleUpdateTenant = () => {
     debugger;
     if (!editingTenantId || !editingProperty) return;
-    
+
     setTenantEditLoading(true);
     try {
       const updatedLocalTenancies = (editingProperty.tenancies || []).map((tenancy: any) => ({
@@ -728,7 +728,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
 
   const handleDeleteTenant = (tenantId: number) => {
     if (!confirm('Are you sure you want to delete this tenant?') || !editingProperty) return;
-    
+
     const updatedLocalTenancies = (editingProperty.tenancies || []).map((tenancy: any) => ({
       ...tenancy,
       tenants: (tenancy.tenants || []).filter((t: any) => t.tenantId !== tenantId),
@@ -745,7 +745,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
 
   const handleAddTenant = () => {
     if (!editingTenancy || !editingProperty) return;
-    
+
     const newTenant = {
       tenantId: 0,
       tenancyId: editingTenancy.tenancyId,
@@ -771,18 +771,18 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
     const parent = updatedLocalTenancies.find((t: any) => t.tenancyId === (editingTenancy && editingTenancy.tenancyId));
     if (parent) setEditingTenancy(parent);
 
-      setNewTenantFormData({});
-      setShowAddTenantForm(false);
+    setNewTenantFormData({});
+    setShowAddTenantForm(false);
   };
 
   // Inspection edit handlers
   const handleEditInspection = (inspection: any) => {
     setEditingInspection(inspection);
-    
+
     // Populate the edit form with existing inspection data
     const inspectionDate = new Date(inspection.inspectionDate).toISOString().split('T')[0];
     const inspectionTime = inspection.inspectionTime || '09:00';
-    
+
     setEditInspection({
       inspectionId: inspection.id,
       propertyId: inspection.propertyId,
@@ -792,14 +792,14 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
       inspectionTime: inspectionTime,
       address: inspection.propertyAddress || '',
     });
-    
+
     // Set the property search term and selected property for edit form
     setEditPropertySearchTerm(inspection.propertyAddress || '');
     setSelectedEditProperty({
       id: inspection.propertyId,
       address: inspection.propertyAddress || '',
     });
-    
+
     setShowEditInspectionModal(true);
   };
 
@@ -855,7 +855,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
         InspectionDate: editInspection.inspectionDate,
         InspectionTime: ensureSeconds(editInspection.inspectionTime),
       };
-      
+
       const updatedInspection = await inspectionApi.update(editInspection.inspectionId as any, {
         id: editInspection.inspectionId,
         propertyId: editInspection.propertyId,
@@ -867,15 +867,15 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
         inspectionTime: ensureSeconds(editInspection.inspectionTime),
       } as any);
       alert('Inspection updated successfully');
-      
+
       // Update the inspection in the property inspections list
       setPropertyInspections(prev => ({
         ...prev,
-        [editInspection.propertyId]: prev[editInspection.propertyId]?.map(inspection => 
+        [editInspection.propertyId]: prev[editInspection.propertyId]?.map(inspection =>
           inspection.id === editInspection.inspectionId.toString() ? updatedInspection : inspection
         ) || []
       }));
-      
+
       // Reset form and close modal
       setEditInspection({
         inspectionId: '',
@@ -905,7 +905,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
       setShowEditPropertyResults(false);
       return;
     }
-    
+
     try {
       const results = await inspectionApi.searchProperties(query);
       setEditPropertySearchResults(results || []);
@@ -950,8 +950,8 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
           )}
         </div>
         <div className="space-x-2">
-          <button 
-            onClick={() => onCreateProperty ? onCreateProperty() : router.push('/properties/create')} 
+          <button
+            onClick={() => onCreateProperty ? onCreateProperty() : router.push('/properties/create')}
             className="px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm"
           >
             Create Property
@@ -969,7 +969,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
               <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
               </svg>
-          </div>
+            </div>
             <h3 className="text-lg font-semibold text-foreground">Advanced Filters</h3>
           </div>
           <button
@@ -979,7 +979,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
             Clear All
           </button>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {/* Active/Inactive Filter */}
           <div>
@@ -1045,7 +1045,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
               value={filters.tenant || ''}
               onChange={(e) => handleFilterChange('tenant', e.target.value)}
             />
-        </div>
+          </div>
 
           {/* Landlord Search */}
           <div>
@@ -1057,7 +1057,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
               value={filters.owner || ''}
               onChange={(e) => handleFilterChange('owner', e.target.value)}
             />
-      </div>
+          </div>
 
           {/* Suburb Search */}
           <div>
@@ -1085,7 +1085,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
-                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z"/>
+                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
                     </svg>
                   </button>
                 </span>
@@ -1098,7 +1098,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-green-400 hover:bg-green-200 hover:text-green-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
-                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z"/>
+                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
                     </svg>
                   </button>
                 </span>
@@ -1117,7 +1117,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-purple-400 hover:bg-purple-200 hover:text-purple-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
-                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z"/>
+                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
                     </svg>
                   </button>
                 </span>
@@ -1130,7 +1130,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-yellow-400 hover:bg-yellow-200 hover:text-yellow-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
-                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z"/>
+                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
                     </svg>
                   </button>
                 </span>
@@ -1143,7 +1143,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-orange-400 hover:bg-orange-200 hover:text-orange-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
-                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z"/>
+                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
                     </svg>
                   </button>
                 </span>
@@ -1156,7 +1156,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-pink-400 hover:bg-pink-200 hover:text-pink-500"
                   >
                     <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 8 8">
-                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z"/>
+                      <path d="m0 0 2 2 2-2 1 1-2 2 2 2-1 1-2-2-2 2-1-1 2-2-2-2z" />
                     </svg>
                   </button>
                 </span>
@@ -1192,116 +1192,114 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
               data.map((p) => (
                 <React.Fragment key={p.id}>
                   <TableRow className="hover:bg-primary/5">
-                  <TableCell className="font-medium">{p.name || (p as any).Name || `#${p.id}`}</TableCell>
-                  <TableCell>
-                    {(() => {
-                      const typeId = (p as any).type ?? (p as any).PropertyTypeLookupId ?? (p as any).propertyTypeId;
-                      const t = propertyTypes.find((pt: any) => pt.propertyTypeId === typeId);
-                      return (t?.name || t?.typeName || t?.TypeName || 'Unknown').toString();
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    {(() => {
-                      const explicit = (p as any).propertyManagerName || (p as any).PropertyManagerName;
-                      if (explicit) return explicit;
-                      const pid = (p as any).propertyManagerId ?? (p as any).PropertyManagerId;
-                      if (!pid) return 'N/A';
-                      const m = propertyManagers.find((mm: any) => (mm.userId || mm.UserId) === pid);
-                      if (!m) return 'N/A';
-                      const first = (m.firstName || m.FirstName || '').toString().trim();
-                      const last = (m.lastName || m.LastName || '').toString().trim();
-                      const full = `${first} ${last}`.trim();
-                      return full || m.username || m.Username || 'N/A';
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="w-16 h-12 rounded-md overflow-hidden bg-muted-100 flex items-center justify-center">
-                      {p.propertyImages ? (
-                        <img 
-                          src={p.propertyImages} 
-                          alt={`Property ${p.id}`}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                            if (nextElement) {
-                              nextElement.style.display = 'flex';
-                            }
-                          }}
-                        />
-                      ) : null}
-                      <div 
-                        className={`w-full h-full flex items-center justify-center text-muted-400 ${p.propertyImages ? 'hidden' : 'flex'}`}
-                        style={{ display: p.propertyImages ? 'none' : 'flex' }}
-                      >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
+                    <TableCell className="font-medium">{p.name || (p as any).Name || `#${p.id}`}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const typeId = (p as any).type ?? (p as any).PropertyTypeLookupId ?? (p as any).propertyTypeId;
+                        const t = propertyTypes.find((pt: any) => pt.propertyTypeId === typeId);
+                        return (t?.name || t?.typeName || t?.TypeName || 'Unknown').toString();
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const explicit = (p as any).propertyManagerName || (p as any).PropertyManagerName;
+                        if (explicit) return explicit;
+                        const pid = (p as any).propertyManagerId ?? (p as any).PropertyManagerId;
+                        if (!pid) return 'N/A';
+                        const m = propertyManagers.find((mm: any) => (mm.userId || mm.UserId) === pid);
+                        if (!m) return 'N/A';
+                        const first = (m.firstName || m.FirstName || '').toString().trim();
+                        const last = (m.lastName || m.LastName || '').toString().trim();
+                        const full = `${first} ${last}`.trim();
+                        return full || m.username || m.Username || 'N/A';
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="w-16 h-12 rounded-md overflow-hidden bg-muted-100 flex items-center justify-center">
+                        {p.propertyImages ? (
+                          <img
+                            src={p.propertyImages}
+                            alt={`Property ${p.id}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (nextElement) {
+                                nextElement.style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={`w-full h-full flex items-center justify-center text-muted-400 ${p.propertyImages ? 'hidden' : 'flex'}`}
+                          style={{ display: p.propertyImages ? 'none' : 'flex' }}
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{p.cityOrSuburb}</TableCell>
-                  <TableCell>
-                    {(() => {
-                      const sid = (p as any).stateLookupId ?? (p as any).stateId ?? (p as any).StateLookupId;
-                      const s = states.find((st: any) => st.id === sid);
-                      return (s?.name || s?.stateName || s?.StateName || '-').toString();
-                    })()}
-                  </TableCell>
-                  <TableCell>{p.postcode}</TableCell>
-                  <TableCell>{prettyInspection(p)}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        (p as any).isActive || (p as any).IsActive
-                          ? 'bg-green-100 text-green-800 border border-green-200'
-                          : 'bg-red-100 text-red-800 border border-red-200'
-                      }`}
-                    >
-                      {(p as any).isActive || (p as any).IsActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-2">
+                    </TableCell>
+                    <TableCell>{p.cityOrSuburb}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const sid = (p as any).stateLookupId ?? (p as any).stateId ?? (p as any).StateLookupId;
+                        const s = states.find((st: any) => st.id === sid);
+                        return (s?.name || s?.stateName || s?.StateName || '-').toString();
+                      })()}
+                    </TableCell>
+                    <TableCell>{p.postcode}</TableCell>
+                    <TableCell>{prettyInspection(p)}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${(p as any).isActive || (p as any).IsActive
+                            ? 'bg-green-100 text-green-800 border border-green-200'
+                            : 'bg-red-100 text-red-800 border border-red-200'
+                          }`}
+                      >
+                        {(p as any).isActive || (p as any).IsActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleEditProperty(p)}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary-50 transition-colors"
+                          title="Edit property"
+                          disabled={loading}
+                        >
+                          <Edit className="w-4 h-4 text-black" />
+                        </button>
+                        <button
+                          onClick={() => onDelete(p.id)}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-destructive-50 transition-colors"
+                          title="Delete property"
+                          disabled={loading}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive-600" />
+                        </button>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
                       <button
-                        onClick={() => handleEditProperty(p)}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary-50 transition-colors"
-                        title="Edit property"
+                        onClick={() => toggleInspectionPanel(p.id)}
+                        className="inline-flex items-center justify-center px-3 py-1 rounded-md border text-xs font-medium hover:bg-muted-100"
                         disabled={loading}
                       >
-                        <Edit className="w-4 h-4 text-black" />
+                        {expandedPropertyId === p.id ? 'Hide Inspections' : 'Show Inspections'}
                       </button>
-                      <button
-                        onClick={() => onDelete(p.id)}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-destructive-50 transition-colors"
-                        title="Delete property"
-                        disabled={loading}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive-600" />
-                      </button>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <button
-                      onClick={() => toggleInspectionPanel(p.id)}
-                      className="inline-flex items-center justify-center px-3 py-1 rounded-md border text-xs font-medium hover:bg-muted-100"
-                      disabled={loading}
-                    >
-                      {expandedPropertyId === p.id ? 'Hide Inspections' : 'Show Inspections'}
-                    </button>
-                  </TableCell>
-                </TableRow>
-                  
+                    </TableCell>
+                  </TableRow>
+
                   {/* Inspection Panel */}
                   <TableRow>
                     <TableCell colSpan={11} className="p-0">
-                      <div 
-                        className={`overflow-hidden transition-all duration-500 ease-in-out transform ${
-                          expandedPropertyId === p.id 
-                            ? 'max-h-screen opacity-100 translate-y-0' 
+                      <div
+                        className={`overflow-hidden transition-all duration-500 ease-in-out transform ${expandedPropertyId === p.id
+                            ? 'max-h-screen opacity-100 translate-y-0'
                             : 'max-h-0 opacity-0 -translate-y-2'
-                        }`}
+                          }`}
                       >
                         <div className="bg-muted-50 border-t border-muted-200 p-4 shadow-sm">
                           <div className="flex items-center justify-between mb-3">
@@ -1310,7 +1308,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                               {propertyInspections[p.id]?.length || 0} inspection(s)
                             </span>
                           </div>
-                          
+
                           {loadingInspections[p.id] ? (
                             <div className="text-center py-4">
                               <div className="inline-flex items-center text-sm text-muted-500">
@@ -1368,11 +1366,10 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                         {new Date((inspection as any).inspectionDate).toISOString().split('T')[0]} {(inspection as any).inspectionTime}
                                       </TableCell>
                                       <TableCell>
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-medium rounded-full ${
-                                          (inspection as any).inspectionStatusId === InspectionStatus.InSync || (inspection as any).inspectionStatusId === InspectionStatus.Completed || (inspection as any).inspectionStatus === InspectionStatus.Completed
-                                            ? 'bg-success-100 text-success-800' 
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-medium rounded-full ${(inspection as any).inspectionStatusId === InspectionStatus.InSync || (inspection as any).inspectionStatusId === InspectionStatus.Completed || (inspection as any).inspectionStatus === InspectionStatus.Completed
+                                            ? 'bg-success-100 text-success-800'
                                             : 'bg-warning-100 text-warning-800'
-                                        }`}>
+                                          }`}>
                                           {inspectionStatuses.find(s => s.inspectionStatusId === ((inspection as any).inspectionStatusId || (inspection as any).inspectionStatus))?.name || (inspection as any).inspectionStatusName || (inspection as any).statusName || 'Unknown'}
                                         </span>
                                       </TableCell>
@@ -1403,12 +1400,12 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                           if (statusId === InspectionStatus.Completed) {
                                             return (
                                               <div className="inline-flex items-center gap-2">
-                                          <button
+                                                <button
                                                   onClick={() => handleViewReport(inspection.id, p.id)}
                                                   className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
-                                          >
+                                                >
                                                   View Report
-                                          </button>
+                                                </button>
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger className="px-2 py-1 border rounded-md text-xs hover:bg-muted-100 flex items-center justify-center" aria-label="More actions">
                                                     <SlidersHorizontal className="w-4 h-4" />
@@ -1430,7 +1427,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                                   className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
                                                 >
                                                   View Report
-                                          </button>
+                                                </button>
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger className="px-2 py-1 border rounded-md text-xs hover:bg-muted-100 flex items-center justify-center" aria-label="More actions">
                                                     <SlidersHorizontal className="w-4 h-4" />
@@ -1440,7 +1437,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                                     <DropdownMenuItem onClick={() => handleViewReport(inspection.id, p.id)}>View Report</DropdownMenuItem>
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
-                                        </div>
+                                              </div>
                                             );
                                           }
                                           return <span className="text-xs text-muted-foreground">No actions</span>;
@@ -1506,7 +1503,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
           </div>
         </div>
       </Modal>
-      
+
       <div className="flex items-center justify-between mt-3">
         <div className="text-sm text-muted-foreground">Page {page} of {totalPages} • {totalCount} results</div>
         <div className="flex items-center gap-2">
@@ -1535,7 +1532,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
               >
                 <X className="w-6 h-6" />
               </button>
-    </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Address 1 */}
@@ -1545,7 +1542,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.address1}
-                  onChange={(e) => setEditFormData({...editFormData, address1: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, address1: e.target.value })}
                 />
               </div>
 
@@ -1556,7 +1553,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.address2}
-                  onChange={(e) => setEditFormData({...editFormData, address2: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, address2: e.target.value })}
                 />
               </div>
 
@@ -1567,7 +1564,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.cityOrSuburb}
-                  onChange={(e) => setEditFormData({...editFormData, cityOrSuburb: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, cityOrSuburb: e.target.value })}
                 />
               </div>
 
@@ -1578,7 +1575,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.postcode}
-                  onChange={(e) => setEditFormData({...editFormData, postcode: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, postcode: e.target.value })}
                 />
               </div>
 
@@ -1588,7 +1585,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                 <select
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.stateId}
-                  onChange={(e) => setEditFormData({...editFormData, stateId: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, stateId: e.target.value })}
                 >
                   {states.map((s: any) => (
                     <option key={String(s.id)} value={String(s.id)}>{s.name || s.stateName || s.StateName}</option>
@@ -1602,7 +1599,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                 <select
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.propertyTypeId}
-                  onChange={(e) => setEditFormData({...editFormData, propertyTypeId: parseInt(e.target.value)})}
+                  onChange={(e) => setEditFormData({ ...editFormData, propertyTypeId: parseInt(e.target.value) })}
                 >
                   {propertyTypes.map((type) => (
                     <option key={type.propertyTypeId} value={type.propertyTypeId}>
@@ -1618,7 +1615,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                 <select
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.propertyManagerId}
-                  onChange={(e) => setEditFormData({...editFormData, propertyManagerId: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, propertyManagerId: e.target.value })}
                 >
                   {propertyManagers.map((manager) => (
                     <option
@@ -1640,20 +1637,20 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                       type="number"
                       className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       value={editFormData.inspectionFrequencyNumber}
-                      onChange={(e) => setEditFormData({...editFormData, inspectionFrequencyNumber: parseInt(e.target.value) || 1})}
+                      onChange={(e) => setEditFormData({ ...editFormData, inspectionFrequencyNumber: parseInt(e.target.value) || 1 })}
                     />
                   </div>
-              <div>
-                <select
+                  <div>
+                    <select
                       className="h-11 w-40 rounded-md border border-muted-300 bg-white px-3 py-2"
-                  value={editFormData.inspectionFrequencyType}
-                  onChange={(e) => setEditFormData({...editFormData, inspectionFrequencyType: e.target.value})}
-                >
+                      value={editFormData.inspectionFrequencyType}
+                      onChange={(e) => setEditFormData({ ...editFormData, inspectionFrequencyType: e.target.value })}
+                    >
                       <option value="Day">Days</option>
                       <option value="Week">Weeks</option>
                       <option value="Month">Months</option>
                       <option value="Year">Years</option>
-                </select>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -1664,7 +1661,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                 <select
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.propertyLayoutId || ''}
-                  onChange={(e) => setEditFormData({...editFormData, propertyLayoutId: e.target.value ? parseInt(e.target.value) : null})}
+                  onChange={(e) => setEditFormData({ ...editFormData, propertyLayoutId: e.target.value ? parseInt(e.target.value) : null })}
                 >
                   <option value="">No Layout Selected</option>
                   {propertyLayouts.map((layout) => (
@@ -1682,7 +1679,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.keyNo}
-                  onChange={(e) => setEditFormData({...editFormData, keyNo: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, keyNo: e.target.value })}
                 />
               </div>
 
@@ -1693,7 +1690,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.alarmCode}
-                  onChange={(e) => setEditFormData({...editFormData, alarmCode: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, alarmCode: e.target.value })}
                 />
               </div>
 
@@ -1704,7 +1701,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.propertyImages}
-                  onChange={(e) => setEditFormData({...editFormData, propertyImages: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, propertyImages: e.target.value })}
                   placeholder="Enter property images URL"
                 />
               </div>
@@ -1716,7 +1713,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   rows={3}
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={editFormData.propertyNotes}
-                  onChange={(e) => setEditFormData({...editFormData, propertyNotes: e.target.value})}
+                  onChange={(e) => setEditFormData({ ...editFormData, propertyNotes: e.target.value })}
                 />
               </div>
             </div>
@@ -1724,7 +1721,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
             {/* Tenancy Management Section */}
             <div className="mt-8 border-t pt-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Tenancy Management</h3>
-              
+
               {/* Current Tenancies */}
               <div className="mb-6">
                 <h4 className="text-md font-medium text-muted-700 mb-3">Current Tenancies</h4>
@@ -1746,9 +1743,8 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              tenancy.isActive ? 'bg-success-100 text-success-800' : 'bg-red-100 text-red-800'
-                            }`}>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${tenancy.isActive ? 'bg-success-100 text-success-800' : 'bg-red-100 text-red-800'
+                              }`}>
                               {tenancy.isActive ? 'Active' : 'Inactive'}
                             </span>
                             <button
@@ -1796,7 +1792,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
             {/* Landlord Management Section */}
             <div className="mt-8 border-t pt-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Landlord Management</h3>
-              
+
               {/* Current Landlords */}
               <div className="mb-6">
                 <h4 className="text-md font-medium text-muted-700 mb-3">Current Landlords</h4>
@@ -1852,7 +1848,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     Add New Landlord
                   </button>
                 ) : (
-              <div>
+                  <div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-muted-700 mb-2">Name *</label>
@@ -1886,8 +1882,8 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4">
-                <button
-                  onClick={() => {
+                      <button
+                        onClick={() => {
                           if (!editingProperty) return;
                           if (!newLandlordFormData.name?.trim() || !newLandlordFormData.email?.trim()) return;
                           const newEntry = {
@@ -1917,7 +1913,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                         disabled={addLandlordLoading}
                       >
                         Cancel
-                </button>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1973,7 +1969,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.fullName}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, fullName: e.target.value})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, fullName: e.target.value })}
                 />
               </div>
 
@@ -1984,7 +1980,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="email"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.email}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, email: e.target.value})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, email: e.target.value })}
                 />
               </div>
 
@@ -1995,7 +1991,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.mobile}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, mobile: e.target.value})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, mobile: e.target.value })}
                 />
               </div>
 
@@ -2006,7 +2002,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="date"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.leaseStartDate}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, leaseStartDate: e.target.value})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, leaseStartDate: e.target.value })}
                 />
               </div>
 
@@ -2017,7 +2013,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="date"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.leaseEndDate}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, leaseEndDate: e.target.value})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, leaseEndDate: e.target.value })}
                 />
               </div>
 
@@ -2029,7 +2025,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   step="0.01"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.currentRentAmount}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, currentRentAmount: parseFloat(e.target.value)})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, currentRentAmount: parseFloat(e.target.value) })}
                 />
               </div>
 
@@ -2039,7 +2035,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                 <select
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.rentFrequency}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, rentFrequency: e.target.value})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, rentFrequency: e.target.value })}
                 >
                   <option value="Day">Day</option>
                   <option value="Week">Week</option>
@@ -2056,7 +2052,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                 <select
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={tenancyFormData.active ? 'true' : 'false'}
-                  onChange={(e) => setTenancyFormData({...tenancyFormData, active: e.target.value === 'true'})}
+                  onChange={(e) => setTenancyFormData({ ...tenancyFormData, active: e.target.value === 'true' })}
                 >
                   <option value="true">Active</option>
                   <option value="false">Inactive</option>
@@ -2093,7 +2089,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                 type="text"
                                 className="w-full px-2 py-1 border border-muted-300 rounded text-sm focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                                 value={tenantFormData.firstName}
-                                onChange={(e) => setTenantFormData({...tenantFormData, firstName: e.target.value})}
+                                onChange={(e) => setTenantFormData({ ...tenantFormData, firstName: e.target.value })}
                               />
                             </div>
 
@@ -2104,7 +2100,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                 type="text"
                                 className="w-full px-2 py-1 border border-muted-300 rounded text-sm focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                                 value={tenantFormData.lastName}
-                                onChange={(e) => setTenantFormData({...tenantFormData, lastName: e.target.value})}
+                                onChange={(e) => setTenantFormData({ ...tenantFormData, lastName: e.target.value })}
                               />
                             </div>
 
@@ -2115,7 +2111,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                 type="email"
                                 className="w-full px-2 py-1 border border-muted-300 rounded text-sm focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                                 value={tenantFormData.email}
-                                onChange={(e) => setTenantFormData({...tenantFormData, email: e.target.value})}
+                                onChange={(e) => setTenantFormData({ ...tenantFormData, email: e.target.value })}
                               />
                             </div>
 
@@ -2126,7 +2122,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                 type="text"
                                 className="w-full px-2 py-1 border border-muted-300 rounded text-sm focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                                 value={tenantFormData.phone}
-                                onChange={(e) => setTenantFormData({...tenantFormData, phone: e.target.value})}
+                                onChange={(e) => setTenantFormData({ ...tenantFormData, phone: e.target.value })}
                               />
                             </div>
                           </div>
@@ -2203,7 +2199,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                         type="text"
                         className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         value={newTenantFormData.firstName || ''}
-                        onChange={(e) => setNewTenantFormData({...newTenantFormData, firstName: e.target.value})}
+                        onChange={(e) => setNewTenantFormData({ ...newTenantFormData, firstName: e.target.value })}
                       />
                     </div>
 
@@ -2214,7 +2210,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                         type="text"
                         className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         value={newTenantFormData.lastName || ''}
-                        onChange={(e) => setNewTenantFormData({...newTenantFormData, lastName: e.target.value})}
+                        onChange={(e) => setNewTenantFormData({ ...newTenantFormData, lastName: e.target.value })}
                       />
                     </div>
 
@@ -2225,7 +2221,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                         type="email"
                         className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         value={newTenantFormData.email || ''}
-                        onChange={(e) => setNewTenantFormData({...newTenantFormData, email: e.target.value})}
+                        onChange={(e) => setNewTenantFormData({ ...newTenantFormData, email: e.target.value })}
                       />
                     </div>
 
@@ -2236,7 +2232,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                         type="text"
                         className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         value={newTenantFormData.phone || ''}
-                        onChange={(e) => setNewTenantFormData({...newTenantFormData, phone: e.target.value})}
+                        onChange={(e) => setNewTenantFormData({ ...newTenantFormData, phone: e.target.value })}
                       />
                     </div>
                   </div>
@@ -2314,7 +2310,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={landlordFormData.name}
-                  onChange={(e) => setLandlordFormData({...landlordFormData, name: e.target.value})}
+                  onChange={(e) => setLandlordFormData({ ...landlordFormData, name: e.target.value })}
                 />
               </div>
 
@@ -2325,7 +2321,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="email"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={landlordFormData.email}
-                  onChange={(e) => setLandlordFormData({...landlordFormData, email: e.target.value})}
+                  onChange={(e) => setLandlordFormData({ ...landlordFormData, email: e.target.value })}
                 />
               </div>
 
@@ -2336,7 +2332,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={landlordFormData.phone}
-                  onChange={(e) => setLandlordFormData({...landlordFormData, phone: e.target.value})}
+                  onChange={(e) => setLandlordFormData({ ...landlordFormData, phone: e.target.value })}
                 />
               </div>
             </div>
@@ -2387,7 +2383,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={newTenancyFormData.fullName}
-                  onChange={(e) => setNewTenancyFormData({...newTenancyFormData, fullName: e.target.value})}
+                  onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, fullName: e.target.value })}
                   placeholder="Enter full name"
                 />
               </div>
@@ -2399,7 +2395,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="email"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={newTenancyFormData.email}
-                  onChange={(e) => setNewTenancyFormData({...newTenancyFormData, email: e.target.value})}
+                  onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, email: e.target.value })}
                   placeholder="Enter email"
                 />
               </div>
@@ -2411,7 +2407,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="text"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={newTenancyFormData.mobile}
-                  onChange={(e) => setNewTenancyFormData({...newTenancyFormData, mobile: e.target.value})}
+                  onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, mobile: e.target.value })}
                   placeholder="Enter mobile number"
                 />
               </div>
@@ -2423,7 +2419,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="date"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={newTenancyFormData.leaseStartDate}
-                  onChange={(e) => setNewTenancyFormData({...newTenancyFormData, leaseStartDate: e.target.value})}
+                  onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, leaseStartDate: e.target.value })}
                 />
               </div>
 
@@ -2434,7 +2430,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   type="date"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={newTenancyFormData.leaseEndDate}
-                  onChange={(e) => setNewTenancyFormData({...newTenancyFormData, leaseEndDate: e.target.value})}
+                  onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, leaseEndDate: e.target.value })}
                 />
               </div>
 
@@ -2447,7 +2443,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   step="0.01"
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={newTenancyFormData.currentRentAmount}
-                  onChange={(e) => setNewTenancyFormData({...newTenancyFormData, currentRentAmount: parseFloat(e.target.value) || 0})}
+                  onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, currentRentAmount: parseFloat(e.target.value) || 0 })}
                   placeholder="Enter rent amount"
                 />
               </div>
@@ -2458,7 +2454,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                 <select
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={newTenancyFormData.rentFrequency}
-                  onChange={(e) => setNewTenancyFormData({...newTenancyFormData, rentFrequency: e.target.value})}
+                  onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, rentFrequency: e.target.value })}
                 >
                   <option value="Day">Day</option>
                   <option value="Week">Week</option>
@@ -2477,7 +2473,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     id="newTenancyActive"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-muted-300 rounded"
                     checked={newTenancyFormData.active}
-                    onChange={(e) => setNewTenancyFormData({...newTenancyFormData, active: e.target.checked})}
+                    onChange={(e) => setNewTenancyFormData({ ...newTenancyFormData, active: e.target.checked })}
                   />
                   <label htmlFor="newTenancyActive" className="ml-2 block text-sm text-muted-700">
                     Active Tenancy
@@ -2568,11 +2564,10 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                   <h3 className="text-lg font-semibold text-foreground">
                     {tenancy.fullName || 'Unnamed Tenancy'}
                   </h3>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    tenancy.active 
-                      ? 'bg-success-100 text-success-800' 
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${tenancy.active
+                      ? 'bg-success-100 text-success-800'
                       : 'bg-muted-100 text-foreground'
-                  }`}>
+                    }`}>
                     {tenancy.active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
