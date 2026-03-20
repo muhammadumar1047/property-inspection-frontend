@@ -517,18 +517,67 @@
     @apply bg-gray-100 text-gray-600 border border-gray-200;
   }
 
+  /* ── A4 Page Document Layout ── */
+  .report-document {
+    max-width: 1250px;
+    margin: 0 auto;
+  }
+
+  .a4-page {
+    background: white;
+    width: 100%;
+    min-height: 297mm;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 32px;
+    border-bottom: 2px solid var(--primary);
+    font-size: 13px;
+  }
+
+  .section-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--primary);
+  }
+
   @media print {
-    @page { margin: 0.75in; size: A4; }
+    @page { margin: 0; size: A4; }
     html, body, * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { font-size: 11pt; line-height: 1.4; }
-    .no-print { display: none !important; }
+    body { font-size: 11pt; line-height: 1.4; margin: 0; padding: 0; background: white !important; }
+
+    .no-print, .print\:hidden { display: none !important; }
+
+    .report-document { max-width: none; }
+
+    .a4-page {
+      box-shadow: none;
+      margin-bottom: 0;
+      border-radius: 0;
+      min-height: auto;
+      page-break-after: always;
+      page-break-inside: avoid;
+    }
+    .a4-page:last-child { page-break-after: auto; }
+
     .page-break { page-break-before: always; }
     .page-break-inside-avoid { page-break-inside: avoid; }
     .report-section { @apply shadow-none; break-inside: avoid; }
     .report-table { font-size: 10pt; }
     h1, h2, h3 { page-break-after: avoid; }
-    .page-number:after { counter-increment: page; content: counter(page) "/" counter(pages); }
-    .report-footer { position: fixed !important; }
-    .print-content { padding-bottom: 96px !important; }
   }
 }

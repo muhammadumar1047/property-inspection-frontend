@@ -5,14 +5,14 @@ import { useSearchParams } from "next/navigation";
 import PropertyDetail from "@/components/properties/PropertyDetail";
 import ReportViewer from "@/components/ReportViewer";
 import { reportApi } from "@/lib/api";
-import type { InspectionReportDto } from "@/types/api";
+import type { ReportDto } from "@/types/api";
 
-export default function PropertyPage({ params }: { params: { id: string } }) {
-  const id = Number(params.id);
+export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
   const search = useSearchParams();
   const inspectionIdParam = search?.get("viewReportForInspectionId");
   const mode = (search?.get('mode') || '').toLowerCase();
-  const [report, setReport] = useState<InspectionReportDto | null>(null);
+  const [report, setReport] = useState<ReportDto | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
@@ -24,7 +24,7 @@ export default function PropertyPage({ params }: { params: { id: string } }) {
       setReportLoading(true);
       setReportError(null);
       try {
-        const r = await reportApi.getInspectionReport(inspectionId);
+        const r = await reportApi.getInspectionReport(String(inspectionId));
         setReport(r);
       } catch (e: any) {
         setReportError(e?.response?.data?.message || e?.message || "Failed to load report");

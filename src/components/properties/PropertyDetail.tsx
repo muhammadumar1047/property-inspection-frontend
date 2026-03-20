@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Building2, ArrowLeft, Bell, User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function PropertyDetail({ id }: { id: number }) {
+export default function PropertyDetail({ id }: { id: string }) {
   const [data, setData] = useState<PropertyResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,44 +36,56 @@ export default function PropertyDetail({ id }: { id: number }) {
         alarmCode: p.alarmCode || "",
         propertyNotes: p.propertyNotes || "",
       });
-      if (p.PropertyLayoutId) {
+      if (p.propertyLayoutId) {
         try {
-          const layout = await layoutApi.getById(p.PropertyLayoutId);
-          setLayoutName(layout.layoutName || `Layout #${p.PropertyLayoutId}`);
-        } catch {}
+          const layout = await layoutApi.getById(p.propertyLayoutId);
+          setLayoutName(layout.name || `Layout #${p.propertyLayoutId}`);
+        } catch {
+          setLayoutName(`Layout #${p.propertyLayoutId}`);
+        }
       } else {
         setLayoutName("");
       }
     } catch (e: any) {
-      setError(e?.response?.data || e?.message || "Failed to load property");
+      const errorData = e?.response?.data;
+      const errorMessage = typeof errorData === 'object' 
+        ? (errorData.title || errorData.message || JSON.stringify(errorData)) 
+        : (errorData || e?.message || "Failed to load property");
+      setError(errorMessage);
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => { 
+    if (id) load(); 
+  }, [id]);
 
   const save = async () => {
     if (!data) return;
     setLoading(true); setError("");
     try {
-      await propertyApi.update(data.propertyId, {
+      await propertyApi.update(data.id, {
         address1: form.address1,
         address2: form.address2 || undefined,
         cityOrSuburb: form.cityOrSuburb,
-        stateId: data.stateId,
+        stateLookupId: data.stateLookupId,
         postcode: form.postcode,
-        propertyTypeId: data.propertyTypeId,
+        type: data.type,
         propertyManagerId: data.propertyManagerId,
         inspectionFrequencyType: data.inspectionFrequencyType,
         inspectionFrequencyNumber: data.inspectionFrequencyNumber,
         keyNo: form.keyNo || undefined,
         alarmCode: form.alarmCode || undefined,
         propertyNotes: form.propertyNotes || undefined,
-        PropertyLayoutId: data.PropertyLayoutId || undefined,
+        propertyLayoutId: data.propertyLayoutId || undefined,
       } as any);
       setEditing(false);
       await load();
     } catch (e: any) {
-      setError(e?.response?.data || e?.message || "Failed to save");
+      const errorData = e?.response?.data;
+      const errorMessage = typeof errorData === 'object'
+        ? (errorData.title || errorData.message || JSON.stringify(errorData))
+        : (errorData || e?.message || "Failed to save");
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -133,7 +145,7 @@ export default function PropertyDetail({ id }: { id: number }) {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}')?.email || 'User') : 'User'}</p>
-                    <p className="text-xs leading-none text-muted-foreground">Viewing Property #{data.propertyId}</p>
+                    <p className="text-xs leading-none text-muted-foreground">Viewing Property #{data.id}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -147,7 +159,7 @@ export default function PropertyDetail({ id }: { id: number }) {
 
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Property #{data.propertyId}</h1>
+          <h1 className="text-2xl font-bold">Property #{data.id}</h1>
           {!editing ? (
             <Button onClick={() => setEditing(true)}>Edit</Button>
           ) : (
@@ -158,93 +170,93 @@ export default function PropertyDetail({ id }: { id: number }) {
           )}
         </div>
 
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-primary">Basic Information</CardTitle>
-          <CardDescription>Core details of the property</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label>Address</Label>
-            <Input disabled={!editing} value={form.address1} onChange={(e) => setForm({ ...form, address1: e.target.value })} />
-          </div>
-          <div>
-            <Label>Address 2</Label>
-            <Input disabled={!editing} value={form.address2} onChange={(e) => setForm({ ...form, address2: e.target.value })} />
-          </div>
-          <div>
-            <Label>City/Suburb</Label>
-            <Input disabled={!editing} value={form.cityOrSuburb} onChange={(e) => setForm({ ...form, cityOrSuburb: e.target.value })} />
-          </div>
-          <div>
-            <Label>Postcode</Label>
-            <Input disabled={!editing} value={form.postcode} onChange={(e) => setForm({ ...form, postcode: e.target.value })} />
-          </div>
-          <div>
-            <Label>Key No</Label>
-            <Input disabled={!editing} value={form.keyNo} onChange={(e) => setForm({ ...form, keyNo: e.target.value })} />
-          </div>
-          <div>
-            <Label>Alarm Code</Label>
-            <Input disabled={!editing} value={form.alarmCode} onChange={(e) => setForm({ ...form, alarmCode: e.target.value })} />
-          </div>
-          <div className="md:col-span-2">
-            <Label>Notes</Label>
-            <Input disabled={!editing} value={form.propertyNotes} onChange={(e) => setForm({ ...form, propertyNotes: e.target.value })} />
-          </div>
-        </CardContent>
-      </Card>
+        {error && <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">{error}</div>}
 
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-primary">Layout</CardTitle>
-          <CardDescription>{data.PropertyLayoutId ? layoutName : "No layout linked"}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {data.PropertyLayoutId ? (
-            <div className="text-sm text-muted-foreground">Layout ID: {data.PropertyLayoutId}</div>
-          ) : (
-            <div className="text-sm text-muted-foreground">You can link a layout from the creation wizard.</div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-primary">Landlords ({data.landlords.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {data.landlords.map((l: LandlordDto) => (
-            <div key={l.landlordId} className="text-sm">{l.name} • {l.email}{l.phone ? ` • ${l.phone}` : ''}</div>
-          ))}
-          {data.landlords.length === 0 && <div className="text-sm text-muted-foreground">No landlords.</div>}
-        </CardContent>
-      </Card>
-
-      <Card className="border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-primary">Tenancies ({data.tenancies.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {data.tenancies.map((t: TenancyDto) => (
-            <div key={t.tenancyId} className="text-sm">
-              <div className="font-medium">{t.fullName} • {t.email}</div>
-              <div className="text-muted-foreground">{new Date(t.leaseStartDate).toLocaleString()} → {new Date(t.leaseEndDate).toLocaleString()}</div>
-              <div className="text-muted-foreground">Rent: <span>${t.currentRentAmount}</span> {t.rentFrequency}</div>
-              <div className="mt-2 ml-4 space-y-1">
-                {(t.tenants || []).map((tn: TenantDto) => (
-                  <div key={tn.tenantId} className="text-xs">- {tn.firstName} {tn.lastName} • {tn.email}{tn.phone ? ` • ${tn.phone}` : ''}</div>
-                ))}
-                {(!t.tenants || t.tenants.length === 0) && <div className="text-xs text-muted-foreground">No tenants.</div>}
-              </div>
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-primary">Basic Information</CardTitle>
+            <CardDescription>Core details of the property</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Address</Label>
+              <Input disabled={!editing} value={form.address1} onChange={(e) => setForm({ ...form, address1: e.target.value })} />
             </div>
-          ))}
-          {data.tenancies.length === 0 && <div className="text-sm text-muted-foreground">No tenancies.</div>}
-        </CardContent>
-      </Card>
+            <div>
+              <Label>Address 2</Label>
+              <Input disabled={!editing} value={form.address2} onChange={(e) => setForm({ ...form, address2: e.target.value })} />
+            </div>
+            <div>
+              <Label>City/Suburb</Label>
+              <Input disabled={!editing} value={form.cityOrSuburb} onChange={(e) => setForm({ ...form, cityOrSuburb: e.target.value })} />
+            </div>
+            <div>
+              <Label>Postcode</Label>
+              <Input disabled={!editing} value={form.postcode} onChange={(e) => setForm({ ...form, postcode: e.target.value })} />
+            </div>
+            <div>
+              <Label>Key No</Label>
+              <Input disabled={!editing} value={form.keyNo} onChange={(e) => setForm({ ...form, keyNo: e.target.value })} />
+            </div>
+            <div>
+              <Label>Alarm Code</Label>
+              <Input disabled={!editing} value={form.alarmCode} onChange={(e) => setForm({ ...form, alarmCode: e.target.value })} />
+            </div>
+            <div className="md:col-span-2">
+              <Label>Notes</Label>
+              <Input disabled={!editing} value={form.propertyNotes} onChange={(e) => setForm({ ...form, propertyNotes: e.target.value })} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-primary">Layout</CardTitle>
+            <CardDescription>{data.propertyLayoutId ? layoutName : "No layout linked"}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {data.propertyLayoutId ? (
+              <div className="text-sm text-muted-foreground">Layout ID: {data.propertyLayoutId}</div>
+            ) : (
+              <div className="text-sm text-muted-foreground">You can link a layout from the creation wizard.</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-primary">Landlords ({data.landlords.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {data.landlords.map((l: LandlordDto) => (
+              <div key={l.id} className="text-sm">{l.name} • {l.email}{l.phone ? ` • ${l.phone}` : ''}</div>
+            ))}
+            {data.landlords.length === 0 && <div className="text-sm text-muted-foreground">No landlords.</div>}
+          </CardContent>
+        </Card>
+
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-primary">Tenancies ({data.tenancies.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {data.tenancies.map((t: TenancyDto) => (
+              <div key={t.id} className="text-sm">
+                <div className="font-medium">{t.fullName} • {t.email}</div>
+                <div className="text-muted-foreground">{new Date(t.leaseStartDate).toLocaleString()} → {new Date(t.leaseEndDate).toLocaleString()}</div>
+                <div className="text-muted-foreground">Rent: <span>${t.currentRentAmount}</span> {t.rentFrequency}</div>
+                <div className="mt-2 ml-4 space-y-1">
+                  {(t.tenants || []).map((tn: TenantDto) => (
+                    <div key={tn.id} className="text-xs">- {tn.firstName} {tn.lastName} • {tn.email}{tn.phone ? ` • ${tn.phone}` : ''}</div>
+                  ))}
+                  {(!t.tenants || t.tenants.length === 0) && <div className="text-xs text-muted-foreground">No tenants.</div>}
+                </div>
+              </div>
+            ))}
+            {data.tenancies.length === 0 && <div className="text-sm text-muted-foreground">No tenancies.</div>}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-};
-
-
+}
