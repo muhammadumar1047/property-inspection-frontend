@@ -69,6 +69,7 @@ const Settings = dynamic(() => import("@/components/Settings"), { ssr: false });
 const UserSettings = dynamic(() => import("@/components/UserSettings"), { ssr: false });
 const AgencySettings = dynamic(() => import("@/components/AgencySettings"), { ssr: false });
 const AgencyManagement = dynamic(() => import("@/components/AgencyManagement"), { ssr: false });
+const BillingPlans = dynamic(() => import("@/components/BillingPlans"), { ssr: false });
 import LayoutManagement from "@/components/LayoutManagement";
 import UserProfile from "@/components/UserProfile";
 import ReferenceData from "@/components/ReferenceData";
@@ -173,11 +174,11 @@ const settingsMenuItems = [
   { icon: SettingsIcon, label: "General Settings" },
   { icon: Users, label: "User Settings" },
   { icon: Building, label: "Agency Settings" },
-  { icon: Mail, label: "Email Templates" },
-  { icon: PenTool, label: "Signatures" },
-  { icon: History, label: "Email Logs" },
-  { icon: Layers, label: "Areas / Items" },
-  { icon: ShieldCheck, label: "Account Settings" },
+  // { icon: Mail, label: "Email Templates" },
+  // { icon: PenTool, label: "Signatures" },
+  // { icon: History, label: "Email Logs" },
+  //{ icon: Layers, label: "Areas / Items" },
+  //{ icon: ShieldCheck, label: "Account Settings" },
 ];
 
 function getStatusBadge(status: string) {
@@ -212,7 +213,7 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  
+
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
 
 
@@ -224,6 +225,7 @@ export default function AdminDashboard() {
   const [inspectionCount, setInspectionCount] = useState(0);
   const [propertyCount, setPropertyCount] = useState(0);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
   const [showingSearchResults, setShowingSearchResults] = useState<{ type: 'properties' | 'inspections' | null, query: string }>({ type: null, query: '' });
   const router = useRouter();
   const { logout, user, isSuperAdmin, impersonatedAgencyId, impersonatedAgencyName, effectiveAgencyId, stopImpersonating } = useAuth();
@@ -243,7 +245,10 @@ export default function AdminDashboard() {
   const showAgencyView = !isSuperAdmin || (!!impersonatedAgencyId && !isSuperAdminRoute);
   const sidebarItems = showAgencyView
     ? mainSidebarItems
-    : [{ icon: Building2, label: 'Agencies' }];
+    : [
+      { icon: Building2, label: 'Agencies' },
+      { icon: CreditCard, label: 'Billing Plans' }
+    ];
 
   const handleViewReport = (inspectionId: string | number, propertyId?: string) => {
     const targetPropertyId = propertyId || 0;
@@ -317,6 +322,9 @@ export default function AdminDashboard() {
       handleLogout();
       return;
     }
+    if (path !== "edit property") {
+      setEditingPropertyId(null);
+    }
     setActiveSection(path);
     // Save the active section to localStorage
     if (typeof window !== 'undefined') {
@@ -330,9 +338,9 @@ export default function AdminDashboard() {
     setShowingSearchResults({ type: null, query: '' });
   };
 
-  // Force superadmin to Agencies section only (unless impersonating)
+  // Force superadmin to Agencies or Billing Plans section only (unless impersonating)
   useEffect(() => {
-    if (isSuperAdmin && !impersonatedAgencyId && activeSection !== 'agencies') {
+    if (isSuperAdmin && !impersonatedAgencyId && !['agencies', 'billing plans'].includes(activeSection)) {
       setActiveSection('agencies');
       if (typeof window !== 'undefined') {
         localStorage.setItem('dashboard-active-section', 'agencies');
@@ -381,6 +389,8 @@ export default function AdminDashboard() {
         return <UserProfile />;
       case "agencies":
         return <AgencyManagement />;
+      case "billing plans":
+        return <BillingPlans />;
       // removed agency management
       case "analytics": {
         const stats: StatCard[] = [
@@ -702,19 +712,32 @@ export default function AdminDashboard() {
       case "properties":
         return <PropertiesTable
           onCreateProperty={() => setActiveSection('create property')}
+          onEditProperty={(id) => {
+            setEditingPropertyId(id);
+            setActiveSection('edit property');
+          }}
           searchResults={showingSearchResults.type === 'properties' ? propertyResults : undefined}
           searchQuery={showingSearchResults.type === 'properties' ? showingSearchResults.query : undefined}
           onClearSearch={clearSearchResults}
         />;
       case "create property":
-        return <PropertyCreation onPropertyCreated={() => {
-          setActiveSection('properties');
-          // Save the active section to localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('dashboard-active-section', 'properties');
-          }
-          fetchPropertyCount();
-        }} />;
+      case "edit property":
+        return <PropertyCreation
+          propertyId={editingPropertyId || undefined}
+          onPropertyCreated={() => {
+            setActiveSection('properties');
+            setEditingPropertyId(null);
+            // Save the active section to localStorage
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('dashboard-active-section', 'properties');
+            }
+            fetchPropertyCount();
+          }}
+          onClose={() => {
+            setActiveSection('properties');
+            setEditingPropertyId(null);
+          }}
+        />;
       case "inspections":
         console.log('Rendering InspectionManagement with selectedPropertyId:', selectedPropertyId);
         if (isSuperAdminRoute) {
@@ -1018,7 +1041,7 @@ export default function AdminDashboard() {
             {/* Center — Search bar */}
             {(!isSuperAdmin || !!impersonatedAgencyId) && (
               <div className="flex-1 max-w-xl transition-all duration-300">
-                <GlobalSearch 
+                <GlobalSearch
                   setActiveSection={setActiveSection}
                   setShowingSearchResults={setShowingSearchResults}
                   setPropertyResults={setPropertyResults}

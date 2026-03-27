@@ -23,9 +23,10 @@ interface PropertiesTableProps {
   searchResults?: PropertyResponse[];
   searchQuery?: string;
   onClearSearch?: () => void;
+  onEditProperty?: (id: string) => void;
 }
 
-export default function PropertiesTable({ onCreateProperty, searchResults, searchQuery, onClearSearch }: PropertiesTableProps = {}) {
+export default function PropertiesTable({ onCreateProperty, onEditProperty, searchResults, searchQuery, onClearSearch }: PropertiesTableProps = {}) {
   const [data, setData] = useState<PropertyResponse[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -335,13 +336,6 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
     }
   };
 
-  const openReport = (inspectionId: string, propertyId: string) => {
-    try {
-      window.open(`/properties/${propertyId}?viewReportForInspectionId=${inspectionId}`, '_blank');
-    } catch {
-      window.location.href = `/properties/${propertyId}?viewReportForInspectionId=${inspectionId}`;
-    }
-  };
 
   const handleShowLandlordDetails = (property: any) => {
     setSelectedPropertyForDetails(property);
@@ -359,29 +353,33 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
   };
 
   const handleEditProperty = (property: PropertyResponse) => {
-    setEditingProperty(property);
-    setEditFormData({
-      propertyTypeId: (property as any).propertyTypeId ?? property.type,
-      propertyManagerId: property.propertyManagerId,
-      address1: property.address1,
-      address2: property.address2 || '',
-      cityOrSuburb: property.cityOrSuburb,
-      stateId: (property as any).stateId ?? property.stateLookupId,
-      postcode: property.postcode,
-      isActive: property.isActive !== undefined ? property.isActive : true,
-      inspectionFrequencyType: property.inspectionFrequencyType,
-      inspectionFrequencyNumber: property.inspectionFrequencyNumber,
-      keyNo: property.keyNo || '',
-      alarmCode: property.alarmCode || '',
-      propertyNotes: property.propertyNotes || '',
-      propertyImages: property.propertyImages || '',
-      propertyLayoutId: (() => {
-        const raw = (property as any).PropertyLayoutId ?? (property as any).propertyLayoutId ?? null;
-        const num = raw != null ? Number(raw) : null;
-        return num && !Number.isNaN(num) ? num : null;
-      })(),
-    });
-    setShowEditModal(true);
+    if (onEditProperty) {
+      onEditProperty(property.id);
+    } else {
+      setEditingProperty(property);
+      setEditFormData({
+        propertyTypeId: (property as any).propertyTypeId ?? property.type,
+        propertyManagerId: property.propertyManagerId,
+        address1: property.address1,
+        address2: property.address2 || '',
+        cityOrSuburb: property.cityOrSuburb,
+        stateId: (property as any).stateId ?? property.stateLookupId,
+        postcode: property.postcode,
+        isActive: property.isActive !== undefined ? property.isActive : true,
+        inspectionFrequencyType: property.inspectionFrequencyType,
+        inspectionFrequencyNumber: property.inspectionFrequencyNumber,
+        keyNo: property.keyNo || '',
+        alarmCode: property.alarmCode || '',
+        propertyNotes: property.propertyNotes || '',
+        propertyImages: property.propertyImages || '',
+        propertyLayoutId: (() => {
+          const raw = (property as any).PropertyLayoutId ?? (property as any).propertyLayoutId ?? null;
+          const num = raw != null ? Number(raw) : null;
+          return num && !Number.isNaN(num) ? num : null;
+        })(),
+      });
+      setShowEditModal(true);
+    }
   };
 
   const handleUpdateProperty = async () => {
@@ -803,14 +801,12 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
     setShowEditInspectionModal(true);
   };
 
-  const handleViewReport = (inspectionId: string, propertyId?: string) => {
+  const handleViewReport = (inspectionId: string) => {
+    const url = `/inspections/${inspectionId}/report`;
     try {
-      const targetPropertyId = propertyId || '';
-      const url = `/properties/${targetPropertyId}?viewReportForInspectionId=${inspectionId}`;
       window.open(url, '_blank');
     } catch {
-      const targetPropertyId = propertyId || '';
-      window.location.href = `/properties/${targetPropertyId}?viewReportForInspectionId=${inspectionId}`;
+      window.location.href = url;
     }
   };
 
@@ -823,18 +819,56 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
   const handleCloseReport = async (inspectionId: string, propertyId: string) => {
     try {
       setLoading(true);
-      const statuses = await inspectionApi.getInspectionStatuses();
-      const closed = (statuses || []).find((s: any) => String((s as any).name || '').toLowerCase() === 'closed');
-      if (!closed) { alert('Unable to close report: Closed status not found.'); return; }
-      const statusId = Number((closed as any).id ?? (closed as any).inspectionStatusId);
-      if (!statusId) { alert('Unable to close report: Closed status id missing.'); return; }
-      const updated = await inspectionApi.updateStatus(inspectionId as any, statusId);
+      const inspection = await inspectionApi.getById(inspectionId);
+      const ok = await inspectionApi.update(inspectionId, {
+        ...inspection,
+        inspectionStatus: InspectionStatus.Closed,
+      } as any);
+
+      if (!ok) throw new Error('Failed to close report');
+
+      const updated = await inspectionApi.getById(inspectionId);
       setPropertyInspections(prev => ({
         ...prev,
         [propertyId]: (prev[propertyId] || []).map(x => x.id === inspectionId ? updated : x),
       }));
     } catch (e: any) {
-      alert(e?.response?.data?.message || e?.message || 'Failed to update report status');
+      alert(e?.response?.data?.message || e?.message || 'Failed to close report');
+    } finally { setLoading(false); }
+  };
+
+  const handleReopenReport = async (inspectionId: string, propertyId: string) => {
+    try {
+      setLoading(true);
+      const inspection = await inspectionApi.getById(inspectionId);
+      const ok = await inspectionApi.update(inspectionId, {
+        ...inspection,
+        inspectionStatus: InspectionStatus.Completed,
+      } as any);
+
+      if (!ok) throw new Error('Failed to reopen report');
+
+      const updated = await inspectionApi.getById(inspectionId);
+      setPropertyInspections(prev => ({
+        ...prev,
+        [propertyId]: (prev[propertyId] || []).map(x => x.id === inspectionId ? updated : x),
+      }));
+    } catch (e: any) {
+      alert(e?.response?.data?.message || e?.message || 'Failed to reopen report');
+    } finally { setLoading(false); }
+  };
+
+  const handleDeleteInspection = async (inspectionId: string, propertyId: string) => {
+    if (!confirm('Are you sure you want to delete this inspection?')) return;
+    try {
+      setLoading(true);
+      await inspectionApi.delete(inspectionId as any);
+      setPropertyInspections(prev => ({
+        ...prev,
+        [propertyId]: (prev[propertyId] || []).filter(x => x.id !== inspectionId),
+      }));
+    } catch (e: any) {
+      alert(e?.response?.data?.message || e?.message || 'Failed to delete inspection');
     } finally { setLoading(false); }
   };
 
@@ -1170,9 +1204,9 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Property Name</TableHead>
-              <TableHead>Property Type</TableHead>
-              <TableHead>Property Manager</TableHead>
+              <TableHead>Property</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Manager</TableHead>
               <TableHead>Address</TableHead>
               <TableHead>Suburb</TableHead>
               <TableHead>State</TableHead>
@@ -1192,7 +1226,36 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
               data.map((p) => (
                 <React.Fragment key={p.id}>
                   <TableRow className="hover:bg-primary/5">
-                    <TableCell className="font-medium">{p.name || (p as any).Name || `#${p.id}`}</TableCell>
+                    <TableCell className="font-medium min-w-[100px]">
+                      <div className="flex items-center">
+                        <div className="w-20 h-14 rounded-md overflow-hidden bg-muted-100 flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
+                          {p.propertyImages ? (
+                            <img
+                              src={p.propertyImages}
+                              alt={`Property ${p.id}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                                if (nextElement) {
+                                  nextElement.style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className={`w-full h-full flex items-center justify-center text-muted-400 ${p.propertyImages ? 'hidden' : 'flex'}`}
+                            style={{ display: p.propertyImages ? 'none' : 'flex' }}
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </div>
+                        </div>
+                        {/* <span className="text-sm font-semibold max-w-[150px] leading-tight break-words">{p.name || (p as any).Name || `#${p.id}`}</span> */}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       {(() => {
                         const typeId = (p as any).type ?? (p as any).PropertyTypeLookupId ?? (p as any).propertyTypeId;
@@ -1215,31 +1278,7 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                       })()}
                     </TableCell>
                     <TableCell>
-                      <div className="w-16 h-12 rounded-md overflow-hidden bg-muted-100 flex items-center justify-center">
-                        {p.propertyImages ? (
-                          <img
-                            src={p.propertyImages}
-                            alt={`Property ${p.id}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                              if (nextElement) {
-                                nextElement.style.display = 'flex';
-                              }
-                            }}
-                          />
-                        ) : null}
-                        <div
-                          className={`w-full h-full flex items-center justify-center text-muted-400 ${p.propertyImages ? 'hidden' : 'flex'}`}
-                          style={{ display: p.propertyImages ? 'none' : 'flex' }}
-                        >
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                        </div>
-                      </div>
+                      {p.address1 || (p as any).Address1 || (p as any).address || (p as any).Address || '-'}
                     </TableCell>
                     <TableCell>{p.cityOrSuburb}</TableCell>
                     <TableCell>
@@ -1254,8 +1293,8 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     <TableCell>
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${(p as any).isActive || (p as any).IsActive
-                            ? 'bg-green-100 text-green-800 border border-green-200'
-                            : 'bg-red-100 text-red-800 border border-red-200'
+                          ? 'bg-green-100 text-green-800 border border-green-200'
+                          : 'bg-red-100 text-red-800 border border-red-200'
                           }`}
                       >
                         {(p as any).isActive || (p as any).IsActive ? 'Active' : 'Inactive'}
@@ -1297,8 +1336,8 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     <TableCell colSpan={11} className="p-0">
                       <div
                         className={`overflow-hidden transition-all duration-500 ease-in-out transform ${expandedPropertyId === p.id
-                            ? 'max-h-screen opacity-100 translate-y-0'
-                            : 'max-h-0 opacity-0 -translate-y-2'
+                          ? 'max-h-screen opacity-100 translate-y-0'
+                          : 'max-h-0 opacity-0 -translate-y-2'
                           }`}
                       >
                         <div className="bg-muted-50 border-t border-muted-200 p-4 shadow-sm">
@@ -1366,45 +1405,59 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                         {new Date((inspection as any).inspectionDate).toISOString().split('T')[0]} {(inspection as any).inspectionTime}
                                       </TableCell>
                                       <TableCell>
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-medium rounded-full ${(inspection as any).inspectionStatusId === InspectionStatus.InSync || (inspection as any).inspectionStatusId === InspectionStatus.Completed || (inspection as any).inspectionStatus === InspectionStatus.Completed
+                                        {(() => {
+                                          const statusId = Number((inspection as any).inspectionStatusId || (inspection as any).inspectionStatus || 0);
+                                          const statusName = inspectionStatuses.find(s => s.inspectionStatusId === statusId)?.name ||
+                                            (inspection as any).inspectionStatusName ||
+                                            (inspection as any).statusName ||
+                                            ({
+                                              1: 'Pending',
+                                              2: 'InProgress',
+                                              3: 'InSync',
+                                              4: 'Completed',
+                                              5: 'Closed'
+                                            } as Record<number, string>)[statusId] ||
+                                            'Unknown';
+
+                                          const colorClass = ([3, 4, 5].includes(statusId))
                                             ? 'bg-success-100 text-success-800'
-                                            : 'bg-warning-100 text-warning-800'
-                                          }`}>
-                                          {inspectionStatuses.find(s => s.inspectionStatusId === ((inspection as any).inspectionStatusId || (inspection as any).inspectionStatus))?.name || (inspection as any).inspectionStatusName || (inspection as any).statusName || 'Unknown'}
-                                        </span>
+                                            : 'bg-warning-100 text-warning-800';
+
+                                          return (
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-medium rounded-full ${colorClass}`}>
+                                              {statusName}
+                                            </span>
+                                          );
+                                        })()}
                                       </TableCell>
                                       <TableCell className="text-right">
                                         {(() => {
                                           const statusId = Number((inspection as any).inspectionStatusId || (inspection as any).inspectionStatus || 0);
+
                                           if (statusId === InspectionStatus.Pending) {
                                             return (
                                               <DropdownMenu>
                                                 <DropdownMenuTrigger className="px-3 py-1 border rounded-md text-xs hover:bg-muted-100">Actions</DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                   <DropdownMenuItem onClick={() => handleEditInspection(inspection)}>Edit</DropdownMenuItem>
-                                                  <DropdownMenuItem onClick={() => {
-                                                    if (confirm('Are you sure you want to delete this inspection?')) {
-                                                      alert(`Delete inspection ${inspection.id} - This functionality needs to be implemented`);
-                                                    }
-                                                  }}>Delete</DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleDeleteInspection(inspection.id, p.id)}>Delete</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                               </DropdownMenu>
                                             );
                                           }
-                                          if (statusId === InspectionStatus.InProgress) {
-                                            return <span className="text-xs text-muted-foreground">No actions</span>;
+
+                                          if (statusId === InspectionStatus.InProgress || statusId === InspectionStatus.InSync) {
+                                            return <span className="text-xs text-muted-foreground italic">No actions available</span>;
                                           }
-                                          if (statusId === InspectionStatus.InSync) {
-                                            return <span className="text-xs text-muted-foreground">No actions</span>;
-                                          }
+
                                           if (statusId === InspectionStatus.Completed) {
                                             return (
                                               <div className="inline-flex items-center gap-2">
                                                 <button
-                                                  onClick={() => handleViewReport(inspection.id, p.id)}
-                                                  className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
+                                                  onClick={() => handleEditReport(inspection.id, p.id)}
+                                                  className="px-3 py-1 bg-amber-500 text-white text-xs rounded-md transition-colors hover:bg-amber-600"
                                                 >
-                                                  View Report
+                                                  Edit Report
                                                 </button>
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger className="px-2 py-1 border rounded-md text-xs hover:bg-muted-100 flex items-center justify-center" aria-label="More actions">
@@ -1413,17 +1466,17 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                                   <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={() => handleEditReport(inspection.id, p.id)}>Edit Report</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleCloseReport(inspection.id, p.id)}>Close Report</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleViewReport(inspection.id, p.id)}>View Report</DropdownMenuItem>
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
                                               </div>
                                             );
                                           }
+
                                           if (statusId === InspectionStatus.Closed) {
                                             return (
                                               <div className="inline-flex items-center gap-2">
                                                 <button
-                                                  onClick={() => handleViewReport(inspection.id, p.id)}
+                                                  onClick={() => handleViewReport(inspection.id)}
                                                   className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
                                                 >
                                                   View Report
@@ -1433,14 +1486,15 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                                                     <SlidersHorizontal className="w-4 h-4" />
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleCloseReport(inspection.id, p.id)}>Reopen Report</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleViewReport(inspection.id, p.id)}>View Report</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleViewReport(inspection.id)}>View Report</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleReopenReport(inspection.id, p.id)}>Reopen Report</DropdownMenuItem>
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
                                               </div>
                                             );
                                           }
-                                          return <span className="text-xs text-muted-foreground">No actions</span>;
+
+                                          return <span className="text-xs text-muted-foreground">No actions available</span>;
                                         })()}
                                       </TableCell>
                                     </TableRow>
@@ -2565,8 +2619,8 @@ export default function PropertiesTable({ onCreateProperty, searchResults, searc
                     {tenancy.fullName || 'Unnamed Tenancy'}
                   </h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${tenancy.active
-                      ? 'bg-success-100 text-success-800'
-                      : 'bg-muted-100 text-foreground'
+                    ? 'bg-success-100 text-success-800'
+                    : 'bg-muted-100 text-foreground'
                     }`}>
                     {tenancy.active ? 'Active' : 'Inactive'}
                   </span>

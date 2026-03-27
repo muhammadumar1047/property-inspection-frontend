@@ -186,7 +186,14 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
         inspectionTime: ensureSeconds(newInspection.inspectionTime),
       };
       const createdInspection = await inspectionApi.create(payload as any);
-      const enriched = enrichInspectionDisplayFields(createdInspection);
+      
+      // Ensure property details are populated immediately for the UI
+      const enriched = {
+        ...enrichInspectionDisplayFields(createdInspection),
+        propertyAddress: createdInspection.propertyAddress || selectedProperty?.address,
+        propertySubhurb: createdInspection.propertySubhurb || selectedProperty?.suburb
+      };
+      
       alert('Inspection created successfully');
 
       // Add the new inspection to the current list with display fields populated
@@ -268,15 +275,12 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
     }
   };
 
-  const handleViewReport = (inspectionId: string, propertyId?: string) => {
+  const handleViewReport = (inspectionId: string) => {
+    const url = `/inspections/${inspectionId}/report`;
     try {
-      const targetPropertyId = propertyId || '';
-      const url = `/properties/${targetPropertyId}?viewReportForInspectionId=${inspectionId}`;
       window.open(url, '_blank');
     } catch {
-      // fallback same tab
-      const targetPropertyId = propertyId || '';
-      window.location.href = `/properties/${targetPropertyId}?viewReportForInspectionId=${inspectionId}`;
+      window.location.href = url;
     }
   };
 
@@ -466,7 +470,11 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
   };
 
   const selectProperty = (property: any) => {
-    setSelectedProperty(property);
+    setSelectedProperty({
+      id: property.id,
+      address: property.address,
+      suburb: property.suburb
+    });
     setNewInspection(prev => ({ ...prev, propertyId: property.id }));
     setPropertySearchTerm(property.address);
     setShowPropertyResults(false);
@@ -490,7 +498,11 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
   };
 
   const selectEditProperty = (property: any) => {
-    setSelectedEditProperty(property);
+    setSelectedEditProperty({
+      id: property.id,
+      address: property.address,
+      suburb: property.suburb
+    });
     setEditInspection(prev => ({ ...prev, propertyId: property.id, address: property.address }));
     setEditPropertySearchTerm(property.address);
     setShowEditPropertyResults(false);
@@ -1271,8 +1283,8 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
               </TableHeader>
               <TableBody>
                 {inspections.map((inspection) => {
-                  const property = properties.find((p) => String(p.propertyId) === inspection.propertyId);
-                  const state = states.find((s) => s.id === property?.stateId);
+                  const property = properties.find((p) => String(p.id) === inspection.propertyId);
+                  const state = states.find((s) => s.id === property?.stateLookupId);
                   return (
                     <TableRow key={inspection.id}>
                       <TableCell>
@@ -1304,32 +1316,34 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                         {new Date(inspection.inspectionDate).toLocaleDateString()} {inspection.inspectionTime}
                       </TableCell>
                       <TableCell>
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-medium rounded-full ${((inspection as any).inspectionStatus === 3 || (inspection as any).inspectionStatus === 4)
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                        >
-                          {
-                            inspectionStatuses.find(
-                              s => s.inspectionStatusId === (inspection as any).inspectionStatus || s.inspectionStatusId === (inspection as any).inspectionStatusId
-                            )?.name
-                            ||
+                        {(() => {
+                          const statusId = Number((inspection as any).inspectionStatus || (inspection as any).inspectionStatusId || (inspection as any).status || 0);
+                          const statusName = inspectionStatuses.find(s => s.inspectionStatusId === statusId)?.name ||
                             ({
                               1: 'Pending',
                               2: 'InProgress',
                               3: 'InSync',
                               4: 'Completed',
                               5: 'Closed'
-                            } as Record<number, string>)[Number((inspection as any).inspectionStatus)]
-                            || (inspection as any).inspectionStatusName
-                            || (inspection as any).statusName
-                            || 'Unknown'
-                          }
-                        </span>
+                            } as Record<number, string>)[statusId] || 
+                            (inspection as any).inspectionStatusName || 
+                            (inspection as any).statusName || 
+                            'Unknown';
+                          
+                          const colorClass = ([3, 4, 5].includes(statusId))
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800';
+
+                          return (
+                            <span className={`px-2 inline-flex text-xs leading-5 font-medium rounded-full ${colorClass}`}>
+                              {statusName}
+                            </span>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className="text-right">
                         {(() => {
+                          debugger
                           const statusId = Number((inspection as any).inspectionStatus || (inspection as any).inspectionStatusId || (inspection as any).status || 0);
 
                           if (statusId === InspectionStatus.Pending) {
@@ -1345,17 +1359,17 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                           }
 
                           if (statusId === InspectionStatus.InProgress || statusId === InspectionStatus.InSync) {
-                            return <span className="text-xs text-muted-foreground">No actions</span>;
+                            return <span className="text-xs text-muted-foreground italic">No actions available</span>;
                           }
 
                           if (statusId === InspectionStatus.Completed) {
                             return (
                               <div className="inline-flex items-center gap-2">
                                 <button
-                                  onClick={() => handleViewReport(inspection.id, inspection.propertyId)}
-                                  className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                                  onClick={() => handleEditReport(inspection.id, inspection.propertyId)}
+                                  className="px-3 py-1 bg-amber-500 text-white rounded-md text-sm font-medium hover:bg-amber-600"
                                 >
-                                  View Report
+                                  Edit Report
                                 </button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger className="px-2 py-1 border rounded-md text-sm hover:bg-muted-100 flex items-center justify-center" aria-label="More actions">
@@ -1364,7 +1378,6 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                                   <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => handleEditReport(inspection.id, inspection.propertyId)}>Edit Report</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleCloseReport(inspection.id)}>Close Report</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleViewReport(inspection.id, inspection.propertyId)}>View Report</DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
@@ -1375,7 +1388,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                             return (
                               <div className="inline-flex items-center gap-2">
                                 <button
-                                  onClick={() => handleViewReport(inspection.id, inspection.propertyId)}
+                                  onClick={() => handleViewReport(inspection.id)}
                                   className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
                                 >
                                   View Report
@@ -1385,15 +1398,15 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                                     <SlidersHorizontal className="w-4 h-4" />
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleViewReport(inspection.id)}>View Report</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleReopenReport(inspection.id)}>Reopen Report</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleViewReport(inspection.id, inspection.propertyId)}>View Report</DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
                             );
                           }
 
-                          return <span className="text-xs text-muted-foreground">No actions</span>;
+                          return <span className="text-xs text-muted-foreground">No actions available</span>;
                         })()}
                       </TableCell>
                     </TableRow>

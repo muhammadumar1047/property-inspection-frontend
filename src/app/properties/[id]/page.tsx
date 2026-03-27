@@ -37,14 +37,29 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
   if (reportLoading) return <div className="p-6">Loading report…</div>;
   if (reportError) return <div className="p-6 text-red-600">{reportError}</div>;
-  if (report) return <ReportViewer report={report} editable={mode === 'edit'} onSave={async (changed) => {
-    try {
-      const updated = await reportApi.updateInspectionReport(report.inspectionId, changed);
-      setReport(updated);
-    } catch (e: any) {
-      alert(e?.response?.data?.message || e?.message || 'Failed to save report');
+  if (report) {
+    const statusId = Number(report.inspection?.inspectionStatus);
+    const isPendingOrActive = [1, 2, 3].includes(statusId);
+    
+    if (mode === 'edit' && isPendingOrActive) {
+      return (
+        <div className="p-10 text-center bg-amber-50 rounded-xl border border-amber-200 m-6">
+          <h2 className="text-xl font-bold text-amber-800 mb-2">Report Editor Unavailable</h2>
+          <p className="text-amber-700">The report is not yet ready for editing. The inspection must be in 'Completed' status.</p>
+          <button onClick={() => window.history.back()} className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors">Go Back</button>
+        </div>
+      );
     }
-  }} />;
+
+    return <ReportViewer report={report} editable={mode === 'edit' && statusId === 4} onSave={async (changed) => {
+      try {
+        const updated = await reportApi.updateInspectionReport(report.inspectionId, changed);
+        setReport(updated);
+      } catch (e: any) {
+        alert(e?.response?.data?.message || e?.message || 'Failed to save report');
+      }
+    }} />;
+  }
 
   return <PropertyDetail id={id} />;
 }

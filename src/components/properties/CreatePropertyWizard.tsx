@@ -16,7 +16,12 @@ import { roleApi } from "@/lib/api/role";
 import { userApi } from "@/lib/api/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { InspectionFrequencyType, PropertyType, RentFrequency, type CreatePropertyRequest } from "@/types/api";
-import { Building2, Bell, User, LogOut } from "lucide-react";
+import { Building2, Bell, User, LogOut, MapPin, X, Info } from "lucide-react";
+import Modal from "@/components/ui/Modal";
+
+const validateEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 // StructureEditor removed: areas & items are captured in layout step
 
 type WizardStep = "property" | "landlord" | "tenancy" | "layout" | "review";
@@ -76,6 +81,10 @@ export default function CreatePropertyWizard() {
     email: "",
     phone: "",
   });
+  
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [selectedLayoutDetails, setSelectedLayoutDetails] = useState<any>(null);
   // Removed separate structure step
 
   const STORAGE_KEY = "pc360:create-property-wizard";
@@ -200,12 +209,14 @@ export default function CreatePropertyWizard() {
     }
     // No separate structure step; areas & items are part of layout
     if (activeStep === "landlord") {
-      return landlord.name.trim() && landlord.email.trim();
+      return landlord.name.trim() && validateEmail(landlord.email);
     }
     if (activeStep === "tenancy") {
+      const allTenantsValid = tenants.every(t => validateEmail(t.email));
       return (
         tenancy.fullName.trim() &&
-        tenancy.email.trim() &&
+        validateEmail(tenancy.email) &&
+        allTenantsValid &&
         tenancy.leaseStartDate &&
         tenancy.leaseEndDate &&
         typeof tenancy.currentRentAmount === "number"
@@ -265,8 +276,8 @@ export default function CreatePropertyWizard() {
           propertyNotes: propertyData.propertyNotes || null,
           propertyImages: propertyData.propertyImages || null,
           propertyLayoutId: propertyData.propertyLayoutId || "",
-          latitude: null,
-          longitude: null,
+          latitude: propertyData.latitude ?? null,
+          longitude: propertyData.longitude ?? null,
           landlords: [
             {
               name: landlord.name,
@@ -311,9 +322,34 @@ export default function CreatePropertyWizard() {
 
   const goBack = () => {
     setError("");
-    const order: WizardStep[] = ["property", "landlord", "tenancy", "review"];
+    const order: WizardStep[] = ["property", "landlord", "tenancy", "layout", "review"];
     const idx = order.indexOf(activeStep);
     if (idx > 0) setActiveStep(order[idx - 1]);
+  };
+
+  const handleClose = () => {
+    const hasPropertyChanges = propertyData.address1.trim() !== "" || 
+                                propertyData.cityOrSuburb.trim() !== "" || 
+                                propertyData.postcode.trim() !== "";
+    const hasLandlordChanges = landlord.name.trim() !== "" || 
+                                landlord.email.trim() !== "";
+    const hasTenancyChanges = tenancy.fullName.trim() !== "" || 
+                               tenancy.email.trim() !== "";
+    
+    if (hasPropertyChanges || hasLandlordChanges || hasTenancyChanges || tenants.length > 0) {
+      setShowCloseConfirm(true);
+    } else {
+      performClose();
+    }
+  };
+
+  const performClose = () => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {}
+    router.push("/dashboard");
   };
 
   const StepIndicator = () => {
@@ -342,13 +378,6 @@ export default function CreatePropertyWizard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/dashboard')}
-              aria-label="Back to properties"
-            >
-              Back
-            </Button>
             <Button variant="ghost" aria-label="Notifications"><Bell className="w-5 h-5" /></Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -387,9 +416,19 @@ export default function CreatePropertyWizard() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem><User className="mr-2 h-4 w-4" />Profile</DropdownMenuItem>
-                <DropdownMenuItem><LogOut className="mr-2 h-4 w-4" />Exit Wizard</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleClose}><LogOut className="mr-2 h-4 w-4" />Exit Wizard</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <div className="h-8 w-px bg-border mx-1" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              className="rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
+              aria-label="Close wizard"
+            >
+              <X className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       </header>
@@ -524,15 +563,52 @@ export default function CreatePropertyWizard() {
                           <Label>Property Images URL</Label>
                           <Input value={propertyData.propertyImages || ''} onChange={(e) => setPropertyData({ ...propertyData, propertyImages: e.target.value || null })} placeholder="Enter property images URL" />
                         </div>
-                        <div className="md:col-span-2">
-                          <Label>Property Notes</Label>
-                          <textarea
-                            className="h-20 w-full rounded-md border border-border bg-white px-3 py-2"
-                            value={propertyData.propertyNotes || ''}
-                            onChange={(e) => setPropertyData({ ...propertyData, propertyNotes: e.target.value || null })}
-                            placeholder="Enter property notes"
-                          />
+                      <div className="md:col-span-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>Location Coordinates</Label>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-2"
+                            onClick={() => setShowMapPicker(true)}
+                          >
+                            <MapPin className="w-4 h-4" />
+                            {propertyData.latitude ? "Change on Map" : "Select on Map"}
+                          </Button>
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs">Latitude</Label>
+                            <Input 
+                              type="number" 
+                              step="any"
+                              value={propertyData.latitude || ''} 
+                              onChange={(e) => setPropertyData({ ...propertyData, latitude: parseFloat(e.target.value) || null })} 
+                              placeholder="-37.8368"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Longitude</Label>
+                            <Input 
+                              type="number" 
+                              step="any"
+                              value={propertyData.longitude || ''} 
+                              onChange={(e) => setPropertyData({ ...propertyData, longitude: parseFloat(e.target.value) || null })} 
+                              placeholder="144.928"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label>Property Notes</Label>
+                        <textarea
+                          className="h-20 w-full rounded-md border border-border bg-white px-3 py-2 text-sm"
+                          value={propertyData.propertyNotes || ''}
+                          onChange={(e) => setPropertyData({ ...propertyData, propertyNotes: e.target.value || null })}
+                          placeholder="Enter property notes"
+                        />
+                      </div>
                       </div>
                     </div>
                   </div>
@@ -542,20 +618,28 @@ export default function CreatePropertyWizard() {
                 {/* Structure step removed; handled in layout */}
 
                 {activeStep === "landlord" && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <Label>Name</Label>
-                      <Input value={landlord.name} onChange={(e) => setLandlord({ ...landlord, name: e.target.value })} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <Label>Name</Label>
+                        <Input value={landlord.name} onChange={(e) => setLandlord({ ...landlord, name: e.target.value })} />
+                      </div>
+                      <div>
+                        <Label>Email</Label>
+                        <Input 
+                          type="email" 
+                          value={landlord.email} 
+                          onChange={(e) => setLandlord({ ...landlord, email: e.target.value })}
+                          className={landlord.email && !validateEmail(landlord.email) ? "border-destructive focus-visible:ring-destructive" : ""}
+                        />
+                        {landlord.email && !validateEmail(landlord.email) && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium italic">Please enter a valid email address</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label>Phone</Label>
+                        <Input value={landlord.phone} onChange={(e) => setLandlord({ ...landlord, phone: e.target.value })} />
+                      </div>
                     </div>
-                    <div>
-                      <Label>Email</Label>
-                      <Input type="email" value={landlord.email} onChange={(e) => setLandlord({ ...landlord, email: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Phone</Label>
-                      <Input value={landlord.phone} onChange={(e) => setLandlord({ ...landlord, phone: e.target.value })} />
-                    </div>
-                  </div>
                 )}
 
                 {activeStep === "tenancy" && (
@@ -566,7 +650,15 @@ export default function CreatePropertyWizard() {
                     </div>
                     <div>
                       <Label>Email</Label>
-                      <Input type="email" value={tenancy.email} onChange={(e) => setTenancy({ ...tenancy, email: e.target.value })} />
+                      <Input 
+                        type="email" 
+                        value={tenancy.email} 
+                        onChange={(e) => setTenancy({ ...tenancy, email: e.target.value })} 
+                        className={tenancy.email && !validateEmail(tenancy.email) ? "border-destructive focus-visible:ring-destructive" : ""}
+                      />
+                      {tenancy.email && !validateEmail(tenancy.email) && (
+                        <p className="text-[10px] text-destructive mt-1 font-medium italic">Please enter a valid email address</p>
+                      )}
                     </div>
                     <div>
                       <Label>Mobile</Label>
@@ -672,7 +764,11 @@ export default function CreatePropertyWizard() {
                                 value={newTenant.email}
                                 onChange={(e) => setNewTenant({ ...newTenant, email: e.target.value })}
                                 placeholder="Enter email"
+                                className={newTenant.email && !validateEmail(newTenant.email) ? "border-destructive focus-visible:ring-destructive" : ""}
                               />
+                              {newTenant.email && !validateEmail(newTenant.email) && (
+                                <p className="text-[10px] text-destructive mt-1 font-medium italic">Please enter a valid email address</p>
+                              )}
                             </div>
                             <div>
                               <Label>Phone</Label>
@@ -729,7 +825,6 @@ export default function CreatePropertyWizard() {
                             value={Number(propertyData.propertyLayoutId || 0)}
                             onChange={(e) => {
                               const value = parseInt(e.target.value);
-                              console.log('Layout selection changed:', value, 'Type:', typeof value);
                               setPropertyData({ ...propertyData, propertyLayoutId: value ? String(value) : '' });
                             }}
                           >
@@ -745,6 +840,37 @@ export default function CreatePropertyWizard() {
                           </p>
                         </div>
                       </div>
+
+                      {selectedLayoutDetails && (
+                        <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Info className="w-4 h-4 text-primary" />
+                            <h4 className="font-semibold text-sm">Layout Details: {selectedLayoutDetails.layoutName}</h4>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {selectedLayoutDetails.areas?.map((area: any) => (
+                              <div key={area.id} className="bg-card border border-border p-3 rounded-md shadow-sm">
+                                <p className="text-sm font-bold text-primary mb-1">{area.name}</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {area.items?.map((item: any) => (
+                                    <span key={item.id} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-sm border border-border/50">
+                                      {item.name}
+                                    </span>
+                                  ))}
+                                  {(!area.items || area.items.length === 0) && (
+                                    <span className="text-[10px] text-muted-foreground italic">No items</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {(!selectedLayoutDetails.areas || selectedLayoutDetails.areas.length === 0) && (
+                            <p className="text-sm text-muted-foreground italic bg-muted/30 p-4 rounded-md text-center border border-dashed">
+                              This layout has no predefined areas or items.
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -799,6 +925,8 @@ export default function CreatePropertyWizard() {
                         <div><strong>Alarm Code:</strong> {propertyData.alarmCode || "N/A"}</div>
                         <div><strong>Property Images URL:</strong> {propertyData.propertyImages || "N/A"}</div>
                         <div><strong>Property Notes:</strong> {propertyData.propertyNotes || "N/A"}</div>
+                        <div><strong>Latitude:</strong> {propertyData.latitude || "-"}</div>
+                        <div><strong>Longitude:</strong> {propertyData.longitude || "-"}</div>
                         <div><strong>Status:</strong> Active (Default)</div>
                       </div>
                     </div>
@@ -841,6 +969,151 @@ export default function CreatePropertyWizard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Map Picker Modal */}
+      {showMapPicker && (
+        <MapPickerModal 
+          onClose={() => setShowMapPicker(false)}
+          onSelect={(lat, lng) => {
+            setPropertyData({ ...propertyData, latitude: lat, longitude: lng });
+            setShowMapPicker(false);
+          }}
+          initialLat={propertyData.latitude || -37.8368}
+          initialLng={propertyData.longitude || 144.928}
+        />
+      )}
+
+      {/* Close Confirmation Modal */}
+      <Modal 
+        isOpen={showCloseConfirm} 
+        onClose={() => setShowCloseConfirm(false)}
+        title="Unsaved Changes"
+        widthClassName="max-w-md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 text-destructive">
+            <Info className="w-6 h-6" />
+            <p className="font-semibold">Confirm Exit</p>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Are you sure you want to close? All unsaved changes will be lost and the form will be reset.
+          </p>
+          <div className="flex gap-3 justify-end mt-6">
+            <Button variant="outline" onClick={() => setShowCloseConfirm(false)}>
+              Stay and Edit
+            </Button>
+            <Button variant="destructive" onClick={performClose}>
+              Discard Changes
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+// Map Picker Component using Leaflet CDN
+function MapPickerModal({ onClose, onSelect, initialLat, initialLng }: { onClose: () => void, onSelect: (lat: number, lng: number) => void, initialLat: number, initialLng: number }) {
+  const mapRef = React.useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    // Load Leaflet CSS
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+
+    // Load Leaflet JS
+    if (!document.getElementById('leaflet-js')) {
+      const script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => setIsLoaded(true);
+      document.head.appendChild(script);
+    } else {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!isLoaded || !mapRef.current) return;
+
+    const L = (window as any).L;
+    if (!L) return;
+
+    // Fix default icon issue with Leaflet and webpack/next
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+
+    const map = L.map(mapRef.current).setView([initialLat, initialLng], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+
+    map.on('click', (e: any) => {
+      const { lat, lng } = e.latlng;
+      marker.setLatLng([lat, lng]);
+    });
+
+    const handleConfirm = () => {
+      const pos = marker.getLatLng();
+      onSelect(pos.lat, pos.lng);
+    };
+
+    (window as any).confirmMapSelection = handleConfirm;
+
+    return () => {
+      map.remove();
+    };
+  }, [isLoaded, initialLat, initialLng]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            <h3 className="font-bold text-lg">Select Property Location</h3>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+        
+        <div className="flex-1 relative min-h-[400px]">
+          {!isLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm text-muted-foreground font-medium">Loading Map...</p>
+              </div>
+            </div>
+          )}
+          <div ref={mapRef} className="w-full h-full" style={{ minHeight: '400px' }} />
+        </div>
+
+        <div className="p-4 border-t border-border bg-muted/30 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <Info className="w-3 h-3" />
+            Click on map or drag marker to select coordinates
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button onClick={() => (window as any).confirmMapSelection()}>Confirm Location</Button>
+          </div>
+        </div>
       </div>
     </div>
   );

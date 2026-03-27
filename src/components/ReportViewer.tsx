@@ -102,18 +102,106 @@ export default function ReportViewer({
   editable?: boolean;
   onSave?: (changed: any) => Promise<void>;
 }) {
+  React.useEffect(() => {
+    // Handle initial hash scrolling after data is likely rendered
+    const hash = window.location.hash;
+    if (hash) {
+      setTimeout(() => {
+        const id = hash.replace("#", "");
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+          // Highlight effect
+          if (id.startsWith("photo-")) {
+            element.classList.add("ring-4", "ring-primary", "ring-offset-4", "scale-105");
+            setTimeout(() => {
+              element.classList.remove("ring-4", "ring-primary", "ring-offset-4", "scale-105");
+            }, 3000);
+          }
+        }
+      }, 500);
+    }
+  }, []);
+
   const areaCount = report.areas?.length || 0;
   const totalPages = 4 + areaCount;
+
+  const defaultGuidelines = {
+    howToComplete: [
+      "Complete and sign three copies (or one electronic copy) as landlord or agent.",
+      "Give two copies to the tenant before or when signing the agreement.",
+      "Inspect premises and mark each item \"Y\" or \"N\" in the condition columns.",
+      "Tenant must return one signed copy within 7 days.",
+    ],
+    importantInformation: [
+      "This report records the premises condition at tenancy commencement and may be used as evidence.",
+      "At tenancy end, the premises condition will be compared to this original report.",
+      "Complete a condition report whether or not a rental bond is paid.",
+    ],
+  };
+
+  const australiaGuidelinesByState: Record<string, { howToComplete: string[]; importantInformation: string[] }> = {
+    NSW: {
+      howToComplete: [
+        "Landlord/agent completes this condition report before or at the start of tenancy.",
+        "Provide two copies to the tenant within the required start-of-tenancy period.",
+        "Tenant checks each item and records agreement/disagreement with condition notes.",
+        "Tenant returns one signed copy to the landlord/agent within 7 days.",
+      ],
+      importantInformation: [
+        "This report may be used as evidence for bond claims at the end of tenancy.",
+        "If tenant and landlord/agent disagree, both comments should be kept on the report.",
+        "Keep a signed copy safely with the tenancy records.",
+      ],
+    },
+    VIC: {
+      howToComplete: [
+        "Rental provider/agent prepares the condition report before tenant occupation.",
+        "Give the tenant the report at the start of the rental agreement.",
+        "Tenant reviews, adds comments where needed, and signs the report.",
+        "Tenant returns the signed report within the required timeframe.",
+      ],
+      importantInformation: [
+        "The condition report is used to compare property condition at move-out.",
+        "Document all pre-existing wear and damage to avoid later disputes.",
+        "Retain the final signed report as part of rental records.",
+      ],
+    },
+  };
+
+  const normalize = (value?: string | null) => (value || "").toString().trim().toUpperCase();
+  const rawCountry = report?.country || report?.propertyCountry || report?.jurisdictionCountry || "";
+  const rawState = report?.state || report?.propertyState || report?.jurisdiction || "";
+  const isAustralia = ["AU", "AUS", "AUSTRALIA"].includes(normalize(rawCountry));
+  const stateKey = normalize(rawState);
+
+  const selectedGuidelines = isAustralia
+    ? (australiaGuidelinesByState[stateKey] || defaultGuidelines)
+    : defaultGuidelines;
 
   let pageCounter = 0;
   const nextPage = () => ++pageCounter;
 
   // Collect all images
-  const allImages: { area: string; item: string; imgId: number; comment?: string }[] = [];
+  const allImages: { area: string; item: string; imgId: number; comment?: string; url?: string }[] = [];
   report.areas?.forEach((area: any) => {
     area.items?.forEach((item: any) => {
+      // Direct images array (legacy/mock)
       item.images?.forEach((img: number) => {
         allImages.push({ area: area.name, item: item.name, imgId: img, comment: item.comments });
+      });
+      // New mediaItems structure (dynamic)
+      item.mediaItems?.forEach((media: any) => {
+        // Only push if not already added by legacy logic (to avoid duplicates)
+        if (!allImages.find(x => x.imgId === media.id)) {
+           allImages.push({ 
+             area: area.name, 
+             item: item.name, 
+             imgId: media.id, 
+             comment: media.comments || item.comments, 
+             url: media.url 
+           });
+        }
       });
     });
   });
@@ -268,12 +356,7 @@ export default function ReportViewer({
                     <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-slate-700">How to Complete</p>
                   </div>
                   <ol className="space-y-2.5 list-none">
-                    {[
-                      "Complete and sign three copies (or one electronic copy) as landlord or agent.",
-                      "Give two copies to the tenant before or when signing the agreement.",
-                      "Inspect premises and mark each item \"Y\" or \"N\" in the condition columns.",
-                      "Tenant must return one signed copy within 7 days."
-                    ].map((text, i) => (
+                    {selectedGuidelines.howToComplete.map((text, i) => (
                       <li key={i} className="flex gap-3 items-start">
                         <span className="flex-shrink-0 w-5 h-5 rounded bg-white border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shadow-sm mt-px">{i + 1}</span>
                         <p className="text-[12px] text-slate-500 leading-relaxed">{text}</p>
@@ -288,11 +371,7 @@ export default function ReportViewer({
                     <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-slate-700">Important Information</p>
                   </div>
                   <ul className="space-y-2.5 list-none">
-                    {[
-                      "This report records the premises condition at tenancy commencement and may be used as evidence.",
-                      "At tenancy end, the premises condition will be compared to this original report.",
-                      "Complete a condition report whether or not a rental bond is paid."
-                    ].map((text, i) => (
+                    {selectedGuidelines.importantInformation.map((text, i) => (
                       <li key={i} className="flex gap-3 items-start">
                         <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm mt-px">
                           <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />
@@ -469,16 +548,24 @@ export default function ReportViewer({
                   <div
                     key={`${img.area}-${img.item}-${img.imgId}`}
                     id={`photo-${img.imgId}`}
-                    className="rounded-xl border border-slate-200 overflow-hidden scroll-mt-6 group hover:shadow-lg hover:border-slate-300 transition-all duration-300"
+                    className="rounded-xl border border-slate-200 overflow-hidden scroll-mt-6 group hover:shadow-lg hover:border-slate-300 transition-all duration-500"
                   >
-                    <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 relative flex items-center justify-center">
-                      <div className="text-center opacity-60 group-hover:opacity-80 transition-opacity">
-                        <svg className="w-8 h-8 text-slate-300 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                        <p className="text-[11px] text-slate-400 font-mono">#{img.imgId}</p>
-                      </div>
+                    <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 relative flex items-center justify-center overflow-hidden">
+                      {img.url ? (
+                        <img 
+                          src={img.url} 
+                          alt={`${img.area} - ${img.item}`}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="text-center opacity-60 group-hover:opacity-80 transition-opacity">
+                          <svg className="w-8 h-8 text-slate-300 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                          <p className="text-[11px] text-slate-400 font-mono">#{img.imgId}</p>
+                        </div>
+                      )}
                       {img.comment && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-4 py-3 pt-6">
-                          <p className="text-white text-[11px] leading-snug font-medium">{img.comment}</p>
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-4 py-3 pt-8 transform translate-y-1 group-hover:translate-y-0 transition-transform">
+                          <p className="text-white text-[11px] leading-snug font-medium line-clamp-2">{img.comment}</p>
                         </div>
                       )}
                     </div>

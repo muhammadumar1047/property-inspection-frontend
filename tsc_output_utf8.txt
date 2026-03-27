@@ -1,0 +1,18 @@
+﻿src/components/properties/StructureEditor.tsx(21,33): error TS2339: Property 'getAreas' does not exist on type '{ getPaged: (pageNumber: number, pageSize: number) => Promise<{ data: PropertyLayoutResponse[]; page: number; pageSize: number; totalCount: number; totalPages: number; }>; ... 4 more ...; delete: (id: string) => Promise<...>; }'.
+src/components/properties/StructureEditor.tsx(24,54): error TS7006: Parameter 'ar' implicitly has an 'any' type.
+src/components/properties/StructureEditor.tsx(24,89): error TS2339: Property 'getItems' does not exist on type '{ getPaged: (pageNumber: number, pageSize: number) => Promise<{ data: PropertyLayoutResponse[]; page: number; pageSize: number; totalCount: number; totalPages: number; }>; ... 4 more ...; delete: (id: string) => Promise<...>; }'.
+src/components/properties/StructureEditor.tsx(26,25): error TS7031: Binding element 'id' implicitly has an 'any' type.
+src/components/properties/StructureEditor.tsx(26,29): error TS7031: Binding element 'items' implicitly has an 'any' type.
+src/components/properties/StructureEditor.tsx(37,37): error TS2339: Property 'createArea' does not exist on type '{ getPaged: (pageNumber: number, pageSize: number) => Promise<{ data: PropertyLayoutResponse[]; page: number; pageSize: number; totalCount: number; totalPages: number; }>; ... 4 more ...; delete: (id: string) => Promise<...>; }'.
+src/components/properties/StructureEditor.tsx(45,21): error TS2339: Property 'createItem' does not exist on type '{ getPaged: (pageNumber: number, pageSize: number) => Promise<{ data: PropertyLayoutResponse[]; page: number; pageSize: number; totalCount: number; totalPages: number; }>; ... 4 more ...; delete: (id: string) => Promise<...>; }'.
+src/components/PropertiesTable.tsx(906,30): error TS2345: Argument of type '(prev: Record<string, InspectionResponse[]>) => { [x: string]: InspectionResponse[] | (boolean | InspectionResponse)[]; }' is not assignable to parameter of type 'SetStateAction<Record<string, InspectionResponse[]>>'.
+  Type '(prev: Record<string, InspectionResponse[]>) => { [x: string]: InspectionResponse[] | (boolean | InspectionResponse)[]; }' is not assignable to type '(prevState: Record<string, InspectionResponse[]>) => Record<string, InspectionResponse[]>'.
+    Type '{ [x: string]: InspectionResponse[] | (boolean | InspectionResponse)[]; }' is not assignable to type 'Record<string, InspectionResponse[]>'.
+      'string' index signatures are incompatible.
+        Type 'InspectionResponse[] | (boolean | InspectionResponse)[]' is not assignable to type 'InspectionResponse[]'.
+          Type '(boolean | InspectionResponse)[]' is not assignable to type 'InspectionResponse[]'.
+            Type 'boolean | InspectionResponse' is not assignable to type 'InspectionResponse'.
+              Type 'boolean' is not assignable to type 'InspectionResponse'.
+src/contexts/AuthContext.tsx(87,9): error TS2353: Object literal may only specify known properties, and 'IsWebClient' does not exist in type 'LoginDto'.
+src/lib/api/reference.ts(10,5): error TS2322: Type '{ countryId: any; name: any; isoCode: any; isoCode2: any; }[]' is not assignable to type 'CountryDto[]'.
+  Type '{ countryId: any; name: any; isoCode: any; isoCode2: any; }' is missing the following properties from type 'CountryDto': id, isoAlpha3, isoAlpha2

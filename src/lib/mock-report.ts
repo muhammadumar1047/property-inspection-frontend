@@ -4,7 +4,7 @@ export const MOCK_INSPECTION_REPORT = {
   agencyAddress: "140 William Street, Woolloomooloo VIC 2011",
   agencyPhone: "02 9264 6299",
   inspectorName: "Frank Lyons",
-  reportTitle: "INGOING CONDITION REPORT",
+  reportTitle: "ENTRY CONDITION REPORT",
   regulation: "Residential Tenancy Regulation",
   jurisdiction: "New South Wales - 2010",
   leaseStartDate: "2021-09-16",

@@ -12,14 +12,22 @@ import { layoutApi } from "@/lib/api/propertyLayout";
 import { userApi } from "@/lib/api/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { InspectionFrequencyType, PropertyType, type CreatePropertyRequest, RentFrequency } from "@/types/api";
+import { MapPin, Info, X, Building2, Bell, User, LogOut } from "lucide-react";
+import Modal from "@/components/ui/Modal";
+
+const validateEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
 type WizardStep = "property" | "landlord" | "tenancy" | "layout" | "review";
 
 interface PropertyCreationProps {
   onPropertyCreated?: () => void;
+  propertyId?: string;
+  onClose?: () => void;
 }
 
-const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }) => {
+const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated, propertyId, onClose }) => {
   const [activeStep, setActiveStep] = useState<WizardStep>("property");
   const [states, setStates] = useState<any[]>([]);
   const [propertyTypes, setPropertyTypes] = useState<any[]>([]);
@@ -27,6 +35,8 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
   const [layouts, setLayouts] = useState<any[]>([]);
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const isEdit = !!propertyId;
 
   // Accumulated data across steps (canonical DTO shape)
   const [propertyData, setPropertyData] = useState<CreatePropertyRequest>({
@@ -71,6 +81,10 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
     phone: "",
   });
 
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [selectedLayoutDetails, setSelectedLayoutDetails] = useState<any>(null);
+
   const STORAGE_KEY = "pc360:create-property-wizard";
   const { effectiveAgencyId } = useAuth();
 
@@ -112,9 +126,10 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
           if (saved.tenants) setTenants(saved.tenants);
         }
       }
-    } catch {}
+    } catch { }
 
     const load = async () => {
+      setIsLoading(true);
       try {
         const [agency, typesData, layoutsData, usersPage] = await Promise.all([
           effectiveAgencyId ? agencyApi.getById(String(effectiveAgencyId)) : Promise.resolve(null as any),
@@ -127,26 +142,105 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
         const statesData = countryId ? await referenceApi.getStatesByCountry(countryId) : await referenceApi.getStates();
         setStates(statesData);
         setPropertyTypes(typesData || []);
-        debugger;
         setLayouts(layoutsData);
         const mgrs = usersPage?.data || [];
         setManagers(mgrs);
-        setPropertyData((prev) => ({
-          ...prev,
-          type: (typesData?.[0]?.propertyTypeId as number | undefined) ? (typesData?.[0]?.propertyTypeId as PropertyType) : prev.type,
-          stateLookupId: String(statesData?.[0]?.id ?? prev.stateLookupId ?? ''),
-          propertyManagerId: String(mgrs?.[0]?.id ?? (mgrs?.[0] as any)?.userId ?? (mgrs?.[0] as any)?.UserId ?? prev.propertyManagerId ?? ''),
-          agencyId: effectiveAgencyId ? String(effectiveAgencyId) : prev.agencyId ?? null,
-        }));
-    } catch (e: any) {
-      setError(getErrorMessage(e, "Failed to load reference data"));
+
+        if (isEdit && propertyId) {
+          try {
+            const prop = await propertyApi.getById(propertyId);
+            setPropertyData({
+              agencyId: prop.agencyId ? String(prop.agencyId) : (effectiveAgencyId ? String(effectiveAgencyId) : null),
+              name: prop.name || "",
+              type: prop.type,
+              propertyManagerId: String(prop.propertyManagerId || ""),
+              address1: prop.address1 || "",
+              address2: prop.address2 || null,
+              cityOrSuburb: prop.cityOrSuburb || "",
+              stateLookupId: String(prop.stateLookupId || ""),
+              postcode: prop.postcode || "",
+              inspectionFrequencyType: prop.inspectionFrequencyType,
+              inspectionFrequencyNumber: prop.inspectionFrequencyNumber,
+              keyNo: prop.keyNo || null,
+              alarmCode: prop.alarmCode || null,
+              propertyNotes: prop.propertyNotes || null,
+              propertyImages: prop.propertyImages || null,
+              propertyLayoutId: prop.propertyLayoutId ? String(prop.propertyLayoutId) : "",
+              latitude: prop.latitude || null,
+              longitude: prop.longitude || null,
+              landlords: prop.landlords || [],
+              tenancies: prop.tenancies || [],
+            } as any);
+
+            if (prop.landlords?.[0]) {
+              setLandlord({
+                name: prop.landlords[0].name || "",
+                email: prop.landlords[0].email || "",
+                phone: prop.landlords[0].phone || "",
+              });
+            }
+
+            const activeTenancy = prop.tenancies?.find(t => t.isActive) || prop.tenancies?.[0];
+            if (activeTenancy) {
+              setTenancy({
+                fullName: activeTenancy.fullName || "",
+                email: activeTenancy.email || "",
+                mobile: activeTenancy.mobile || "",
+                leaseStartDate: activeTenancy.leaseStartDate ? new Date(activeTenancy.leaseStartDate).toISOString().slice(0, 16) : "",
+                leaseEndDate: activeTenancy.leaseEndDate ? new Date(activeTenancy.leaseEndDate).toISOString().slice(0, 16) : "",
+                currentRentAmount: activeTenancy.currentRentAmount,
+                rentFrequency: activeTenancy.rentFrequency as any,
+                originalLeaseDate: activeTenancy.originalLeaseDate ? new Date(activeTenancy.originalLeaseDate).toISOString().slice(0, 16) : "",
+                newInspectionDate: activeTenancy.newInspectionDate ? new Date(activeTenancy.newInspectionDate).toISOString().slice(0, 16) : "",
+              });
+              setTenants(activeTenancy.tenants?.map(t => ({
+                firstName: t.firstName || "",
+                lastName: t.lastName || "",
+                email: t.email || "",
+                phone: t.phone || "",
+              })) || []);
+            }
+          } catch (e: any) {
+            setError(getErrorMessage(e, "Failed to load property data"));
+          }
+        } else {
+          setPropertyData((prev) => ({
+            ...prev,
+            type: (typesData?.[0]?.propertyTypeId as number | undefined) ? (typesData?.[0]?.propertyTypeId as PropertyType) : prev.type,
+            stateLookupId: String(statesData?.[0]?.id ?? prev.stateLookupId ?? ''),
+            propertyManagerId: String(mgrs?.[0]?.id ?? (mgrs?.[0] as any)?.userId ?? (mgrs?.[0] as any)?.UserId ?? prev.propertyManagerId ?? ''),
+            agencyId: effectiveAgencyId ? String(effectiveAgencyId) : prev.agencyId ?? null,
+          }));
+        }
+      } catch (e: any) {
+        setError(getErrorMessage(e, "Failed to load reference data"));
+      } finally {
+        setIsLoading(false);
       }
     };
     load();
-  }, []);
+  }, [effectiveAgencyId]);
+
+  useEffect(() => {
+    const fetchLayoutDetails = async () => {
+      if (propertyData.propertyLayoutId) {
+        try {
+          const details = await layoutApi.getById(propertyData.propertyLayoutId);
+          setSelectedLayoutDetails(details);
+        } catch (err) {
+          console.error("Failed to fetch layout details", err);
+          setSelectedLayoutDetails(null);
+        }
+      } else {
+        setSelectedLayoutDetails(null);
+      }
+    };
+    fetchLayoutDetails();
+  }, [propertyData.propertyLayoutId]);
 
   // Persist to storage on meaningful state changes
   useEffect(() => {
+    if (isEdit) return; // Don't persist to storage in edit mode
     try {
       if (typeof window !== "undefined") {
         const payload = {
@@ -157,8 +251,8 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
       }
-    } catch {}
-  }, [activeStep, propertyData, createdPropertyId, tenants]);
+    } catch { }
+  }, [activeStep, propertyData, createdPropertyId, tenants, isEdit]);
 
   const steps: { id: WizardStep; title: string; description: string }[] = [
     { id: "property", title: "Property Information", description: "Basic property details" },
@@ -181,12 +275,14 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
       );
     }
     if (activeStep === "landlord") {
-      return landlord.name.trim() && landlord.email.trim();
+      return landlord.name.trim() && validateEmail(landlord.email);
     }
     if (activeStep === "tenancy") {
+      const allTenantsValid = tenants.every(t => validateEmail(t.email));
       return (
         tenancy.fullName.trim() &&
-        tenancy.email.trim() &&
+        validateEmail(tenancy.email) &&
+        allTenantsValid &&
         tenancy.leaseStartDate &&
         tenancy.leaseEndDate &&
         typeof tenancy.currentRentAmount === "number"
@@ -278,8 +374,12 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
           ],
         };
 
-        await propertyApi.create(payload as any);
-        try { localStorage.removeItem(STORAGE_KEY); } catch {}
+        if (isEdit && propertyId) {
+          await propertyApi.update(propertyId, payload as any);
+        } else {
+          await propertyApi.create(payload as any);
+          try { localStorage.removeItem(STORAGE_KEY); } catch { }
+        }
         onPropertyCreated?.();
       }
     } catch (e: any) {
@@ -296,6 +396,38 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
     if (idx > 0) setActiveStep(order[idx - 1]);
   };
 
+  const handleClose = () => {
+    const hasPropertyChanges = propertyData.address1.trim() !== "" ||
+      propertyData.cityOrSuburb.trim() !== "" ||
+      propertyData.postcode.trim() !== "";
+    const hasLandlordChanges = landlord.name.trim() !== "" ||
+      landlord.email.trim() !== "";
+    const hasTenancyChanges = tenancy.fullName.trim() !== "" ||
+      tenancy.email.trim() !== "";
+
+    if (hasPropertyChanges || hasLandlordChanges || hasTenancyChanges || tenants.length > 0) {
+      setShowCloseConfirm(true);
+    } else {
+      performClose();
+    }
+  };
+
+  const performClose = () => {
+    try {
+      if (typeof window !== "undefined" && !isEdit) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch { }
+    
+    if (onClose) {
+      onClose();
+    } else if (onPropertyCreated) {
+      onPropertyCreated();
+    } else {
+      window.history.back();
+    }
+  };
+
   const StepIndicator = () => {
     const currentIdx = steps.findIndex((x) => x.id === activeStep);
     const progressPercent = ((currentIdx + 1) / steps.length) * 100;
@@ -310,23 +442,48 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Create Property</h2>
-          <p className="text-sm text-muted-foreground mt-1">Complete all steps to finish property setup</p>
+      <div className="flex justify-between items-center bg-card border border-border p-4 rounded-lg shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+            <Building2 className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">{isEdit ? "Edit Property" : "Create Property"}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5 font-medium">{isEdit ? "Update logical sections of the property data" : "Complete all steps to finish property setup"}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
+             <Bell className="w-5 h-5" />
+          </Button> */}
+          {/* <div className="h-6 w-px bg-border mx-1" /> */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClose}
+            className="rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Property Creation Wizard</CardTitle>
+          <CardTitle>{isEdit ? "Property Edit Wizard" : "Property Creation Wizard"}</CardTitle>
           <CardDescription>Step {steps.findIndex(s => s.id === activeStep) + 1} of {steps.length}: {steps.find(s => s.id === activeStep)?.title}</CardDescription>
         </CardHeader>
         <CardContent>
           <StepIndicator />
           {error && <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">{error}</div>}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[60vh]">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-muted-foreground font-medium">Fetching property data...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-[60vh]">
             <aside className="lg:col-span-4">
               <div className="bg-card border border-border rounded-lg p-4 pl-6 sticky top-4">
                 <div className="absolute left-4 top-4 bottom-4 w-px bg-border" />
@@ -339,13 +496,12 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                       <li key={s.id} className="relative flex items-start gap-3">
                         <button
                           type="button"
-                          className={`absolute -left-6 top-0 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border shadow-sm ${
-                            isActive
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : isCompleted
+                          className={`absolute -left-6 top-0 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border shadow-sm ${isActive
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : isCompleted
                               ? "bg-primary/10 text-primary border-primary/30"
                               : "bg-muted text-muted-foreground border-border"
-                          }`}
+                            }`}
                           onClick={() => {
                             if (i <= currentIdx) setActiveStep(s.id);
                           }}
@@ -372,7 +528,7 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label>Address *</Label>
-                  <Input value={propertyData.address1} onChange={(e) => setPropertyData({ ...propertyData, address1: e.target.value })} placeholder="Enter address" />
+                        <Input value={propertyData.address1} onChange={(e) => setPropertyData({ ...propertyData, address1: e.target.value })} placeholder="Enter address" />
                       </div>
                       <div>
                         <Label>Address 2</Label>
@@ -474,11 +630,50 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                         <Input value={propertyData.propertyImages || ''} onChange={(e) => setPropertyData({ ...propertyData, propertyImages: e.target.value || null })} placeholder="Enter property images URL" />
                       </div>
                       <div className="md:col-span-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>Location Coordinates</Label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                            onClick={() => setShowMapPicker(true)}
+                          >
+                            <MapPin className="w-4 h-4" />
+                            {propertyData.latitude ? "Change on Map" : "Select on Map"}
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Latitude</Label>
+                            <Input
+                              type="number"
+                              step="any"
+                              value={propertyData.latitude || ''}
+                              onChange={(e) => setPropertyData({ ...propertyData, latitude: parseFloat(e.target.value) || null })}
+                              placeholder="-37.8368"
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Longitude</Label>
+                            <Input
+                              type="number"
+                              step="any"
+                              value={propertyData.longitude || ''}
+                              onChange={(e) => setPropertyData({ ...propertyData, longitude: parseFloat(e.target.value) || null })}
+                              placeholder="144.928"
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="md:col-span-2 border-t border-border pt-4 mt-2">
                         <Label>Property Notes</Label>
-                        <textarea 
-                          className="h-20 w-full rounded-md border border-border bg-white px-3 py-2" 
-                          value={propertyData.propertyNotes || ''} 
-                          onChange={(e) => setPropertyData({ ...propertyData, propertyNotes: e.target.value || null })} 
+                        <textarea
+                          className="h-20 w-full rounded-md border border-border bg-white px-3 py-2 text-sm"
+                          value={propertyData.propertyNotes || ''}
+                          onChange={(e) => setPropertyData({ ...propertyData, propertyNotes: e.target.value || null })}
                           placeholder="Enter property notes"
                         />
                       </div>
@@ -498,7 +693,16 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                       </div>
                       <div>
                         <Label>Email *</Label>
-                        <Input type="email" value={landlord.email} onChange={(e) => setLandlord({ ...landlord, email: e.target.value })} placeholder="Enter email address" />
+                        <Input
+                          type="email"
+                          value={landlord.email}
+                          onChange={(e) => setLandlord({ ...landlord, email: e.target.value })}
+                          placeholder="Enter email address"
+                          className={landlord.email && !validateEmail(landlord.email) ? "border-destructive focus-visible:ring-destructive" : ""}
+                        />
+                        {landlord.email && !validateEmail(landlord.email) && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium italic">Please enter a valid email address</p>
+                        )}
                       </div>
                       <div>
                         <Label>Phone</Label>
@@ -520,7 +724,16 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                       </div>
                       <div>
                         <Label>Email *</Label>
-                        <Input type="email" value={tenancy.email} onChange={(e) => setTenancy({ ...tenancy, email: e.target.value })} placeholder="Enter email address" />
+                        <Input
+                          type="email"
+                          value={tenancy.email}
+                          onChange={(e) => setTenancy({ ...tenancy, email: e.target.value })}
+                          placeholder="Enter email address"
+                          className={tenancy.email && !validateEmail(tenancy.email) ? "border-destructive focus-visible:ring-destructive" : ""}
+                        />
+                        {tenancy.email && !validateEmail(tenancy.email) && (
+                          <p className="text-[10px] text-destructive mt-1 font-medium italic">Please enter a valid email address</p>
+                        )}
                       </div>
                       <div>
                         <Label>Mobile</Label>
@@ -567,9 +780,9 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                   <div className="bg-muted/50 p-6 rounded-lg">
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="text-lg font-semibold text-foreground">Additional Tenants</h4>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         size="sm"
                         onClick={() => setShowAddTenantForm(!showAddTenantForm)}
                       >
@@ -586,9 +799,9 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                               <span className="text-muted-foreground ml-2">• {tenant.email}</span>
                               {tenant.phone && <span className="text-muted-foreground ml-2">• {tenant.phone}</span>}
                             </div>
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
+                            <Button
+                              type="button"
+                              variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveTenant(index)}
                               className="text-red-600 hover:text-red-700"
@@ -606,50 +819,54 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div>
                             <Label>First Name *</Label>
-                            <Input 
-                              value={newTenant.firstName} 
-                              onChange={(e) => setNewTenant({ ...newTenant, firstName: e.target.value })} 
+                            <Input
+                              value={newTenant.firstName}
+                              onChange={(e) => setNewTenant({ ...newTenant, firstName: e.target.value })}
                               placeholder="Enter first name"
                             />
                           </div>
                           <div>
                             <Label>Last Name *</Label>
-                            <Input 
-                              value={newTenant.lastName} 
-                              onChange={(e) => setNewTenant({ ...newTenant, lastName: e.target.value })} 
+                            <Input
+                              value={newTenant.lastName}
+                              onChange={(e) => setNewTenant({ ...newTenant, lastName: e.target.value })}
                               placeholder="Enter last name"
                             />
                           </div>
                           <div>
                             <Label>Email *</Label>
-                            <Input 
-                              type="email" 
-                              value={newTenant.email} 
-                              onChange={(e) => setNewTenant({ ...newTenant, email: e.target.value })} 
+                            <Input
+                              type="email"
+                              value={newTenant.email}
+                              onChange={(e) => setNewTenant({ ...newTenant, email: e.target.value })}
                               placeholder="Enter email"
+                              className={newTenant.email && !validateEmail(newTenant.email) ? "border-destructive focus-visible:ring-destructive" : ""}
                             />
+                            {newTenant.email && !validateEmail(newTenant.email) && (
+                              <p className="text-[10px] text-destructive mt-1 font-medium italic">Please enter a valid email address</p>
+                            )}
                           </div>
                           <div>
                             <Label>Phone</Label>
-                            <Input 
-                              value={newTenant.phone} 
-                              onChange={(e) => setNewTenant({ ...newTenant, phone: e.target.value })} 
+                            <Input
+                              value={newTenant.phone}
+                              onChange={(e) => setNewTenant({ ...newTenant, phone: e.target.value })}
                               placeholder="Enter phone number"
                             />
                           </div>
                         </div>
                         <div className="flex gap-2 mt-3">
-                          <Button 
-                            type="button" 
+                          <Button
+                            type="button"
                             size="sm"
                             onClick={handleAddTenant}
                             disabled={!newTenant.firstName.trim() || !newTenant.lastName.trim() || !newTenant.email.trim()}
                           >
                             Add Tenant
                           </Button>
-                          <Button 
-                            type="button" 
-                            variant="outline" 
+                          <Button
+                            type="button"
+                            variant="outline"
                             size="sm"
                             onClick={() => {
                               setShowAddTenantForm(false);
@@ -688,7 +905,7 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                           }}
                         >
                           <option value="">Select layout</option>
-                        
+
                           {layouts.map((l) => {
                             debugger;
                             const id = String(l.id ?? l.layoutId ?? l.LayoutId ?? '');
@@ -709,6 +926,37 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                         </p>
                       </div>
                     </div>
+
+                    {selectedLayoutDetails && (
+                      <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Info className="w-4 h-4 text-primary" />
+                          <h4 className="font-semibold text-sm">Layout Details: {selectedLayoutDetails.layoutName}</h4>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {selectedLayoutDetails.areas?.map((area: any) => (
+                            <div key={area.id} className="bg-card border border-border p-3 rounded-md shadow-sm">
+                              <p className="text-sm font-bold text-primary mb-1">{area.name}</p>
+                              <div className="flex flex-wrap gap-1">
+                                {area.items?.map((item: any) => (
+                                  <span key={item.id} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-sm border border-border/50">
+                                    {item.name}
+                                  </span>
+                                ))}
+                                {(!area.items || area.items.length === 0) && (
+                                  <span className="text-[10px] text-muted-foreground italic">No items</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {(!selectedLayoutDetails.areas || selectedLayoutDetails.areas.length === 0) && (
+                          <p className="text-sm text-muted-foreground italic bg-muted/30 p-4 rounded-md text-center border border-dashed">
+                            This layout has no predefined areas or items.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -735,6 +983,8 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                       <div><strong>Alarm Code:</strong> {propertyData.alarmCode || "N/A"}</div>
                       <div><strong>Property Images URL:</strong> {propertyData.propertyImages || "N/A"}</div>
                       <div><strong>Property Notes:</strong> {propertyData.propertyNotes || "N/A"}</div>
+                      <div><strong>Latitude:</strong> {propertyData.latitude || "-"}</div>
+                      <div><strong>Longitude:</strong> {propertyData.longitude || "-"}</div>
                       <div><strong>Status:</strong> Active (Default)</div>
                     </div>
                   </div>
@@ -771,20 +1021,20 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                         if (!propertyData.propertyLayoutId) {
                           return "No layout selected";
                         }
-                        
+
                         const layoutId = Number(propertyData.propertyLayoutId);
                         const foundLayout = layouts.find(l => l.layoutId === layoutId);
-                        
+
                         if (foundLayout) {
                           return foundLayout.layoutName;
                         }
-                        
-                      const foundLayoutByString = layouts.find(l => String(l.layoutId) === String(propertyData.propertyLayoutId));
+
+                        const foundLayoutByString = layouts.find(l => String(l.layoutId) === String(propertyData.propertyLayoutId));
                         if (foundLayoutByString) {
                           return foundLayoutByString.layoutName;
                         }
-                        
-                      return `Layout not found (ID: ${propertyData.propertyLayoutId})`;
+
+                        return `Layout not found (ID: ${propertyData.propertyLayoutId})`;
                       })()}</div>
                     </div>
                   </div>
@@ -796,15 +1046,165 @@ const PropertyCreation: React.FC<PropertyCreationProps> = ({ onPropertyCreated }
                   Back
                 </Button>
                 <Button onClick={goNext} disabled={!canProceed || isSubmitting}>
-                  {activeStep === "review" ? (isSubmitting ? "Creating Property..." : "Create Property") : "Next"}
+                  {activeStep === "review"
+                    ? (isSubmitting
+                      ? (isEdit ? "Updating Property..." : "Creating Property...")
+                      : (isEdit ? "Update Property" : "Create Property"))
+                    : "Next"}
                 </Button>
               </div>
             </section>
           </div>
-        </CardContent>
+        )}
+      </CardContent>
       </Card>
+
+      {/* Map Picker Modal */}
+      {showMapPicker && (
+        <MapPickerModal
+          onClose={() => setShowMapPicker(false)}
+          onSelect={(lat, lng) => {
+            setPropertyData({ ...propertyData, latitude: lat, longitude: lng });
+            setShowMapPicker(false);
+          }}
+          initialLat={propertyData.latitude || -37.8368}
+          initialLng={propertyData.longitude || 144.928}
+        />
+      )}
+
+      {/* Close Confirmation Modal */}
+      <Modal
+        isOpen={showCloseConfirm}
+        onClose={() => setShowCloseConfirm(false)}
+        title="Unsaved Changes"
+        widthClassName="max-w-md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 text-destructive">
+            <Info className="w-6 h-6" />
+            <p className="font-semibold text-lg">Confirm Exit</p>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Are you sure you want to close? All unsaved changes will be lost and the form will be reset.
+          </p>
+          <div className="flex gap-3 justify-end mt-6">
+            <Button variant="outline" onClick={() => setShowCloseConfirm(false)}>
+              Stay and Edit
+            </Button>
+            <Button variant="destructive" onClick={performClose}>
+              Discard Changes
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
+
+// Map Picker Component using Leaflet CDN
+function MapPickerModal({ onClose, onSelect, initialLat, initialLng }: { onClose: () => void, onSelect: (lat: number, lng: number) => void, initialLat: number, initialLng: number }) {
+  const mapRef = React.useRef<HTMLDivElement>(null);
+  const [isLoaded, setIsLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    // Load Leaflet CSS
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+
+    // Load Leaflet JS
+    if (!document.getElementById('leaflet-js')) {
+      const script = document.createElement('script');
+      script.id = 'leaflet-js';
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = () => setIsLoaded(true);
+      document.head.appendChild(script);
+    } else {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!isLoaded || !mapRef.current) return;
+
+    const L = (window as any).L;
+    if (!L) return;
+
+    // Fix default icon issue with Leaflet and webpack/next
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+
+    const map = L.map(mapRef.current).setView([initialLat, initialLng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+
+    map.on('click', (e: any) => {
+      const { lat, lng } = e.latlng;
+      marker.setLatLng([lat, lng]);
+    });
+
+    const handleConfirm = () => {
+      const pos = marker.getLatLng();
+      onSelect(pos.lat, pos.lng);
+    };
+
+    (window as any).confirmMapSelection = handleConfirm;
+
+    return () => {
+      map.remove();
+    };
+  }, [isLoaded, initialLat, initialLng]);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            <h3 className="font-bold text-lg">Select Property Location</h3>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        <div className="flex-1 relative min-h-[400px]">
+          {!isLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/20">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm text-muted-foreground font-medium">Loading Map...</p>
+              </div>
+            </div>
+          )}
+          <div ref={mapRef} className="w-full h-full" style={{ minHeight: '400px' }} />
+        </div>
+
+        <div className="p-4 border-t border-border bg-muted/30 flex items-center justify-between">
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <Info className="w-3 h-3" />
+            Click on map or drag marker to select coordinates
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button onClick={() => (window as any).confirmMapSelection()}>Confirm Location</Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default PropertyCreation;

@@ -642,6 +642,7 @@ export interface CreateNotificationDto {
 export interface SearchPropertyDto {
   id: string;
   address: string;
+  suburb: string;
 }
 
 export interface SearchResultDto {

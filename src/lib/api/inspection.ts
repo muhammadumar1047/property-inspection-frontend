@@ -131,6 +131,7 @@ export const inspectionApi = {
         return {
           id: String(id),
           address: parts.join(', ') || String(id),
+          suburb: (suburb || '').toString().trim(),
         } as SearchPropertyDto;
       });
     } catch (error: any) {
