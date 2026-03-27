@@ -61,6 +61,7 @@ import dynamic from "next/dynamic";
 import { propertyApi } from "@/lib/api/property";
 import inspectionApi from "@/lib/api/inspection";
 import { analyticsApi } from "@/lib/api/analytics";
+import type { AnalyticsChartDto, AnalyticsSummaryDto } from "@/types/api";
 import Modal from "@/components/ui/Modal";
 import NotificationsBell from "@/components/NotificationsBell";
 const PropertiesTable = dynamic(() => import("@/components/PropertiesTable"), { ssr: false });
@@ -85,24 +86,7 @@ type StatCard = {
   color: string;
 };
 
-// Mock per-type monthly data for the last 12 months (index 0 = oldest)
 const INSPECTION_TYPES = ["Entry", "Exit", "Routine"] as const;
-const monthlyByType: Record<(typeof INSPECTION_TYPES)[number], number[]> = {
-  Entry: [10, 8, 12, 11, 15, 13, 14, 12, 16, 14, 18, 16],
-  Exit: [20, 18, 24, 22, 28, 26, 30, 29, 31, 30, 33, 32],
-  Routine: [60, 48, 70, 65, 80, 75, 85, 84, 90, 88, 95, 92],
-};
-
-// Helper to get Date objects for each month in the last 12 months (oldest -> newest)
-function getLast12MonthDates(): Date[] {
-  const list: Date[] = [];
-  const now = new Date();
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    list.push(d);
-  }
-  return list;
-}
 
 type SparklineProps = {
   data: number[];
@@ -199,7 +183,8 @@ function getStatusBadge(status: string) {
 export default function AdminDashboard() {
   const pathname = usePathname();
   const [profile, setProfile] = useState<any>(null);
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [analyticsSummary, setAnalyticsSummary] = useState<AnalyticsSummaryDto | null>(null);
+  const [analyticsCharts, setAnalyticsCharts] = useState<AnalyticsChartDto | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('inspections');
 
@@ -235,6 +220,20 @@ export default function AdminDashboard() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([...INSPECTION_TYPES]);
   const [customStart, setCustomStart] = useState<string>("");
   const [customEnd, setCustomEnd] = useState<string>("");
+  const availableChartTypes = useMemo(
+    () => (analyticsCharts?.datasets ?? []).map((d) => d.label),
+    [analyticsCharts]
+  );
+  const availableChartTypesKey = useMemo(() => availableChartTypes.join("|"), [availableChartTypes]);
+
+  useEffect(() => {
+    if (availableChartTypes.length === 0) return;
+    setSelectedTypes((prev) => {
+      if (prev.length === 0) return availableChartTypes;
+      const filtered = prev.filter((t) => availableChartTypes.includes(t));
+      return filtered.length ? filtered : availableChartTypes;
+    });
+  }, [availableChartTypesKey]);
 
   const isAgencyAdmin = useMemo(() => {
     if (!user || isSuperAdmin) return false;
@@ -288,27 +287,70 @@ export default function AdminDashboard() {
     fetchPropertyCount();
   }, [showAgencyView]);
 
+  const toIsoDate = (d: Date) => d.toISOString().split('T')[0];
+
+  const buildAnalyticsFilters = () => {
+    const now = new Date();
+    const today = toIsoDate(now);
+
+    if (selectedRange === 'custom') {
+      if (customStart && customEnd) {
+        return { startDate: customStart, endDate: customEnd };
+      }
+      if (customStart) {
+        return { startDate: customStart, endDate: today };
+      }
+      if (customEnd) {
+        return { startDate: toIsoDate(new Date(now.getFullYear(), now.getMonth(), 1)), endDate: customEnd };
+      }
+    }
+
+    if (selectedRange === 'current') {
+      return {
+        startDate: toIsoDate(new Date(now.getFullYear(), now.getMonth(), 1)),
+        endDate: today,
+      };
+    }
+
+    const months = selectedRange === '3m' ? 3 : selectedRange === '6m' ? 6 : 12;
+    const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+    return { startDate: toIsoDate(start), endDate: today };
+  };
+
   useEffect(() => {
     let ignore = false;
     const load = async () => {
       if (ignore) return;
       if (!showAgencyView) return;
       if (isSuperAdminRoute) return;
+      if (activeSection !== 'analytics') return;
       setAnalyticsLoading(true);
       try {
-        const a = await analyticsApi.get();
-        if (!ignore) setAnalytics(a);
+        const filters = buildAnalyticsFilters();
+        const [summary, charts] = await Promise.all([
+          analyticsApi.getSummary(filters),
+          analyticsApi.getCharts(filters),
+        ]);
+        if (!ignore) {
+          setAnalyticsSummary(summary);
+          setAnalyticsCharts(charts);
+        }
       } catch {
-        if (!ignore) setAnalytics(null);
+        if (!ignore) {
+          setAnalyticsSummary(null);
+          setAnalyticsCharts(null);
+        }
       } finally {
         if (!ignore) setAnalyticsLoading(false);
       }
     };
     load();
+    const interval = setInterval(load, 20000);
     return () => {
       ignore = true;
+      clearInterval(interval);
     };
-  }, [showAgencyView, isSuperAdminRoute]);
+  }, [showAgencyView, isSuperAdminRoute, activeSection, selectedRange, customStart, customEnd]);
 
 
 
@@ -396,36 +438,36 @@ export default function AdminDashboard() {
         const stats: StatCard[] = [
           {
             title: "Total Properties",
-            value: analytics ? String(analytics.totalProperties ?? 0) : "—",
-            change: analytics ? fmtPct(Number(analytics.totalPropertiesChangePercent ?? 0)) : "—",
+            value: analyticsSummary ? String(analyticsSummary.totalProperties ?? 0) : "--",
+            change: analyticsSummary ? fmtPct(Number(analyticsSummary.totalPropertiesChangePercent ?? 0)) : "--",
             icon: Building2,
             color: "text-primary",
           },
           {
             title: "Completed Inspections",
-            value: analytics ? String(analytics.completedInspections ?? 0) : "—",
-            change: analytics ? fmtPct(Number(analytics.completedInspectionsChangePercent ?? 0)) : "—",
+            value: analyticsSummary ? String(analyticsSummary.completedInspections ?? 0) : "--",
+            change: analyticsSummary ? fmtPct(Number(analyticsSummary.completedInspectionsChangePercent ?? 0)) : "--",
             icon: CheckCircle2,
             color: "text-secondary",
           },
           {
             title: "Pending Inspections",
-            value: analytics ? String(analytics.pendingInspections ?? 0) : "—",
-            change: analytics ? fmtPct(Number(analytics.pendingInspectionsChangePercent ?? 0)) : "—",
+            value: analyticsSummary ? String(analyticsSummary.pendingInspections ?? 0) : "--",
+            change: analyticsSummary ? fmtPct(Number(analyticsSummary.pendingInspectionsChangePercent ?? 0)) : "--",
             icon: Clock3,
             color: "text-accent",
           },
           {
             title: "Reports Generated",
-            value: analytics ? String(analytics.reportsGenerated ?? 0) : "—",
-            change: analytics ? fmtPct(Number(analytics.reportsGeneratedChangePercent ?? 0)) : "—",
+            value: analyticsSummary ? String(analyticsSummary.reportsGenerated ?? 0) : "--",
+            change: analyticsSummary ? fmtPct(Number(analyticsSummary.reportsGeneratedChangePercent ?? 0)) : "--",
             icon: FileStack,
             color: "text-primary",
           },
         ];
 
         const recentInspections =
-          (analytics?.recentInspections ?? []).map((r: any, idx: number) => ({
+          (analyticsSummary?.recentInspections ?? []).map((r: any, idx: number) => ({
             id: `recent-${idx}`,
             property: r.propertyAddress,
             inspector: r.inspectorName,
@@ -434,10 +476,10 @@ export default function AdminDashboard() {
           })) ?? [];
 
         const upcomingInspections =
-          (analytics?.upcomingInspections ?? []).map((u: any, idx: number) => {
+          (analyticsSummary?.upcomingInspections ?? []).map((u: any, idx: number) => {
             const dt = u.scheduledDateTime ? new Date(u.scheduledDateTime) : null;
-            const dateLabel = dt ? dt.toLocaleDateString() : "—";
-            const timeLabel = dt ? dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
+            const dateLabel = dt ? dt.toLocaleDateString() : "--";
+            const timeLabel = dt ? dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--";
             return {
               id: `upcoming-${idx}`,
               property: u.propertyAddress,
@@ -447,45 +489,54 @@ export default function AdminDashboard() {
             };
           }) ?? [];
 
-        const activeTypes = selectedTypes.length > 0 ? selectedTypes : [...INSPECTION_TYPES];
+        const chartLabels = analyticsCharts?.labels ?? [];
+        const chartDatasets = analyticsCharts?.datasets ?? [];
+        const availableTypes = availableChartTypes;
+        const activeTypes = selectedTypes.length > 0 ? selectedTypes : (availableTypes.length ? availableTypes : [...INSPECTION_TYPES]);
 
-        // Determine which month indices (0..11) are selected based on range/custom
-        const monthDates = getLast12MonthDates();
+        const labelDates = chartLabels.map((l) => new Date(l));
         let selectedIndices: number[] = [];
-        if (selectedRange === 'current') {
-          selectedIndices = [11];
-        } else if (selectedRange === '3m' || selectedRange === '6m' || selectedRange === '12m') {
-          const months = selectedRange === '3m' ? 3 : selectedRange === '6m' ? 6 : 12;
-          selectedIndices = Array.from({ length: months }, (_, i) => 12 - months + i);
-        } else {
-          // custom range by month
-          const start = customStart ? new Date(customStart) : null;
-          const end = customEnd ? new Date(customEnd) : null;
-          if (start && end) {
-            const startTime = new Date(start.getFullYear(), start.getMonth(), 1).getTime();
-            const endTime = new Date(end.getFullYear(), end.getMonth(), 1).getTime();
-            const [from, to] = startTime <= endTime ? [startTime, endTime] : [endTime, startTime];
-            selectedIndices = monthDates
-              .map((d, idx) => ({ t: new Date(d.getFullYear(), d.getMonth(), 1).getTime(), idx }))
-              .filter((x) => x.t >= from && x.t <= to)
-              .map((x) => x.idx);
-          }
-          // Fallback if no valid custom selection
-          if (selectedIndices.length === 0) {
-            selectedIndices = [11];
+        if (chartLabels.length > 0) {
+          if (selectedRange === 'current') {
+            selectedIndices = [chartLabels.length - 1];
+          } else if (selectedRange === '3m' || selectedRange === '6m' || selectedRange === '12m') {
+            const months = selectedRange === '3m' ? 3 : selectedRange === '6m' ? 6 : 12;
+            const startIndex = Math.max(0, chartLabels.length - months);
+            selectedIndices = Array.from({ length: chartLabels.length - startIndex }, (_, i) => startIndex + i);
+          } else {
+            const start = customStart ? new Date(customStart) : null;
+            const end = customEnd ? new Date(customEnd) : null;
+            if (start && end) {
+              const startTime = new Date(start.getFullYear(), start.getMonth(), 1).getTime();
+              const endTime = new Date(end.getFullYear(), end.getMonth(), 1).getTime();
+              const [from, to] = startTime <= endTime ? [startTime, endTime] : [endTime, startTime];
+              selectedIndices = labelDates
+                .map((d, idx) => ({ t: new Date(d.getFullYear(), d.getMonth(), 1).getTime(), idx }))
+                .filter((x) => x.t >= from && x.t <= to)
+                .map((x) => x.idx);
+            }
+            if (selectedIndices.length === 0) {
+              selectedIndices = [chartLabels.length - 1];
+            }
           }
         }
 
-        // Build sparkline data by summing selected types per chosen indices
-        const summedAllMonths: number[] = Array.from({ length: 12 }, (_, idx) =>
-          activeTypes.reduce((acc, t) => acc + (monthlyByType as any)[t][idx], 0)
-        );
-        const sparkData = selectedIndices.map((idx) => summedAllMonths[idx]);
+        const seriesByType: Record<string, number[]> = {};
+        chartDatasets.forEach((d) => {
+          seriesByType[d.label] = Array.isArray(d.data) ? d.data : [];
+        });
 
-        const computedInspectionTypeData = INSPECTION_TYPES.map((label) => ({
+        const summedAllMonths: number[] = chartLabels.map((_, idx) =>
+          activeTypes.reduce((acc, t) => acc + (seriesByType[t]?.[idx] ?? 0), 0)
+        );
+        const sparkData = selectedIndices.map((idx) => summedAllMonths[idx] ?? 0);
+
+        const typeLabels = availableTypes.length ? availableTypes : activeTypes;
+        const computedInspectionTypeData = typeLabels.map((label) => ({
           label,
-          value: selectedIndices.reduce((acc, idx) => acc + monthlyByType[label][idx], 0),
+          value: selectedIndices.reduce((acc, idx) => acc + (seriesByType[label]?.[idx] ?? 0), 0),
         }));
+        const maxTypeValue = Math.max(1, ...computedInspectionTypeData.map((x) => x.value));
 
         const cardDesc = (() => {
           if (selectedRange === 'current') return 'Trend for current month';
@@ -498,6 +549,8 @@ export default function AdminDashboard() {
           const months = selectedRange === '3m' ? 3 : selectedRange === '6m' ? 6 : 12;
           return `Trend over the last ${months} months`;
         })();
+
+        const inspectionTypeOptions = availableTypes.length ? availableTypes : [...INSPECTION_TYPES];
 
         const toggleType = (label: string) => {
           setSelectedTypes((prev) =>
@@ -549,7 +602,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-[var(--muted-400)] uppercase tracking-wider">Types</span>
                     <div className="flex items-center gap-4">
-                      {INSPECTION_TYPES.map((t) => (
+                      {inspectionTypeOptions.map((t) => (
                         <label key={t} className="flex items-center gap-2 text-sm cursor-pointer">
                           <Checkbox checked={selectedTypes.includes(t)} onCheckedChange={() => toggleType(t)} />
                           <span className="text-[var(--foreground)]">{t}</span>
@@ -673,9 +726,9 @@ export default function AdminDashboard() {
                     {computedInspectionTypeData.map((d) => (
                       <div key={d.label} className="grid grid-cols-5 items-center gap-2">
                         <div className="col-span-1 text-xs text-muted-foreground">{d.label}</div>
-                        <div className="col-span-4 h-2 bg-muted rounded">
-                          <div className="h-2 bg-primary rounded" style={{ width: `${Math.round((d.value / Math.max(...computedInspectionTypeData.map(x => x.value))) * 100)}%` }} />
-                        </div>
+                          <div className="col-span-4 h-2 bg-muted rounded">
+                            <div className="h-2 bg-primary rounded" style={{ width: `${Math.round((d.value / maxTypeValue) * 100)}%` }} />
+                          </div>
                       </div>
                     ))}
                   </div>

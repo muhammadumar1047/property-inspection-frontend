@@ -676,6 +676,36 @@ export interface AnalyticsDto {
   topSuburbs: TopSuburbDto[];
 }
 
+export interface AnalyticsSummaryDto {
+  totalProperties: number;
+  totalPropertiesChangePercent: number;
+  completedInspections: number;
+  completedInspectionsChangePercent: number;
+  pendingInspections: number;
+  pendingInspectionsChangePercent: number;
+  reportsGenerated: number;
+  reportsGeneratedChangePercent: number;
+  recentInspections: RecentInspectionDto[];
+  upcomingInspections: UpcomingInspectionDto[];
+}
+
+export interface AnalyticsChartDatasetDto {
+  label: string;
+  data: number[];
+}
+
+export interface AnalyticsChartDto {
+  labels: string[];
+  datasets: AnalyticsChartDatasetDto[];
+}
+
+export interface AnalyticsFilterDto {
+  startDate?: string;
+  endDate?: string;
+  agencyId?: string;
+  status?: number;
+}
+
 export interface NotificationAgencyUserDto {
   agencyId: string;
   agencyName: string;
