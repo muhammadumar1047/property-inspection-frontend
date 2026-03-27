@@ -1,84 +1,24 @@
-"use client";
+﻿"use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Plus, Edit2, Trash2, Power, PowerOff, Filter, ChevronLeft, ChevronRight, X, AlertTriangle } from "lucide-react";
-
-interface PlanFeature {
-  id: string;
-  name: string;
-}
-
-interface BillingPlan {
-  id: string;
-  name: string;
-  description: string;
-  priceMonthly: number;
-  priceYearly: number;
-  status: 'active' | 'inactive';
-  createdDate: string;
-  features: PlanFeature[];
-  userLimits: number;
-  trialDays: number;
-  propertiesLimit: number | 'Unlimited';
-  inspectionsLimit: number | 'Unlimited';
-}
-
-const mockPlans: BillingPlan[] = [
-  {
-    id: "1",
-    name: "Starter",
-    description: "Perfect for small agencies.",
-    priceMonthly: 49,
-    priceYearly: 490,
-    status: 'active',
-    createdDate: "2024-01-15",
-    features: [{ id: "f1", name: "Up to 50 Inspections" }],
-    userLimits: 3,
-    trialDays: 14,
-    propertiesLimit: 10,
-    inspectionsLimit: 50,
-  },
-  {
-    id: "2",
-    name: "Professional",
-    description: "For growing agencies.",
-    priceMonthly: 99,
-    priceYearly: 990,
-    status: 'active',
-    createdDate: "2024-02-10",
-    features: [{ id: "f1", name: "Unlimited Inspections" }, { id: "f2", name: "Priority Support" }],
-    userLimits: 10,
-    trialDays: 14,
-    propertiesLimit: 'Unlimited',
-    inspectionsLimit: 'Unlimited',
-  },
-  {
-    id: "3",
-    name: "Enterprise",
-    description: "For large organizations.",
-    priceMonthly: 299,
-    priceYearly: 2990,
-    status: 'inactive',
-    createdDate: "2024-03-20",
-    features: [{ id: "f1", name: "Custom Workflows" }, { id: "f2", name: "Dedicated Account Manager" }],
-    userLimits: 50,
-    trialDays: 30,
-    propertiesLimit: 'Unlimited',
-    inspectionsLimit: 'Unlimited',
-  }
-];
+import { Plus, Edit2, Trash2, Power, PowerOff, Filter, X } from "lucide-react";
+import { billingApi } from '@/lib/api/billing';
+import type { BillingPlan, BillingFeatureDto, BillingStatus } from '@/types/api';
 
 export default function BillingPlans() {
-  const [plans, setPlans] = useState<BillingPlan[]>(mockPlans);
+  const [plans, setPlans] = useState<BillingPlan[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<'all' | BillingStatus>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Filters state
   const [minPrice, setMinPrice] = useState("");
@@ -92,21 +32,46 @@ export default function BillingPlans() {
   // Form State
   const [editingPlan, setEditingPlan] = useState<Partial<BillingPlan> | null>(null);
 
-  // Computed
-  const filteredPlans = plans.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-    const matchesMinPrice = minPrice === "" || p.priceMonthly >= Number(minPrice);
-    const matchesMaxPrice = maxPrice === "" || p.priceMonthly <= Number(maxPrice);
-    return matchesSearch && matchesStatus && matchesMinPrice && matchesMaxPrice;
-  });
+  const fetchPlans = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await billingApi.getPaged(currentPage, itemsPerPage, {
+        search: searchQuery || undefined,
+        status: statusFilter,
+        minPrice: minPrice !== "" ? Number(minPrice) : undefined,
+        maxPrice: maxPrice !== "" ? Number(maxPrice) : undefined,
+      });
+      setPlans(resp.data || []);
+      setTotalCount(resp.totalCount || 0);
+      setTotalPages(resp.totalPages || 1);
+    } catch (err: any) {
+      console.error('Failed to load billing plans', err?.response?.data ?? err);
+      setError('Failed to load billing plans. Please try again.');
+      setPlans([]);
+      setTotalCount(0);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const paginatedPlans = filteredPlans.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const totalPages = Math.ceil(filteredPlans.length / itemsPerPage);
+  useEffect(() => {
+    fetchPlans();
+  }, [searchQuery, statusFilter, minPrice, maxPrice, currentPage]);
 
   // Handlers
   const handleOpenCreate = () => {
-    setEditingPlan({ status: 'active', features: [], propertiesLimit: 50, inspectionsLimit: 100 });
+    setEditingPlan({
+      status: 'active',
+      features: [],
+      propertiesLimit: 50,
+      inspectionsLimit: 100,
+      userLimits: 1,
+      trialDays: 14,
+      priceMonthly: 0,
+      priceYearly: 0,
+    });
     setIsFormOpen(true);
   };
 
@@ -115,39 +80,74 @@ export default function BillingPlans() {
     setIsFormOpen(true);
   };
 
-  const handleSaveForm = () => {
+  const toFeaturePayload = (features: BillingFeatureDto[] = []) =>
+    features
+      .filter((f) => (f?.name || '').trim().length > 0)
+      .map((f) => ({
+        id: f.id,
+        name: f.name.trim(),
+      }));
+
+  const handleSaveForm = async () => {
     if (!editingPlan) return;
-    
-    // Create new or Update existing (Mock)
-    if (editingPlan.id) {
-      setPlans(plans.map(p => p.id === editingPlan.id ? { ...p, ...editingPlan } as BillingPlan : p));
-    } else {
-      const newPlan = { ...editingPlan, id: Date.now().toString(), createdDate: new Date().toISOString().split('T')[0] } as BillingPlan;
-      setPlans([newPlan, ...plans]);
+
+    const payloadBase = {
+      name: (editingPlan.name || '').trim(),
+      description: (editingPlan.description || '').trim(),
+      priceMonthly: Number(editingPlan.priceMonthly || 0),
+      priceYearly: Number(editingPlan.priceYearly || 0),
+      status: (editingPlan.status || 'active') as BillingStatus,
+      features: toFeaturePayload(editingPlan.features || []),
+      userLimits: Number(editingPlan.userLimits || 0),
+      trialDays: Number(editingPlan.trialDays || 0),
+      propertiesLimit: editingPlan.propertiesLimit ?? null,
+      inspectionsLimit: editingPlan.inspectionsLimit ?? null,
+    };
+
+    try {
+      if (editingPlan.id) {
+        await billingApi.update(editingPlan.id, payloadBase);
+      } else {
+        await billingApi.create(payloadBase);
+      }
+      setIsFormOpen(false);
+      setEditingPlan(null);
+      fetchPlans();
+    } catch (err: any) {
+      console.error('Failed to save billing plan', err?.response?.data ?? err);
+      alert('Failed to save billing plan. Please check your inputs and try again.');
     }
-    
-    setIsFormOpen(false);
   };
 
-  const executeConfirmAction = () => {
+  const executeConfirmAction = async () => {
     if (!confirmAction) return;
     const { type, planId } = confirmAction;
-    
-    if (type === 'delete') {
-      setPlans(plans.filter(p => p.id !== planId));
-    } else if (type === 'activate' || type === 'deactivate') {
-      setPlans(plans.map(p => p.id === planId ? { ...p, status: type === 'activate' ? 'active' : 'inactive' } : p));
+
+    try {
+      if (type === 'delete') {
+        await billingApi.delete(planId);
+      } else if (type === 'activate') {
+        await billingApi.activate(planId);
+      } else if (type === 'deactivate') {
+        await billingApi.deactivate(planId);
+      }
+      setIsConfirmOpen(false);
+      setConfirmAction(null);
+      fetchPlans();
+    } catch (err: any) {
+      console.error('Failed to update billing plan status', err?.response?.data ?? err);
+      alert('Action failed. Please try again.');
     }
-    
-    setIsConfirmOpen(false);
-    setConfirmAction(null);
   };
 
   const addFeature = () => {
     if (editingPlan) {
+      const newId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? (crypto as any).randomUUID()
+        : Date.now().toString();
       setEditingPlan({
         ...editingPlan,
-        features: [...(editingPlan.features || []), { id: Date.now().toString(), name: "" }]
+        features: [...(editingPlan.features || []), { id: newId, name: "" }]
       });
     }
   };
@@ -169,6 +169,9 @@ export default function BillingPlans() {
       });
     }
   };
+
+  const startIndex = totalCount === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const endIndex = (currentPage - 1) * itemsPerPage + plans.length;
 
   return (
     <div className="space-y-6">
@@ -215,7 +218,7 @@ export default function BillingPlans() {
             <select
               className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-sm"
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+              onChange={(e) => { setStatusFilter(e.target.value as 'all' | BillingStatus); setCurrentPage(1); }}
             >
               <option value="all">All Statuses</option>
               <option value="active">Active Plans</option>
@@ -253,6 +256,9 @@ export default function BillingPlans() {
           </p>
         </div>
         <div className="px-4 pb-6 sm:px-6 overflow-x-auto">
+          {error && (
+            <div className="mb-4 text-sm text-red-600">{error}</div>
+          )}
           <Table>
             <TableHeader>
               <TableRow>
@@ -264,7 +270,7 @@ export default function BillingPlans() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedPlans.map((plan) => (
+              {plans.map((plan) => (
                 <TableRow key={plan.id}>
                   <TableCell className="font-medium">
                     <div>{plan.name}</div>
@@ -283,7 +289,7 @@ export default function BillingPlans() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    {new Date(plan.createdDate).toLocaleDateString()}
+                    {plan.createdDate ? new Date(plan.createdDate).toLocaleDateString() : '-'}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2 text-right">
@@ -320,8 +326,11 @@ export default function BillingPlans() {
               ))}
             </TableBody>
           </Table>
-          {paginatedPlans.length === 0 && (
+          {!loading && plans.length === 0 && (
             <div className="text-center text-muted-foreground text-sm py-6">No plans found. Try adjusting your filters.</div>
+          )}
+          {loading && (
+            <div className="text-center text-muted-foreground text-sm py-6">Loading plans...</div>
           )}
         </div>
       </div>
@@ -330,7 +339,7 @@ export default function BillingPlans() {
       {totalPages > 0 && (
         <div className="px-4 py-4 sm:px-6 flex items-center justify-between border-t border-border">
           <div className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, filteredPlans.length)} of {filteredPlans.length} results
+            Showing {startIndex}-{endIndex} of {totalCount} results
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -417,7 +426,7 @@ export default function BillingPlans() {
                       <Label className="text-gray-700">Monthly Price ($)</Label>
                       <Input 
                         type="number" 
-                        value={editingPlan?.priceMonthly || ''} 
+                        value={editingPlan?.priceMonthly ?? ''} 
                         onChange={e => setEditingPlan({...editingPlan, priceMonthly: Number(e.target.value)})} 
                         className="mt-1.5"
                       />
@@ -426,7 +435,7 @@ export default function BillingPlans() {
                       <Label className="text-gray-700">Yearly Price ($)</Label>
                       <Input 
                         type="number" 
-                        value={editingPlan?.priceYearly || ''} 
+                        value={editingPlan?.priceYearly ?? ''} 
                         onChange={e => setEditingPlan({...editingPlan, priceYearly: Number(e.target.value)})} 
                         className="mt-1.5"
                       />
@@ -435,7 +444,7 @@ export default function BillingPlans() {
                       <Label className="text-gray-700">User Limits</Label>
                       <Input 
                         type="number" 
-                        value={editingPlan?.userLimits || ''} 
+                        value={editingPlan?.userLimits ?? ''} 
                         onChange={e => setEditingPlan({...editingPlan, userLimits: Number(e.target.value)})} 
                         className="mt-1.5"
                         placeholder="e.g. 5"
@@ -445,7 +454,7 @@ export default function BillingPlans() {
                       <Label className="text-gray-700">Trial Days</Label>
                       <Input 
                         type="number" 
-                        value={editingPlan?.trialDays || ''} 
+                        value={editingPlan?.trialDays ?? ''} 
                         onChange={e => setEditingPlan({...editingPlan, trialDays: Number(e.target.value)})} 
                         className="mt-1.5"
                         placeholder="e.g. 14"
@@ -460,19 +469,19 @@ export default function BillingPlans() {
                             <input 
                               type="checkbox" 
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer h-3.5 w-3.5"
-                              checked={editingPlan?.propertiesLimit === 'Unlimited'}
+                              checked={editingPlan?.propertiesLimit == null}
                               onChange={(e) => setEditingPlan({
                                 ...editingPlan, 
-                                propertiesLimit: e.target.checked ? 'Unlimited' : 0
+                                propertiesLimit: e.target.checked ? null : 0
                               })}
                             />
                             Unlimited
                           </label>
                         </Label>
                         <Input 
-                          type={editingPlan?.propertiesLimit === 'Unlimited' ? 'text' : 'number'}
-                          disabled={editingPlan?.propertiesLimit === 'Unlimited'}
-                          value={editingPlan?.propertiesLimit ?? ''}
+                          type={editingPlan?.propertiesLimit == null ? 'text' : 'number'}
+                          disabled={editingPlan?.propertiesLimit == null}
+                          value={editingPlan?.propertiesLimit == null ? 'Unlimited' : (editingPlan?.propertiesLimit ?? '')}
                           onChange={e => setEditingPlan({...editingPlan, propertiesLimit: Number(e.target.value)})} 
                           className="w-full disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-200"
                           placeholder="e.g. 50"
@@ -485,19 +494,19 @@ export default function BillingPlans() {
                             <input 
                               type="checkbox" 
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer h-3.5 w-3.5"
-                              checked={editingPlan?.inspectionsLimit === 'Unlimited'}
+                              checked={editingPlan?.inspectionsLimit == null}
                               onChange={(e) => setEditingPlan({
                                 ...editingPlan, 
-                                inspectionsLimit: e.target.checked ? 'Unlimited' : 0
+                                inspectionsLimit: e.target.checked ? null : 0
                               })}
                             />
                             Unlimited
                           </label>
                         </Label>
                         <Input 
-                          type={editingPlan?.inspectionsLimit === 'Unlimited' ? 'text' : 'number'}
-                          disabled={editingPlan?.inspectionsLimit === 'Unlimited'}
-                          value={editingPlan?.inspectionsLimit ?? ''}
+                          type={editingPlan?.inspectionsLimit == null ? 'text' : 'number'}
+                          disabled={editingPlan?.inspectionsLimit == null}
+                          value={editingPlan?.inspectionsLimit == null ? 'Unlimited' : (editingPlan?.inspectionsLimit ?? '')}
                           onChange={e => setEditingPlan({...editingPlan, inspectionsLimit: Number(e.target.value)})} 
                           className="w-full disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-200"
                           placeholder="e.g. 100"

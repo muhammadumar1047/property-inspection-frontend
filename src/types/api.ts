@@ -118,6 +118,65 @@ export interface UserInfo {
   isAgencyAdmin?: boolean | null;
 }
 
+export interface BillingFeatureDto {
+  id: string;
+  name: string;
+}
+
+export type BillingStatus = 'active' | 'inactive';
+
+export interface BillingPlan {
+  id: string;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  priceYearly: number;
+  status: BillingStatus;
+  createdDate: string;
+  features: BillingFeatureDto[];
+  userLimits: number;
+  trialDays: number;
+  propertiesLimit: number | null;
+  inspectionsLimit: number | null;
+}
+
+export interface CreateBillingPlanRequest {
+  name: string;
+  description?: string | null;
+  priceMonthly: number;
+  priceYearly: number;
+  status: BillingStatus;
+  features: BillingFeatureDto[];
+  userLimits: number;
+  trialDays: number;
+  propertiesLimit: number | null;
+  inspectionsLimit: number | null;
+}
+
+export interface UpdateBillingPlanRequest {
+  name?: string | null;
+  description?: string | null;
+  priceMonthly?: number | null;
+  priceYearly?: number | null;
+  status?: BillingStatus;
+  features?: BillingFeatureDto[] | null;
+  userLimits?: number | null;
+  trialDays?: number | null;
+  propertiesLimit?: number | null;
+  inspectionsLimit?: number | null;
+}
+
+export interface BillingPlanFilter {
+  search?: string;
+  status?: BillingStatus | 'all';
+  minPrice?: number;
+  maxPrice?: number;
+  fromDate?: string;
+  toDate?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export interface LoginDto {
   email: string;
   password: string;
