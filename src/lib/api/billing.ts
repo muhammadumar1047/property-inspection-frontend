@@ -3,6 +3,10 @@ import type { ApiResponse, PagedResult, BillingPlan, CreateBillingPlanRequest, U
 import { unwrapApiResponse, unwrapPaged } from './helpers';
 
 export const billingApi = {
+  getActive: async (): Promise<BillingPlan[]> => {
+    const response = await api.get<ApiResponse<BillingPlan[]>>('/billing/active');
+    return unwrapApiResponse<BillingPlan[]>(response.data);
+  },
   getPaged: async (
     page: number = 1,
     pageSize: number = 10,

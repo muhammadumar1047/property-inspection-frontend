@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AgencyResponse, CreateAgencyRequest, AgencyWhitelabelResponse, CountryDto, StateDto, TimeZoneDto, UpdateAgencyRequest } from '../types/api';
+import { AgencyResponse, CreateAgencyRequest, AgencyWhitelabelResponse, CountryDto, StateDto, TimeZoneDto, UpdateAgencyRequest, BillingPlan } from '../types/api';
 import { agencyApi } from '@/lib/api/agency';
 import { agencyManagementApi } from '@/lib/api/agencyManagement';
 import { referenceApi } from '@/lib/api/reference';
+import { billingApi } from '@/lib/api/billing';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Modal from './ui/Modal';
 import { notificationApi } from '@/lib/api/notification';
@@ -42,6 +43,8 @@ const AgencyManagement: React.FC = () => {
   const [states, setStates] = useState<StateDto[]>([]);
   const [timezones, setTimezones] = useState<TimeZoneDto[]>([]);
   const [lookupLoading, setLookupLoading] = useState<{ countries: boolean; states: boolean; timezones: boolean }>({ countries: false, states: false, timezones: false });
+  const [billingPlans, setBillingPlans] = useState<BillingPlan[]>([]);
+  const [billingPlansLoading, setBillingPlansLoading] = useState(false);
   const [newAgency, setNewAgency] = useState<CreateAgencyRequest>({
     legalBusinessName: '',
     companyWebsite: null,
@@ -77,6 +80,7 @@ const AgencyManagement: React.FC = () => {
     technicalContactJobTitle: null,
     technicalContactFaxNumber: null,
     technicalContactEmail: null,
+    billingPlanId: '',
   });
 
   // Notification composer state (superadmin)
@@ -144,6 +148,22 @@ const AgencyManagement: React.FC = () => {
       }
     })();
   }, [showNotificationModal]);
+
+  useEffect(() => {
+    const loadBillingPlans = async () => {
+      try {
+        setBillingPlansLoading(true);
+        const plans = await billingApi.getActive();
+        setBillingPlans(Array.isArray(plans) ? plans : []);
+      } catch (err) {
+        console.error('Failed to load billing plans', err);
+        setBillingPlans([]);
+      } finally {
+        setBillingPlansLoading(false);
+      }
+    };
+    loadBillingPlans();
+  }, []);
 
   const openNotificationModal = () => {
     setNotifyTitle('');
@@ -339,6 +359,12 @@ const AgencyManagement: React.FC = () => {
     setError('');
 
     try {
+      if (!newAgency.billingPlanId) {
+        const msg = 'Billing Plan is required';
+        setError(msg);
+        alert(msg);
+        return;
+      }
       await agencyApi.create(newAgency);
       alert('Agency created successfully');
       setNewAgency({
@@ -376,6 +402,7 @@ const AgencyManagement: React.FC = () => {
         technicalContactJobTitle: null,
         technicalContactFaxNumber: null,
         technicalContactEmail: null,
+        billingPlanId: '',
       });
       setShowCreateForm(false);
       await loadAgencies();
@@ -444,6 +471,7 @@ const AgencyManagement: React.FC = () => {
         technicalContactJobTitle: (data as any).technicalContactJobTitle || '',
         technicalContactFaxNumber: (data as any).technicalContactFaxNumber || '',
         technicalContactEmail: (data as any).technicalContactEmail || '',
+        billingPlanId: (data as any).billingPlanId || '',
       });
       setEditingAgencyId(id);
       setShowEditForm(true);
@@ -500,6 +528,12 @@ const AgencyManagement: React.FC = () => {
     setLoading(true);
     setError('');
     try {
+      if (!(editAgency as any).billingPlanId) {
+        const msg = 'Billing Plan is required';
+        setError(msg);
+        alert(msg);
+        return;
+      }
       const payload: UpdateAgencyRequest = {
         name: editAgency.legalBusinessName || '',
         legalBusinessName: editAgency.legalBusinessName || '',
@@ -531,6 +565,7 @@ const AgencyManagement: React.FC = () => {
         technicalContactJobTitle: (editAgency as any).technicalContactJobTitle ?? null,
         technicalContactFaxNumber: (editAgency as any).technicalContactFaxNumber ?? null,
         technicalContactEmail: (editAgency as any).technicalContactEmail ?? null,
+        billingPlanId: (editAgency as any).billingPlanId ?? null,
       };
       await agencyApi.update(editingAgencyId, payload);
       alert('Agency updated successfully');
@@ -810,6 +845,21 @@ const AgencyManagement: React.FC = () => {
                   </option>
                   {timezones.map((t) => (
                     <option key={t.id} value={t.id}>{t.displayName}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Billing Plan *</label>
+                <select
+                  className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-primary focus-border-primary px-3 py-2 border"
+                  value={(editAgency as any).billingPlanId || ''}
+                  onChange={(e) => setEditAgency({ ...editAgency, billingPlanId: e.target.value })}
+                >
+                  <option value="" disabled>
+                    {billingPlansLoading ? 'Loading billing plans...' : 'Select billing plan'}
+                  </option>
+                  {billingPlans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>{plan.name}</option>
                   ))}
                 </select>
               </div>
@@ -1194,6 +1244,21 @@ const AgencyManagement: React.FC = () => {
                   </option>
                   {timezones.map((t) => (
                     <option key={t.id} value={t.id}>{t.displayName}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Billing Plan *</label>
+                <select
+                  className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-primary focus-border-primary px-3 py-2 border"
+                  value={newAgency.billingPlanId || ''}
+                  onChange={(e) => setNewAgency({ ...newAgency, billingPlanId: e.target.value })}
+                >
+                  <option value="" disabled>
+                    {billingPlansLoading ? 'Loading billing plans...' : 'Select billing plan'}
+                  </option>
+                  {billingPlans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>{plan.name}</option>
                   ))}
                 </select>
               </div>
@@ -2265,6 +2330,3 @@ const UsersTable: React.FC<{ agencyId: string | number }> = ({ agencyId }) => {
     </div>
   );
 };
-
-
-

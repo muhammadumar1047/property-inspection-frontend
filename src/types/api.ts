@@ -1,4 +1,4 @@
-export interface ApiResponse<T> {
+﻿export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
@@ -338,6 +338,8 @@ export interface AgencyResponse extends BaseEntityDto {
   technicalContactJobTitle?: string | null;
   technicalContactFaxNumber?: string | null;
   technicalContactEmail?: string | null;
+  billingPlanId?: string | null;
+  billingPlanName?: string | null;
   agencyWhitelabel?: AgencyWhitelabelResponse | null;
 }
 
@@ -376,6 +378,7 @@ export interface CreateAgencyRequest {
   technicalContactJobTitle?: string | null;
   technicalContactFaxNumber?: string | null;
   technicalContactEmail?: string | null;
+  billingPlanId: string;
 }
 
 export interface UpdateAgencyRequest {
@@ -409,6 +412,7 @@ export interface UpdateAgencyRequest {
   technicalContactJobTitle?: string | null;
   technicalContactFaxNumber?: string | null;
   technicalContactEmail?: string | null;
+  billingPlanId?: string | null;
 }
 
 export interface LandlordDto extends BaseEntityDto {
@@ -870,3 +874,4 @@ export interface UpdateUserRequest {
 //  PropertyResponse, CreatePropertyRequest, InspectionResponse,
 //  CreateInspectionRequest, PropertyLayoutResponse, LayoutAreaResponse,
 //  and LayoutItemResponse directly instead.)
+
