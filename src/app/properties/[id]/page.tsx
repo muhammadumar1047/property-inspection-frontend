@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import PropertyDetail from "@/components/properties/PropertyDetail";
 import ReportViewer from "@/components/ReportViewer";
 import { reportApi } from "@/lib/api";
+import { mapApiReportToViewer } from "@/lib/report-mapping";
 import type { ReportDto } from "@/types/api";
 
 export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +26,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       setReportError(null);
       try {
         const r = await reportApi.getInspectionReport(String(inspectionId));
-        setReport(r);
+        if (r) {
+          const mapped = mapApiReportToViewer(r);
+          setReport(mapped as any);
+        }
       } catch (e: any) {
         setReportError(e?.response?.data?.message || e?.message || "Failed to load report");
       } finally {

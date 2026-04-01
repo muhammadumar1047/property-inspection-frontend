@@ -2,18 +2,19 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import ReportViewer from "@/components/ReportViewer";
-import { reportApi } from "@/lib/api";
-import { mapApiReportToViewer } from "@/lib/report-mapping";
 import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import InspectionReport from "@/components/InspectionReport";
+import api from "@/lib/api/http";
+import type { InspectionReportData, InspectionReportResponse } from "@/types/report";
+import axios from "axios";
 
 export default function InspectionReportPage() {
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
-  
-  const [report, setReport] = useState<any>(null);
+
+  const [report, setReport] = useState<InspectionReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,24 +25,24 @@ export default function InspectionReportPage() {
       try {
         setLoading(true);
         setError(null);
-        const reportData = await reportApi.getInspectionReport(id);
-        
-        if (reportData) {
-          // Check if inspection is closed
-          const statusId = Number(reportData.inspection?.inspectionStatus);
-          if (statusId !== 5) { // 5 is Closed
-            setError("This report is not yet available for viewing. It must be in 'Closed' status.");
-            return;
-          }
+        const response = await api.get<InspectionReportResponse>(`/report/inspection/${id}`);
+        const envelope = response.data;
+        const reportData =
+          (envelope && "data" in envelope ? envelope.data : (envelope as any)?.Data ?? envelope) as
+            | InspectionReportData
+            | null;
 
-          const mapped = mapApiReportToViewer(reportData);
-          setReport(mapped);
-        } else {
+        if (!reportData || !reportData.inspectionId) {
           setError("Inspection report data is empty.");
+          return;
         }
+
+        setReport(reportData);
       } catch (err: any) {
         console.error("Failed to load report:", err);
-        const msg = err?.response?.data?.Message || err?.response?.data?.message || err?.message || "Failed to load inspection report.";
+        const msg = axios.isAxiosError(err)
+          ? err.response?.data?.message || err.response?.data?.Message || err.message
+          : err?.message || "Failed to load inspection report.";
         setError(msg);
       } finally {
         setLoading(false);
@@ -94,7 +95,7 @@ export default function InspectionReportPage() {
   return (
     <div className="min-h-screen bg-slate-200 py-8 px-6 print:bg-white print:p-0 print:m-0 selection:bg-primary/10">
       <div className="max-w-[1200px] mx-auto transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
-        <ReportViewer report={report} />
+        {report ? <InspectionReport report={report} /> : null}
       </div>
     </div>
   );

@@ -531,7 +531,7 @@
     margin-bottom: 32px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
     border-radius: 4px;
   }
 

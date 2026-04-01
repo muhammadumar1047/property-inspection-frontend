@@ -4,11 +4,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
 
   typescript: {
-    ignoreBuildErrors: true, // ✅ Type errors ignore
+    ignoreBuildErrors: true, 
   },
 
   eslint: {
-    ignoreDuringBuilds: true, // ✅ ESLint warnings ignore
+    ignoreDuringBuilds: true, 
   },
 };
 

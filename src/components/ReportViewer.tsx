@@ -123,7 +123,8 @@ export default function ReportViewer({
     }
   }, []);
 
-  const areaCount = report.areas?.length || 0;
+  const areas = report.areas || report.reportAreas || [];
+  const areaCount = areas.length;
   const totalPages = 4 + areaCount;
 
   const defaultGuidelines = {
@@ -184,8 +185,9 @@ export default function ReportViewer({
 
   // Collect all images
   const allImages: { area: string; item: string; imgId: number; comment?: string; url?: string }[] = [];
-  report.areas?.forEach((area: any) => {
-    area.items?.forEach((item: any) => {
+  areas.forEach((area: any) => {
+    const items = area.items || area.reportItems || [];
+    items.forEach((item: any) => {
       // Direct images array (legacy/mock)
       item.images?.forEach((img: number) => {
         allImages.push({ area: area.name, item: item.name, imgId: img, comment: item.comments });
@@ -210,7 +212,7 @@ export default function ReportViewer({
   const navSections = [
     { id: "cover", label: "Cover Page", icon: "◎" },
     { id: "standards", label: "Standards", icon: "◈" },
-    ...report.areas?.map((a: any, i: number) => ({ id: `area-${i}`, label: a.name, icon: `${i + 1}` })) || [],
+    ...areas.map((a: any, i: number) => ({ id: `area-${i}`, label: a.name || a.areaName, icon: `${i + 1}` })),
     ...(allImages.length > 0 ? [{ id: "media", label: "Photos", icon: "◉" }] : []),
     { id: "summary", label: "Summary", icon: "◆" },
   ];
@@ -472,68 +474,96 @@ export default function ReportViewer({
         {/* ╔══════════════════════════════════════╗
            ║    PAGES 3+ — ROOM / AREA DETAILS    ║
            ╚══════════════════════════════════════╝ */}
-        {report.areas?.map((area: any, areaIdx: number) => (
-          <section key={areaIdx} id={`area-${areaIdx}`} className="a4-page">
-            <InnerHeader report={report} />
-            <div className="px-10 py-8 flex-1">
-              {/* Area Header */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-700)] flex items-center justify-center shadow-md shadow-[var(--primary)]/20">
-                  <span className="text-white font-black text-sm">{areaIdx + 1}</span>
+        {areas.map((area: any, areaIdx: number) => {
+          const items = area.items || area.reportItems || [];
+          const areaName = area.name || area.areaName || `Area ${areaIdx + 1}`;
+          
+          return (
+            <section key={areaIdx} id={`area-${areaIdx}`} className="a4-page !overflow-visible">
+              <InnerHeader report={report} />
+              <div className="px-10 py-8 flex-1">
+                {/* Area Header */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-700)] flex items-center justify-center shadow-md shadow-[var(--primary)]/20">
+                    <span className="text-white font-black text-sm">{areaIdx + 1}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 tracking-tight">{areaName}</h3>
+                    <p className="text-[11px] text-slate-400">{items.length} items inspected</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 tracking-tight">{area.name}</h3>
-                  <p className="text-[11px] text-slate-400">{area.items?.length || 0} items inspected</p>
-                </div>
-              </div>
 
-              {/* Condition Table */}
-              <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-slate-800 text-white">
-                      <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider w-[22%]">Item</th>
-                      <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Clean</th>
-                      <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Undam.</th>
-                      <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Working</th>
-                      <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Keys</th>
-                      <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider">Comments</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {area.items?.map((item: any, itemIdx: number) => (
-                      <tr key={itemIdx} className={`border-b border-slate-100 last:border-0 ${itemIdx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}`}>
-                        <td className="px-5 py-4 font-semibold text-slate-800">{item.name}</td>
-                        <td className="px-3 py-4 text-center"><StatusCell value={item.clean} /></td>
-                        <td className="px-3 py-4 text-center"><StatusCell value={item.undamaged} /></td>
-                        <td className="px-3 py-4 text-center"><StatusCell value={item.working} /></td>
-                        <td className="px-3 py-4 text-center"><StatusCell value={item.keys} /></td>
-                        <td className="px-5 py-4 text-slate-500 text-[13px]">
-                          {item.comments && <span className="text-slate-600">{item.comments}</span>}
-                          {item.images && item.images.length > 0 && (
-                            <span className="inline-flex gap-1 ml-2">
-                              {item.images.map((img: number) => (
-                                <a
-                                  key={img}
-                                  href={`#photo-${img}`}
-                                  className="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-600 pl-1.5 pr-2 py-0.5 rounded-full font-semibold hover:bg-blue-100 transition-colors no-underline border border-blue-100"
-                                >
-                                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                  {img}
-                                </a>
-                              ))}
-                            </span>
-                          )}
-                        </td>
+                {/* Condition Table */}
+                <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-800 text-white">
+                        <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider w-[22%]">Item</th>
+                        <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Clean</th>
+                        <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Undam.</th>
+                        <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Working</th>
+                        <th className="px-3 py-3.5 text-center text-[11px] font-semibold uppercase tracking-wider w-[10%]">Keys</th>
+                        <th className="text-left px-5 py-3.5 text-[11px] font-semibold uppercase tracking-wider">Comments</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {items.map((item: any, itemIdx: number) => {
+                        const itemName = item.name || item.itemName;
+                        // Helper for raw structures if mapper wasn't used
+                        const getVal = (field: string) => {
+                          if (item[field] !== undefined) return item[field];
+                          const conditions = item.reportItemConditions || [];
+                          const cond = conditions.find((c: any) => c.description?.toLowerCase() === field.toLowerCase());
+                          if (!cond || !cond.value) return null;
+                          return cond.value.toUpperCase() === 'Y' || cond.value.toUpperCase() === 'YES';
+                        };
+                        const comments = item.comments || item.reportItemComments?.map((c: any) => c.text).join('\n') || "";
+
+                        return (
+                          <tr key={itemIdx} className={`border-b border-slate-100 last:border-0 ${itemIdx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}`}>
+                            <td className="px-5 py-4 font-semibold text-slate-800">{itemName}</td>
+                            <td className="px-3 py-4 text-center"><StatusCell value={getVal('clean')} /></td>
+                            <td className="px-3 py-4 text-center"><StatusCell value={getVal('undamaged')} /></td>
+                            <td className="px-3 py-4 text-center"><StatusCell value={getVal('working')} /></td>
+                            <td className="px-3 py-4 text-center"><StatusCell value={getVal('keys')} /></td>
+                            <td className="px-5 py-4 text-slate-500 text-[13px]">
+                              {comments && <span className="text-slate-600 whitespace-pre-wrap">{comments}</span>}
+                              {(item.images || item.reportMedia) && (
+                                <span className="inline-flex gap-1 ml-2">
+                                  {(item.images || []).map((img: number) => (
+                                    <a
+                                      key={img}
+                                      href={`#photo-${img}`}
+                                      className="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-600 pl-1.5 pr-2 py-0.5 rounded-full font-semibold hover:bg-blue-100 transition-colors no-underline border border-blue-100"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                      {img}
+                                    </a>
+                                  ))}
+                                  {(item.mediaItems || []).map((media: any) => (
+                                    <a
+                                      key={media.id}
+                                      href={`#photo-${media.id}`}
+                                      className="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-600 pl-1.5 pr-2 py-0.5 rounded-full font-semibold hover:bg-blue-100 transition-colors no-underline border border-blue-100"
+                                    >
+                                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                      {media.id}
+                                    </a>
+                                  ))}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-            <PageFooter report={report} pageNum={nextPage()} totalPages={totalPages} />
-          </section>
-        ))}
+              <PageFooter report={report} pageNum={nextPage()} totalPages={totalPages} />
+            </section>
+          );
+        })}
 
         {/* ╔══════════════════════════════════════╗
            ║      PHOTOS & MEDIA PAGE             ║
@@ -593,7 +623,7 @@ export default function ReportViewer({
               <div className="grid grid-cols-4 gap-4 mt-4">
                 {[
                   { value: areaCount, label: "Areas", color: "from-[var(--primary)] to-[var(--primary-700)]" },
-                  { value: report.areas?.reduce((a: number, ar: any) => a + ar.items.length, 0), label: "Items", color: "from-emerald-500 to-emerald-600" },
+                  { value: areas.reduce((a: number, ar: any) => a + (ar.items || ar.reportItems || []).length, 0), label: "Items", color: "from-emerald-500 to-emerald-600" },
                   { value: allImages.length, label: "Photos", color: "from-blue-500 to-blue-600" },
                   { value: report.inspectionDate, label: "Date", color: "from-amber-500 to-amber-600", isText: true },
                 ].map((stat, i) => (
