@@ -535,6 +535,7 @@
     border-radius: 4px;
   }
 
+
   .page-header {
     display: flex;
     justify-content: space-between;
@@ -580,4 +581,17 @@
     .report-table { font-size: 10pt; }
     h1, h2, h3 { page-break-after: avoid; }
   }
+}
+
+/* Screen preview to match printed appearance */
+.report-print-preview .report-document {
+  max-width: none;
+}
+.report-print-preview .report-document > * + * {
+  margin-top: 0;
+}
+.report-print-preview .a4-page {
+  box-shadow: none;
+  margin-bottom: 0;
+  border-radius: 0;
 }

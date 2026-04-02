@@ -36,7 +36,6 @@ export default function InspectionReportPage() {
           setError("Inspection report data is empty.");
           return;
         }
-
         setReport(reportData);
       } catch (err: any) {
         console.error("Failed to load report:", err);
@@ -93,8 +92,8 @@ export default function InspectionReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-200 py-8 px-6 print:bg-white print:p-0 print:m-0 selection:bg-primary/10">
-      <div className="max-w-[1200px] mx-auto transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
+    <div className="min-h-screen bg-white p-0 m-0 selection:bg-primary/10 report-print-preview">
+      <div className="transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
         {report ? <InspectionReport report={report} /> : null}
       </div>
     </div>
