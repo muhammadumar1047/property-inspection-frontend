@@ -7,6 +7,7 @@ import { agencyManagementApi } from "@/lib/api/agencyManagement";
 import inspectionApi from "@/lib/api/inspection";
 import type { PropertyResponse, InspectionResponse } from "@/types/api";
 import { InspectionStatus, InspectionType } from "@/types/api";
+import { getInspectionActions, getInspectionReportUrl } from "@/lib/inspection-actions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SlidersHorizontal } from "lucide-react";
@@ -802,7 +803,7 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
   };
 
   const handleViewReport = (inspectionId: string) => {
-    const url = `/inspections/${inspectionId}/report`;
+    const url = getInspectionReportUrl(inspectionId);
     try {
       window.open(url, '_blank');
     } catch {
@@ -1433,68 +1434,55 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                                       <TableCell className="text-right">
                                         {(() => {
                                           const statusId = Number((inspection as any).inspectionStatusId || (inspection as any).inspectionStatus || 0);
+                                          const actions = getInspectionActions({
+                                            statusId,
+                                            onEditInspection: () => handleEditInspection(inspection),
+                                            onDeleteInspection: () => handleDeleteInspection(inspection.id, p.id),
+                                            onViewReport: () => handleViewReport(inspection.id),
+                                            onCloseReport: () => handleCloseReport(inspection.id, p.id),
+                                            onReopenReport: () => handleReopenReport(inspection.id, p.id),
+                                          });
 
-                                          if (statusId === InspectionStatus.Pending) {
-                                            return (
-                                              <DropdownMenu>
-                                                <DropdownMenuTrigger className="px-3 py-1 border rounded-md text-xs hover:bg-muted-100">Actions</DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                  <DropdownMenuItem onClick={() => handleEditInspection(inspection)}>Edit</DropdownMenuItem>
-                                                  <DropdownMenuItem onClick={() => handleDeleteInspection(inspection.id, p.id)}>Delete</DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                              </DropdownMenu>
-                                            );
+                                          if (actions.emptyLabel) {
+                                            return <span className="text-xs text-muted-foreground italic">{actions.emptyLabel}</span>;
                                           }
 
-                                          if (statusId === InspectionStatus.InProgress || statusId === InspectionStatus.InSync) {
-                                            return <span className="text-xs text-muted-foreground italic">No actions available</span>;
-                                          }
+                                          const hasPrimary = !!actions.primary;
+                                          const menuItems = actions.menu ?? [];
 
-                                          if (statusId === InspectionStatus.Completed) {
-                                            return (
-                                              <div className="inline-flex items-center gap-2">
+                                          return (
+                                            <div className="inline-flex items-center gap-2">
+                                              {actions.primary && (
                                                 <button
-                                                  onClick={() => handleEditReport(inspection.id, p.id)}
-                                                  className="px-3 py-1 bg-amber-500 text-white text-xs rounded-md transition-colors hover:bg-amber-600"
-                                                >
-                                                  Edit Report
-                                                </button>
-                                                <DropdownMenu>
-                                                  <DropdownMenuTrigger className="px-2 py-1 border rounded-md text-xs hover:bg-muted-100 flex items-center justify-center" aria-label="More actions">
-                                                    <SlidersHorizontal className="w-4 h-4" />
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleEditReport(inspection.id, p.id)}>Edit Report</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleCloseReport(inspection.id, p.id)}>Close Report</DropdownMenuItem>
-                                                  </DropdownMenuContent>
-                                                </DropdownMenu>
-                                              </div>
-                                            );
-                                          }
-
-                                          if (statusId === InspectionStatus.Closed) {
-                                            return (
-                                              <div className="inline-flex items-center gap-2">
-                                                <button
-                                                  onClick={() => handleViewReport(inspection.id)}
+                                                  onClick={actions.primary.onClick}
                                                   className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors"
                                                 >
-                                                  View Report
+                                                  {actions.primary.label}
                                                 </button>
+                                              )}
+                                              {menuItems.length > 0 && (
                                                 <DropdownMenu>
-                                                  <DropdownMenuTrigger className="px-2 py-1 border rounded-md text-xs hover:bg-muted-100 flex items-center justify-center" aria-label="More actions">
-                                                    <SlidersHorizontal className="w-4 h-4" />
+                                                  <DropdownMenuTrigger
+                                                    className={
+                                                      hasPrimary
+                                                        ? "px-2 py-1 border rounded-md text-xs hover:bg-muted-100 flex items-center justify-center"
+                                                        : "px-3 py-1 border rounded-md text-xs hover:bg-muted-100"
+                                                    }
+                                                    aria-label="More actions"
+                                                  >
+                                                    {hasPrimary ? <SlidersHorizontal className="w-4 h-4" /> : "Actions"}
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleViewReport(inspection.id)}>View Report</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleReopenReport(inspection.id, p.id)}>Reopen Report</DropdownMenuItem>
+                                                    {menuItems.map(item => (
+                                                      <DropdownMenuItem key={item.key} onClick={item.onClick}>
+                                                        {item.label}
+                                                      </DropdownMenuItem>
+                                                    ))}
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
-                                              </div>
-                                            );
-                                          }
-
-                                          return <span className="text-xs text-muted-foreground">No actions available</span>;
+                                              )}
+                                            </div>
+                                          );
                                         })()}
                                       </TableCell>
                                     </TableRow>
