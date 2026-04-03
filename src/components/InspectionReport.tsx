@@ -76,7 +76,7 @@ const getYoutubeEmbedUrl = (url: string) => {
 const StatusBadge = ({ value }: { value?: string | null }) => {
   if (!value) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[10px] font-bold text-slate-400">
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[11px] font-bold text-slate-400">
         —
       </span>
     );
@@ -86,7 +86,7 @@ const StatusBadge = ({ value }: { value?: string | null }) => {
   return (
     <span
       className={[
-        "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
+        "inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold",
         isYes ? "bg-emerald-100 text-emerald-700 border border-emerald-200" : "bg-rose-100 text-rose-700 border border-rose-200",
       ].join(" ")}
     >
@@ -104,7 +104,7 @@ const MediaGrid = ({ media, label }: { media: ReportMedia[]; label: string }) =>
         const youtubeEmbed = !isPhoto ? getYoutubeEmbedUrl(m.url) : null;
         return (
           <div key={m.mediaId} className="rounded-md border border-slate-200 overflow-hidden bg-white">
-            <div className="flex items-center justify-between bg-[var(--report-accent)] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+            <div className="flex items-center justify-between bg-[var(--report-accent)] px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
               <span className="truncate">{label}</span>
               <span>Image {index + 1}</span>
             </div>
@@ -123,7 +123,7 @@ const MediaGrid = ({ media, label }: { media: ReportMedia[]; label: string }) =>
                 Video link: {m.url}
               </div>
             )}
-            <div className="px-2 py-1 text-[10px] text-slate-500 border-t border-slate-100">
+            <div className="px-2 py-1 text-[11px] text-slate-500 border-t border-slate-100">
               {m.type.toUpperCase()} {m.comments?.length ? `• ${m.comments.join(" ")}` : ""}
             </div>
           </div>
@@ -134,9 +134,9 @@ const MediaGrid = ({ media, label }: { media: ReportMedia[]; label: string }) =>
 };
 
 const PageHeader = ({ address }: { address?: string | null }) => (
-  <div className="px-8 pt-4">
-    <div className="text-[10px] uppercase tracking-wide text-slate-400">Address of premises</div>
-    <div className="text-[12px] font-semibold text-slate-800">{displayValue(address)}</div>
+  <div className="px-10 pt-4">
+    <div className="text-[11px] uppercase tracking-wide text-slate-400">Address of premises</div>
+    <div className="text-[13px] font-semibold text-slate-800">{displayValue(address)}</div>
     <div className="mt-2 h-px w-full bg-slate-200" />
   </div>
 );
@@ -154,7 +154,7 @@ const PageFooter = ({
   inspectionDate?: string | null;
   tenantName?: string | null;
 }) => (
-  <div className="mt-auto border-t border-slate-200 px-8 py-3 text-[10px] text-slate-500">
+  <div className="mt-auto border-t border-slate-200 px-10 py-3 text-[11px] text-slate-500">
     <div className="flex items-center justify-between gap-4">
       <div className="flex flex-wrap items-center gap-6">
         <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ const PageFooter = ({
           <span className="font-semibold text-slate-600">{displayValue(tenantName)}</span>
         </div>
       </div>
-      <div className="text-[10px] text-slate-400">
+      <div className="text-[11px] text-slate-400">
         <span className="font-semibold text-slate-600">{page}</span> / {total}
       </div>
     </div>
@@ -208,7 +208,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
 
   return (
     <div
-      className="report-document mx-auto w-full max-w-[1000px] space-y-8 px-6 text-[12px] text-slate-700 sm:px-10"
+      className="report-document mx-auto w-full max-w-[1000px] space-y-8 px-12 text-[14px] text-slate-700 sm:px-20"
       style={
         {
           "--report-accent": accentColor,
@@ -217,7 +217,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
       }
     >
       <section className="a4-page overflow-hidden pt-6">
-        <div className="px-8">
+        <div className="px-10">
           <div className="flex items-start justify-between gap-6">
             <div className="flex items-start gap-3">
               {header.agencyLogoUrl ? (
@@ -230,32 +230,32 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 </div>
               ) : null}
               <div>
-                <div className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: theme.agencyNameColor || "inherit", fontFamily: accentFontFamily }}>
+                <div className="text-[13px] font-semibold uppercase tracking-wide" style={{ color: theme.agencyNameColor || "inherit", fontFamily: accentFontFamily }}>
                   {displayValue(header.agencyName)}
                 </div>
-                <div className="text-[11px] text-slate-500">{displayValue(header.agencyPhone)}</div>
-                <div className="text-[11px] text-slate-500">{displayValue(header.inspector?.name)}</div>
+                <div className="text-[12px] text-slate-500">{displayValue(header.agencyPhone)}</div>
+                <div className="text-[12px] text-slate-500">{displayValue(header.inspector?.name)}</div>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-800">
+              <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-800">
                 {displayValue(header.reportTitle) || "Ingoing Condition Report"}
               </div>
-              <div className="text-[11px] text-slate-500">{displayValue(header.reportType)}</div>
+              <div className="text-[12px] text-slate-500">{displayValue(header.reportType)}</div>
             </div>
           </div>
           <div className="mt-3 h-px w-full bg-slate-200" />
         </div>
 
-        <div className="px-8 py-6 flex-1">
+        <div className="px-10 py-6 flex-1">
           <div className="grid gap-6 lg:grid-cols-[1.05fr_1.4fr]">
             <div className="space-y-4">
               <div className="border border-slate-200 bg-slate-50/80">
                 <div className="flex">
                   <div className="w-1.5 bg-[var(--report-accent)]" />
                   <div className="flex-1 px-3 py-2">
-                    <div className="text-[10px] uppercase tracking-wide text-slate-500">Address of premises</div>
-                    <div className="mt-1 text-[12px] font-semibold text-slate-700">{displayValue(header.propertyAddress)}</div>
+                    <div className="text-[11px] uppercase tracking-wide text-slate-500">Address of premises</div>
+                    <div className="mt-1 text-[13px] font-semibold text-slate-700">{displayValue(header.propertyAddress)}</div>
                   </div>
                 </div>
               </div>
@@ -264,30 +264,30 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 <div className="flex">
                   <div className="w-1.5 bg-[var(--report-accent)]" />
                   <div className="flex-1 px-3 py-2">
-                    <div className="text-[10px] uppercase tracking-wide text-slate-500">Tenant&apos;s name(s)</div>
-                    <div className="mt-1 text-[12px] font-semibold text-slate-700">{displayValue(header.tenant?.name)}</div>
+                    <div className="text-[11px] uppercase tracking-wide text-slate-500">Tenant&apos;s name(s)</div>
+                    <div className="mt-1 text-[13px] font-semibold text-slate-700">{displayValue(header.tenant?.name)}</div>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="border border-slate-200 bg-slate-50/80 px-3 py-2">
-                  <div className="text-[10px] uppercase tracking-wide text-slate-500">Lease Start Date</div>
-                  <div className="mt-2 inline-flex items-center rounded bg-[var(--report-accent)] px-2 py-1 text-[11px] font-semibold text-white">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500">Lease Start Date</div>
+                  <div className="mt-2 inline-flex items-center rounded bg-[var(--report-accent)] px-2 py-1 text-[12px] font-semibold text-white">
                     {formatDate(header.leaseStartDate)}
                   </div>
                 </div>
                 <div className="border border-slate-200 bg-slate-50/80 px-3 py-2">
-                  <div className="text-[10px] uppercase tracking-wide text-slate-500">Inspection Date</div>
-                  <div className="mt-2 inline-flex items-center rounded bg-[var(--report-accent)] px-2 py-1 text-[11px] font-semibold text-white">
+                  <div className="text-[11px] uppercase tracking-wide text-slate-500">Inspection Date</div>
+                  <div className="mt-2 inline-flex items-center rounded bg-[var(--report-accent)] px-2 py-1 text-[12px] font-semibold text-white">
                     {formatDate(header.inspectionDate)}
                   </div>
                 </div>
               </div>
 
               <div className="border border-slate-200 bg-white px-3 py-3">
-                <div className="text-[10px] uppercase tracking-wide text-slate-500">Condition / Action Codes</div>
-                <div className="mt-3 flex items-center gap-4 text-[11px]">
+                <div className="text-[11px] uppercase tracking-wide text-slate-500">Condition / Action Codes</div>
+                <div className="mt-3 flex items-center gap-4 text-[12px]">
                   <div className="flex items-center gap-2">
                     <StatusBadge value="yes" />
                     <span className="text-slate-600">YES</span>
@@ -298,14 +298,58 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                   </div>
                 </div>
               </div>
+
+              <div className="border border-slate-200 bg-white">
+                <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  Sample Condition Report
+                </div>
+                <div className="bg-[var(--report-accent)] px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-white">
+                  Bedroom 2
+                </div>
+                <div className="grid grid-cols-[2.2fr_repeat(4,0.9fr)] gap-2 border-b border-slate-200 bg-slate-100 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+                  <div>Item</div>
+                  <div className="text-center">Clean</div>
+                  <div className="text-center">Undamaged</div>
+                  <div className="text-center">Working</div>
+                  <div className="text-center">Keys</div>
+                </div>
+                {[
+                  "Walls",
+                  "Blinds / Curtains",
+                  "Door / Doorframe",
+                  "TV aerial port",
+                  "Floors covering",
+                ].map((label, rowIdx) => (
+                  <div
+                    key={label}
+                    className={`grid grid-cols-[2.2fr_repeat(4,0.9fr)] gap-2 px-3 py-1.5 text-[12px] ${
+                      rowIdx % 2 === 0 ? "bg-white" : "bg-slate-50/70"
+                    }`}
+                  >
+                    <div className="text-slate-700">{label}</div>
+                    <div className="flex justify-center">
+                      <StatusBadge value={rowIdx % 2 === 0 ? "yes" : "no"} />
+                    </div>
+                    <div className="flex justify-center">
+                      <StatusBadge value="yes" />
+                    </div>
+                    <div className="flex justify-center">
+                      <StatusBadge value={rowIdx === 1 ? "no" : "yes"} />
+                    </div>
+                    <div className="flex justify-center">
+                      <StatusBadge value={rowIdx === 3 ? "no" : "yes"} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-4">
               <div className="border border-slate-200 bg-white px-4 py-3">
-                <div className="inline-flex items-center rounded-sm bg-[var(--report-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <div className="inline-flex items-center rounded-sm bg-[var(--report-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
                   How to complete this report
                 </div>
-                <div className="mt-3 space-y-2 text-[11px] leading-relaxed text-slate-600">
+                <div className="mt-3 space-y-2 text-[12px] leading-relaxed text-slate-600">
                   <p>Three copies, or one electronic copy, of this condition report should be completed and signed by the landlord or the landlord’s agent.</p>
                   <p>Two copies, or one electronic copy, of the report, which have been completed and signed by the landlord or landlord’s agent, must be given to the tenant before or when the tenant signs the agreement. The landlord or landlord’s agent keeps the third copy or an electronic copy.</p>
                   <p>Before the tenancy begins, the landlord or the landlord’s agent must inspect the residential premises and record the condition of the premises by indicating whether the particular room item is clean, undamaged and working by placing “Y” (YES) or “N” (NO) in the appropriate column. Where necessary, comments should be included in the report.</p>
@@ -314,10 +358,10 @@ export default function InspectionReport({ report }: { report: InspectionReportD
               </div>
 
               <div className="border border-slate-200 bg-white px-4 py-3">
-                <div className="inline-flex items-center rounded-sm bg-[var(--report-accent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <div className="inline-flex items-center rounded-sm bg-[var(--report-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
                   Important information
                 </div>
-                <div className="mt-3 space-y-2 text-[11px] leading-relaxed text-slate-600">
+                <div className="mt-3 space-y-2 text-[12px] leading-relaxed text-slate-600">
                   <p>This condition report is an important record of the condition of the residential premises when the tenancy begins and may be used as evidence of the state of repair or general condition of the premises.</p>
                   <p>At the end of the tenancy the premises will be inspected and the condition of the premises at that time will be compared to that stated in the original condition report.</p>
                   <p>A condition report should be filled out whether or not a rental bond is paid.</p>
@@ -340,12 +384,12 @@ export default function InspectionReport({ report }: { report: InspectionReportD
       {orderedAreas.map((area, idx) => (
         <section key={area.areaId} className="a4-page pt-4">
           <PageHeader address={displayValue(header.propertyAddress)} />
-          <div className="px-8 py-5 flex-1">
+          <div className="px-10 py-5 flex-1">
             <div className="border border-slate-200 bg-white">
-              <div className="bg-[var(--report-accent)] px-3 py-2 text-[12px] font-semibold uppercase tracking-wide text-white">
+              <div className="bg-[var(--report-accent)] px-3 py-2 text-[13px] font-semibold uppercase tracking-wide text-white">
                 {displayValue(area.areaName)}
               </div>
-              <div className="grid grid-cols-[2.2fr_0.9fr_2fr_1fr] gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
+              <div className="grid grid-cols-[2.2fr_0.9fr_2fr_1fr] gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
                 <div>Condition</div>
                 <div>Result</div>
                 <div>Inspector Comments</div>
@@ -354,13 +398,13 @@ export default function InspectionReport({ report }: { report: InspectionReportD
 
               {area.items.map((item) => (
                 <div key={item.itemId} className="border-b border-slate-200 last:border-0">
-                  <div className="bg-[var(--report-accent)]/90 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
+                  <div className="bg-[var(--report-accent)]/90 px-3 py-2 text-[12px] font-semibold uppercase tracking-wide text-white">
                     {displayValue(item.itemName)}
                   </div>
                   {(item.conditions || []).map((condition, conditionIndex) => (
                     <div
                       key={condition.id}
-                      className={`grid grid-cols-[2.2fr_0.9fr_2fr_1fr] gap-3 px-3 py-2 text-[11px] ${
+                      className={`grid grid-cols-[2.2fr_0.9fr_2fr_1fr] gap-3 px-3 py-2 text-[12px] ${
                         conditionIndex % 2 === 0 ? "bg-white" : "bg-slate-50/70"
                       }`}
                     >
@@ -379,7 +423,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                             {item.media.map((m, mediaIndex) => (
                               <span
                                 key={m.mediaId}
-                                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[9px] font-semibold text-slate-500"
+                                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500"
                               >
                                 Media {mediaIndex + 1}
                               </span>
@@ -409,4 +453,3 @@ export default function InspectionReport({ report }: { report: InspectionReportD
     </div>
   );
 }
-
