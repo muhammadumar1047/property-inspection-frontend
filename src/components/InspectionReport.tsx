@@ -132,7 +132,15 @@ const StatusBadge = ({ value }: { value?: string | null }) => {
   );
 };
 
-const MediaGrid = ({ media, label }: { media: ReportMedia[]; label: string }) => {
+const MediaGrid = ({
+  media,
+  label,
+  onSelect,
+}: {
+  media: ReportMedia[];
+  label: string;
+  onSelect: (item: ReportMedia, itemLabel: string, mediaIndex: number) => void;
+}) => {
   if (!media || media.length === 0) return null;
   return (
     <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -145,21 +153,31 @@ const MediaGrid = ({ media, label }: { media: ReportMedia[]; label: string }) =>
               <span className="truncate">{label}</span>
               <span>Image {index + 1}</span>
             </div>
-            {isPhoto ? (
-              <img src={m.url} alt="Inspection media" className="h-40 w-full object-cover" />
-            ) : youtubeEmbed ? (
-              <iframe
-                className="h-40 w-full"
-                src={youtubeEmbed}
-                title="Inspection video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <div className="h-40 w-full flex items-center justify-center text-xs text-slate-500 bg-slate-50 px-3 text-center">
-                Video link: {m.url}
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={() => onSelect(m, label, index)}
+              className="relative block h-40 w-full bg-transparent text-left"
+              aria-label="Open media"
+            >
+              <span className="absolute left-2 top-2 z-10 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                Media {index + 1}
+              </span>
+              {isPhoto ? (
+                <img src={m.url} alt="Inspection media" className="h-40 w-full object-cover" />
+              ) : youtubeEmbed ? (
+                <iframe
+                  className="h-40 w-full pointer-events-none"
+                  src={youtubeEmbed}
+                  title="Inspection video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="h-40 w-full flex items-center justify-center text-xs text-slate-500 bg-slate-50 px-3 text-center">
+                  Video link: {m.url}
+                </div>
+              )}
+            </button>
             <div className="px-2 py-1 text-[11px] text-slate-500 border-t border-slate-100">
               {m.type.toUpperCase()} {m.comments?.length ? `• ${m.comments.join(" ")}` : ""}
             </div>
@@ -242,6 +260,15 @@ export default function InspectionReport({ report }: { report: InspectionReportD
   const accentColor = theme.accentColor || theme.primaryColor || DEFAULT_ACCENT;
   const fontFamily = theme.fontFamily || "Helvetica, Arial, sans-serif";
   const accentFontFamily = theme.accentFontFamily || fontFamily;
+  const [selectedMedia, setSelectedMedia] = React.useState<{
+    media: ReportMedia;
+    label: string;
+    index: number;
+  } | null>(null);
+  const selectedIsPhoto = selectedMedia?.media.type === "photo";
+  const selectedYoutubeEmbed = selectedMedia ? getYoutubeEmbedUrl(selectedMedia.media.url) : null;
+  const selectedItemLabel = selectedMedia?.label ? displayValue(selectedMedia.label) : "";
+  const selectedMediaNumber = selectedMedia ? `Media ${selectedMedia.index + 1}` : "";
 
   return (
     <div
@@ -472,7 +499,11 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                         </div>
                       ))}
                       <div className="px-3 py-3">
-                        <MediaGrid media={item.media || []} label={displayValue(item.itemName)} />
+                        <MediaGrid
+                          media={item.media || []}
+                          label={displayValue(item.itemName)}
+                          onSelect={(media, label, index) => setSelectedMedia({ media, label, index })}
+                        />
                       </div>
                     </div>
                   ))}
@@ -550,7 +581,11 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                         </div>
                         {hasMedia ? (
                           <div className="px-3 py-3">
-                            <MediaGrid media={item.media || []} label={displayValue(item.itemName)} />
+                            <MediaGrid
+                              media={item.media || []}
+                              label={displayValue(item.itemName)}
+                              onSelect={(media, label, index) => setSelectedMedia({ media, label, index })}
+                            />
                           </div>
                         ) : null}
                       </div>
@@ -569,6 +604,58 @@ export default function InspectionReport({ report }: { report: InspectionReportD
           />
         </section>
       ))}
+
+      {selectedMedia ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setSelectedMedia(null)}
+        >
+          <div
+            className="relative w-full max-w-4xl overflow-hidden rounded-lg bg-white shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedMedia(null)}
+              className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[12px] font-semibold text-slate-600 shadow"
+              aria-label="Close media"
+            >
+              Close
+            </button>
+            <div className="bg-[var(--report-accent)] px-4 py-2 text-[12px] font-semibold uppercase tracking-wide text-white">
+              {selectedMediaNumber ? `${selectedMediaNumber} • ` : ""}Media Preview
+              {selectedItemLabel ? ` • ${selectedItemLabel}` : ""}
+            </div>
+            <div className="flex items-center justify-center bg-black">
+              {selectedIsPhoto ? (
+                <img
+                  src={selectedMedia.media.url}
+                  alt="Inspection media"
+                  className="max-h-[80vh] w-full object-contain"
+                />
+              ) : selectedYoutubeEmbed ? (
+                <iframe
+                  className="h-[80vh] w-full"
+                  src={selectedYoutubeEmbed}
+                  title="Inspection video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="p-6 text-center text-sm text-slate-100">
+                  Video link: {selectedMedia.media.url}
+                </div>
+              )}
+            </div>
+            <div className="border-t border-slate-200 px-4 py-2 text-[12px] text-slate-500">
+              {selectedMedia.media.type.toUpperCase()}{" "}
+              {selectedMedia.media.comments?.length ? `• ${selectedMedia.media.comments.join(" ")}` : ""}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
