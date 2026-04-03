@@ -17,7 +17,7 @@ const formatValue = (condition: ReportCondition) => {
 
   if (condition.type === "boolean") {
     if (!trimmed) return "N/A";
-    return isTruthy(raw) ? "Y" : "N";
+    return isTruthy(raw) ? "Yes" : "No";
   }
 
   if (condition.type === "date") {
@@ -38,11 +38,7 @@ const formatValue = (condition: ReportCondition) => {
 
 const displayValue = (value?: string | null) => {
   const trimmed = (value || "").toString().trim();
-  if (!trimmed) return "N/A";
-  const normalized = trimmed.toLowerCase();
-  if (normalized === "true") return "Y";
-  if (normalized === "false") return "N";
-  return trimmed;
+  return trimmed || "N/A";
 };
 
 const formatDate = (value?: string | null) => {
@@ -196,9 +192,6 @@ const resolveCoverImage = (report: InspectionReportData) => {
 export default function InspectionReport({ report }: { report: InspectionReportData }) {
   const header = report.header || ({} as InspectionReportData["header"]);
   const areas = report.areas || [];
-  const utilitiesAreas = areas.filter((area) => area.areaName?.toString().trim().toLowerCase().includes("utilities"));
-  const nonUtilitiesAreas = areas.filter((area) => !area.areaName?.toString().trim().toLowerCase().includes("utilities"));
-  const orderedAreas = [...utilitiesAreas, ...nonUtilitiesAreas];
   const totalPages = 1 + areas.length;
   const coverImage = resolveCoverImage(report);
   const theme = header.agencyWhiteLabel || {};
@@ -208,7 +201,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
 
   return (
     <div
-      className="report-document mx-auto w-full max-w-[1000px] space-y-8 px-6 text-[12px] text-slate-700 sm:px-10"
+      className="report-document space-y-8 text-[11px] text-slate-700"
       style={
         {
           "--report-accent": accentColor,
@@ -337,7 +330,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
         />
       </section>
 
-      {orderedAreas.map((area, idx) => (
+      {areas.map((area, idx) => (
         <section key={area.areaId} className="a4-page pt-4">
           <PageHeader address={displayValue(header.propertyAddress)} />
           <div className="px-8 py-5 flex-1">
