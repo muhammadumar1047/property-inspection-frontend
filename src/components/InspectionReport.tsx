@@ -51,6 +51,43 @@ const formatDate = (value?: string | null) => {
   return Number.isNaN(parsed.getTime()) ? displayValue(value) : parsed.toLocaleDateString();
 };
 
+const CONDITION_COLUMNS = [
+  { key: "clean", label: "Clean" },
+  { key: "undamaged", label: "Undamaged" },
+  { key: "working", label: "Working" },
+  { key: "keys", label: "Keys" },
+];
+
+const normalizeConditionKey = (description?: string | null) => {
+  const normalized = (description || "").toString().trim().toLowerCase();
+  if (!normalized) return null;
+  if (normalized.includes("clean")) return "clean";
+  if (normalized.includes("undamaged") || normalized.includes("damage")) return "undamaged";
+  if (normalized.includes("working") || normalized.includes("works") || normalized.includes("operational")) return "working";
+  if (normalized.includes("keys") || normalized.includes("key")) return "keys";
+  return null;
+};
+
+const buildConditionMap = (conditions?: ReportCondition[] | null) => {
+  const map: Record<string, ReportCondition | undefined> = {};
+  (conditions || []).forEach((condition) => {
+    const key = normalizeConditionKey(condition.description);
+    if (key && !map[key]) {
+      map[key] = condition;
+    }
+  });
+  return map;
+};
+
+const splitComments = (value?: string | null) => {
+  const raw = (value || "").toString().trim();
+  if (!raw) return [];
+  return raw
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+};
+
 const getYoutubeEmbedUrl = (url: string) => {
   try {
     const parsed = new URL(url);
@@ -389,56 +426,138 @@ export default function InspectionReport({ report }: { report: InspectionReportD
               <div className="bg-[var(--report-accent)] px-3 py-2 text-[13px] font-semibold uppercase tracking-wide text-white">
                 {displayValue(area.areaName)}
               </div>
-              <div className="grid grid-cols-[2.2fr_0.9fr_2fr_1fr] gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                <div>Condition</div>
-                <div>Result</div>
-                <div>Inspector Comments</div>
-                <div>Tenant Comments</div>
-              </div>
-
-              {area.items.map((item) => (
-                <div key={item.itemId} className="border-b border-slate-200 last:border-0">
-                  <div className="bg-[var(--report-accent)]/90 px-3 py-2 text-[12px] font-semibold uppercase tracking-wide text-white">
-                    {displayValue(item.itemName)}
+              {area.areaName?.toString().trim().toLowerCase().includes("utilities") ? (
+                <>
+                  <div className="grid grid-cols-[2.2fr_0.9fr_2fr] gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    <div>Condition</div>
+                    <div>Result</div>
+                    <div>Inspector Comments</div>
                   </div>
-                  {(item.conditions || []).map((condition, conditionIndex) => (
-                    <div
-                      key={condition.id}
-                      className={`grid grid-cols-[2.2fr_0.9fr_2fr_1fr] gap-3 px-3 py-2 text-[12px] ${
-                        conditionIndex % 2 === 0 ? "bg-white" : "bg-slate-50/70"
-                      }`}
-                    >
-                      <div className="text-slate-700">{displayValue(condition.description)}</div>
-                      <div className="flex items-center gap-2">
-                        {condition.type === "boolean" ? (
-                          <StatusBadge value={condition.value} />
-                        ) : (
-                          <span className="text-slate-700">{formatValue(condition)}</span>
-                        )}
+
+                  {area.items.map((item) => (
+                    <div key={item.itemId} className="border-b border-slate-200 last:border-0">
+                      <div className="bg-[var(--report-accent)]/90 px-3 py-2 text-[12px] font-semibold uppercase tracking-wide text-white">
+                        {displayValue(item.itemName)}
                       </div>
-                      <div className="text-slate-500">
-                        {conditionIndex === 0 ? displayValue(item.inspectorComments) : ""}
-                        {conditionIndex === 0 && item.media?.length ? (
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {item.media.map((m, mediaIndex) => (
-                              <span
-                                key={m.mediaId}
-                                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500"
-                              >
-                                Media {mediaIndex + 1}
-                              </span>
-                            ))}
+                      {(item.conditions || []).map((condition, conditionIndex) => (
+                        <div
+                          key={condition.id}
+                          className={`grid grid-cols-[2.2fr_0.9fr_2fr] gap-3 px-3 py-2 text-[12px] ${
+                            conditionIndex % 2 === 0 ? "bg-white" : "bg-slate-50/70"
+                          }`}
+                        >
+                          <div className="text-slate-700">{displayValue(condition.description)}</div>
+                          <div className="flex items-center gap-2">
+                            {condition.type === "boolean" ? (
+                              <StatusBadge value={condition.value} />
+                            ) : (
+                              <span className="text-slate-700">{formatValue(condition)}</span>
+                            )}
+                          </div>
+                          <div className="text-slate-500">
+                            {conditionIndex === 0 ? displayValue(item.inspectorComments) : ""}
+                            {conditionIndex === 0 && item.media?.length ? (
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {item.media.map((m, mediaIndex) => (
+                                  <span
+                                    key={m.mediaId}
+                                    className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500"
+                                  >
+                                    Media {mediaIndex + 1}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="px-3 py-3">
+                        <MediaGrid media={item.media || []} label={displayValue(item.itemName)} />
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr] gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    <div>Item</div>
+                    {CONDITION_COLUMNS.map((column) => (
+                      <div key={column.key} className="text-center">
+                        {column.label}
+                      </div>
+                    ))}
+                    <div>Inspector Comments</div>
+                  </div>
+
+                  {area.items.map((item, itemIndex) => {
+                    const conditionMap = buildConditionMap(item.conditions);
+                    const rowBackground = itemIndex % 2 === 0 ? "bg-white" : "bg-slate-50/70";
+                    const hasComments = Boolean(item.inspectorComments?.toString().trim());
+                    const hasMedia = Boolean(item.media?.length);
+                    const commentEntries = splitComments(item.inspectorComments);
+
+                    return (
+                      <div key={item.itemId} className="border-b border-slate-200 last:border-0">
+                        <div className={`grid grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr] gap-2 px-3 py-2 text-[12px] ${rowBackground}`}>
+                          <div className="text-slate-700">{displayValue(item.itemName)}</div>
+                          {CONDITION_COLUMNS.map((column) => {
+                            const condition = conditionMap[column.key];
+                            if (!condition) {
+                              return (
+                                <div key={column.key} className="flex justify-center">
+                                  <StatusBadge value={null} />
+                                </div>
+                              );
+                            }
+                            if (condition.type === "boolean") {
+                              return (
+                                <div key={column.key} className="flex justify-center">
+                                  <StatusBadge value={condition.value} />
+                                </div>
+                              );
+                            }
+                            return (
+                              <div key={column.key} className="flex justify-center text-[11px] font-semibold text-slate-600">
+                                {formatValue(condition)}
+                              </div>
+                            );
+                          })}
+                          <div className="text-[11px] text-slate-500">
+                            {commentEntries.length ? (
+                              <div className="space-y-1">
+                                {commentEntries.map((entry, entryIndex) => (
+                                  <div key={`${item.itemId}-comment-${entryIndex}`}>
+                                    {entryIndex + 1}. {entry}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400">N/A</span>
+                            )}
+                            {hasMedia ? (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {item.media?.map((m, mediaIndex) => (
+                                  <span
+                                    key={m.mediaId}
+                                    className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500"
+                                  >
+                                    Media {mediaIndex + 1}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                        {hasMedia ? (
+                          <div className="px-3 py-3">
+                            <MediaGrid media={item.media || []} label={displayValue(item.itemName)} />
                           </div>
                         ) : null}
                       </div>
-                      <div className="text-slate-400">N/A</div>
-                    </div>
-                  ))}
-                  <div className="px-3 py-3">
-                    <MediaGrid media={item.media || []} label={displayValue(item.itemName)} />
-                  </div>
-                </div>
-              ))}
+                    );
+                  })}
+                </>
+              )}
             </div>
           </div>
           <PageFooter
