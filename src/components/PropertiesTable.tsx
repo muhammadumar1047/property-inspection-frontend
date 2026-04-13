@@ -18,6 +18,7 @@ import { Trash2, Eye, ChevronDown, ChevronUp, Edit, X, User, Home } from "lucide
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import Modal from "@/components/ui/Modal";
+import { mergePropertyImages, parsePropertyImages, serializePropertyImages } from "@/lib/propertyImages";
 
 interface PropertiesTableProps {
   onCreateProperty?: () => void;
@@ -99,6 +100,8 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
   const [editingProperty, setEditingProperty] = useState<PropertyResponse | null>(null);
   const [editFormData, setEditFormData] = useState<any>({});
   const [editLoading, setEditLoading] = useState(false);
+  const [editSelectedImages, setEditSelectedImages] = useState<File[]>([]);
+  const [editImagePreviews, setEditImagePreviews] = useState<string[]>([]);
 
   // Tenancy edit modal state
   const [showTenancyEditModal, setShowTenancyEditModal] = useState(false);
@@ -271,6 +274,12 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
     return () => { ignore = true; };
   }, [page, pageSize, filters.isActive, filters.propertyType, filters.propertyManagerId, filters.tenant, filters.owner, filters.suburb, searchResults]);
 
+  useEffect(() => {
+    return () => {
+      editImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [editImagePreviews]);
+
   const [deleteTarget, setDeleteTarget] = useState<PropertyResponse | null>(null);
 
   const onDelete = (id: string) => {
@@ -372,15 +381,50 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
         keyNo: property.keyNo || '',
         alarmCode: property.alarmCode || '',
         propertyNotes: property.propertyNotes || '',
-        propertyImages: property.propertyImages || '',
+        propertyImages: serializePropertyImages(property.propertyImages) || '',
         propertyLayoutId: (() => {
           const raw = (property as any).PropertyLayoutId ?? (property as any).propertyLayoutId ?? null;
           const num = raw != null ? Number(raw) : null;
           return num && !Number.isNaN(num) ? num : null;
         })(),
       });
+      setEditSelectedImages([]);
+      setEditImagePreviews([]);
       setShowEditModal(true);
     }
+  };
+
+  const handleEditImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) {
+      setEditSelectedImages([]);
+      setEditImagePreviews([]);
+      return;
+    }
+
+    const validImages = files.filter((file) => file.type.startsWith('image/'));
+    if (validImages.length !== files.length) {
+      setError("Only image files are allowed.");
+    }
+
+    editImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    setEditSelectedImages(validImages);
+    setEditImagePreviews(validImages.map((file) => URL.createObjectURL(file)));
+  };
+
+  const removeEditExistingImage = (url: string) => {
+    const next = parsePropertyImages(editFormData.propertyImages).filter((img) => img !== url);
+    setEditFormData({ ...editFormData, propertyImages: serializePropertyImages(next) });
+  };
+
+  const removeEditSelectedImage = (index: number) => {
+    const nextFiles = editSelectedImages.filter((_, i) => i !== index);
+    const nextPreviews = editImagePreviews.filter((_, i) => i !== index);
+    editImagePreviews.forEach((url, i) => {
+      if (i === index) URL.revokeObjectURL(url);
+    });
+    setEditSelectedImages(nextFiles);
+    setEditImagePreviews(nextPreviews);
   };
 
   const handleUpdateProperty = async () => {
@@ -452,13 +496,26 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
         KeyNo: editFormData.keyNo || undefined,
         AlarmCode: editFormData.alarmCode || undefined,
         PropertyNotes: editFormData.propertyNotes || undefined,
-        PropertyImages: editFormData.propertyImages || null,
+        PropertyImages: serializePropertyImages(editFormData.propertyImages),
         PropertyLayoutId: editFormData.propertyLayoutId ?? editingProperty.propertyLayoutId ?? null,
         Landlords: landlordsPayload,
         Tenancies: tenanciesPayload,
       } as any;
 
       await propertyApi.update(editingProperty.id, payload);
+
+      if (editSelectedImages.length > 0) {
+        const uploads = await propertyApi.uploadImages(
+          editingProperty.id,
+          editSelectedImages,
+          effectiveAgencyId ? String(effectiveAgencyId) : undefined,
+        );
+        const newUrls = uploads.map((u) => u.fileUrl);
+        const merged = mergePropertyImages(editFormData.propertyImages, newUrls);
+        setEditFormData((prev: any) => ({ ...prev, propertyImages: serializePropertyImages(merged) }));
+        setEditSelectedImages([]);
+        setEditImagePreviews([]);
+      }
       // Reload properties
       const allProperties = await propertyApi.getAll();
 
@@ -1230,9 +1287,9 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                     <TableCell className="font-medium min-w-[100px]">
                       <div className="flex items-center">
                         <div className="w-20 h-14 rounded-md overflow-hidden bg-muted-100 flex items-center justify-center shrink-0 shadow-sm border border-gray-100">
-                          {p.propertyImages ? (
+                          {parsePropertyImages(p.propertyImages)[0] ? (
                             <img
-                              src={p.propertyImages}
+                              src={parsePropertyImages(p.propertyImages)[0]}
                               alt={`Property ${p.id}`}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -1245,8 +1302,8 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                             />
                           ) : null}
                           <div
-                            className={`w-full h-full flex items-center justify-center text-muted-400 ${p.propertyImages ? 'hidden' : 'flex'}`}
-                            style={{ display: p.propertyImages ? 'none' : 'flex' }}
+                            className={`w-full h-full flex items-center justify-center text-muted-400 ${parsePropertyImages(p.propertyImages)[0] ? 'hidden' : 'flex'}`}
+                            style={{ display: parsePropertyImages(p.propertyImages)[0] ? 'none' : 'flex' }}
                           >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -1736,16 +1793,51 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                 />
               </div>
 
-              {/* Property Images URL */}
+              {/* Property Images */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-muted-700 mb-2">Property Images URL</label>
+                <label className="block text-sm font-medium text-muted-700 mb-2">Property Images</label>
                 <input
-                  type="text"
+                  type="file"
+                  accept="image/*"
+                  multiple
                   className="w-full px-3 py-2 border border-muted-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  value={editFormData.propertyImages}
-                  onChange={(e) => setEditFormData({ ...editFormData, propertyImages: e.target.value })}
-                  placeholder="Enter property images URL"
+                  onChange={handleEditImageSelection}
                 />
+                <p className="mt-1 text-xs text-muted-500">Upload image files (JPG, PNG, WebP). You can upload multiple images.</p>
+
+                {parsePropertyImages(editFormData.propertyImages).length > 0 && (
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {parsePropertyImages(editFormData.propertyImages).map((url: string) => (
+                      <div key={url} className="relative rounded-lg border border-muted-200 overflow-hidden">
+                        <img src={url} alt="Property" className="h-24 w-full object-cover" />
+                        <button
+                          type="button"
+                          className="absolute right-1 top-1 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white"
+                          onClick={() => removeEditExistingImage(url)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {editImagePreviews.length > 0 && (
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {editImagePreviews.map((preview, index) => (
+                      <div key={preview} className="relative rounded-lg border border-muted-200 overflow-hidden">
+                        <img src={preview} alt="Preview" className="h-24 w-full object-cover" />
+                        <button
+                          type="button"
+                          className="absolute right-1 top-1 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white"
+                          onClick={() => removeEditSelectedImage(index)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Property Notes */}

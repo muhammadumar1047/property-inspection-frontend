@@ -525,7 +525,7 @@ export interface PropertyResponse extends BaseEntityDto {
   keyNo?: string | null;
   alarmCode?: string | null;
   propertyNotes?: string | null;
-  propertyImages?: string | null;
+  propertyImages?: string | string[] | null;
   propertyLayoutId: string;
   propertyManagerName?: string | null;
   latitude?: number | null;
@@ -536,6 +536,13 @@ export interface PropertyResponse extends BaseEntityDto {
   propertyLayout?: PropertyLayoutResponse | null;
   landlords: LandlordDto[];
   tenancies: TenancyDto[];
+}
+
+export interface PropertyImageUploadResponse {
+  imageGuid: string;
+  fileKey: string;
+  fileUrl: string;
+  contentType: string;
 }
 
 export interface PropertyRequestBase {
@@ -553,7 +560,7 @@ export interface PropertyRequestBase {
   keyNo?: string | null;
   alarmCode?: string | null;
   propertyNotes?: string | null;
-  propertyImages?: string | null;
+  propertyImages?: string | string[] | null;
   propertyLayoutId: string;
   latitude?: number | null;
   longitude?: number | null;
@@ -904,4 +911,3 @@ export interface UpdateUserRequest {
 //  PropertyResponse, CreatePropertyRequest, InspectionResponse,
 //  CreateInspectionRequest, PropertyLayoutResponse, LayoutAreaResponse,
 //  and LayoutItemResponse directly instead.)
-

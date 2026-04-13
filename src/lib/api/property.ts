@@ -9,8 +9,10 @@ import {
   ApiResponse,
   PagedResult,
   InspectionFrequencyType,
+  PropertyImageUploadResponse,
 } from '@/types/api';
 import { unwrapApiResponse } from './helpers';
+import { serializePropertyImages } from '@/lib/propertyImages';
 
 const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
 
@@ -129,6 +131,7 @@ export const propertyApi = {
       inspectionFrequencyType: numericFreq as any,
       inspectionFrequencyNumber: Number(property.inspectionFrequencyNumber) || 1,
     };
+    (safePayload as any).propertyImages = serializePropertyImages((safePayload as any).propertyImages);
     const response = await api.post<ApiResponse<PropertyResponse>>('/property', safePayload);
     return unwrapApiResponse<PropertyResponse>(response.data);
   },
@@ -139,6 +142,9 @@ export const propertyApi = {
       ...property,
       id, // ensure Id matches route
     };
+    if (body.propertyImages !== undefined) {
+      body.propertyImages = serializePropertyImages(body.propertyImages);
+    }
     if (body.inspectionFrequencyType != null) {
       const parsed = Number(body.inspectionFrequencyType);
       body.inspectionFrequencyType = !Number.isNaN(parsed) && parsed > 0 ? parsed : body.inspectionFrequencyType;
@@ -150,6 +156,28 @@ export const propertyApi = {
   delete: async (id: string): Promise<boolean> => {
     const response = await api.delete<ApiResponse<boolean>>(`/property/${id}`);
     return unwrapApiResponse<boolean>(response.data);
+  },
+
+  uploadImages: async (
+    propertyId: string,
+    files: File[],
+    agencyId?: string | null,
+  ): Promise<PropertyImageUploadResponse[]> => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    const response = await api.post<ApiResponse<PropertyImageUploadResponse[]>>(
+      `/property/${propertyId}/images`,
+      formData,
+      {
+        params: agencyId ? { agencyId } : undefined,
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    );
+
+    return unwrapApiResponse<PropertyImageUploadResponse[]>(response.data);
   },
 
   // -----------------------------------------------------------------------
@@ -322,8 +350,6 @@ export const propertyApi = {
 };
 
 export default propertyApi;
-
-
 
 
 

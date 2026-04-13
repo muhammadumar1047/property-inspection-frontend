@@ -16,6 +16,7 @@ import { roleApi } from "@/lib/api/role";
 import { userApi } from "@/lib/api/user";
 import { useAuth } from "@/contexts/AuthContext";
 import { InspectionFrequencyType, PropertyType, RentFrequency, type CreatePropertyRequest } from "@/types/api";
+import { mergePropertyImages, parsePropertyImages, serializePropertyImages } from "@/lib/propertyImages";
 import { Building2, Bell, User, LogOut, MapPin, X, Info } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 
@@ -85,6 +86,8 @@ export default function CreatePropertyWizard() {
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [selectedLayoutDetails, setSelectedLayoutDetails] = useState<any>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   // Removed separate structure step
 
   const STORAGE_KEY = "pc360:create-property-wizard";
@@ -186,6 +189,45 @@ export default function CreatePropertyWizard() {
     } catch { }
   }, [activeStep, propertyData, createdPropertyId, tenants]);
 
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
+
+  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) {
+      setSelectedImages([]);
+      setImagePreviews([]);
+      return;
+    }
+
+    const validImages = files.filter((file) => file.type.startsWith("image/"));
+    if (validImages.length !== files.length) {
+      setError("Only image files are allowed.");
+    }
+
+    imagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    setSelectedImages(validImages);
+    setImagePreviews(validImages.map((file) => URL.createObjectURL(file)));
+  };
+
+  const removeExistingImage = (url: string) => {
+    const next = parsePropertyImages(propertyData.propertyImages).filter((img) => img !== url);
+    setPropertyData({ ...propertyData, propertyImages: serializePropertyImages(next) });
+  };
+
+  const removeSelectedImage = (index: number) => {
+    const nextFiles = selectedImages.filter((_, i) => i !== index);
+    const nextPreviews = imagePreviews.filter((_, i) => i !== index);
+    imagePreviews.forEach((url, i) => {
+      if (i === index) URL.revokeObjectURL(url);
+    });
+    setSelectedImages(nextFiles);
+    setImagePreviews(nextPreviews);
+  };
+
   const steps: { id: WizardStep; title: string; description: string }[] = [
     { id: "property", title: "Property Information", description: "Basic property details" },
     { id: "landlord", title: "Landlord", description: "Add property owner" },
@@ -227,6 +269,11 @@ export default function CreatePropertyWizard() {
     }
     return true;
   }, [activeStep, propertyData, landlord, tenancy]);
+
+  const existingImages = useMemo(
+    () => parsePropertyImages(propertyData.propertyImages),
+    [propertyData.propertyImages],
+  );
 
   const mapFrequencyToId = (freq: string): number => {
     const map: Record<string, number> = { Day: 0, Week: 1, Fortnight: 2, Month: 3, Quarter: 4, Year: 5 };
@@ -274,7 +321,7 @@ export default function CreatePropertyWizard() {
           keyNo: propertyData.keyNo || null,
           alarmCode: propertyData.alarmCode || null,
           propertyNotes: propertyData.propertyNotes || null,
-          propertyImages: propertyData.propertyImages || null,
+          propertyImages: serializePropertyImages(propertyData.propertyImages),
           propertyLayoutId: propertyData.propertyLayoutId || "",
           latitude: propertyData.latitude ?? null,
           longitude: propertyData.longitude ?? null,
@@ -309,7 +356,15 @@ export default function CreatePropertyWizard() {
           ],
         };
 
-        await propertyApi.create(payload as any);
+        const created = await propertyApi.create(payload as any);
+        if (selectedImages.length > 0) {
+          const uploads = await propertyApi.uploadImages(created.id, selectedImages, propertyData.agencyId || undefined);
+          const newUrls = uploads.map((u) => u.fileUrl);
+          const merged = mergePropertyImages(propertyData.propertyImages, newUrls);
+          setPropertyData((prev) => ({ ...prev, propertyImages: serializePropertyImages(merged) }));
+          setSelectedImages([]);
+          setImagePreviews([]);
+        }
         try { localStorage.removeItem(STORAGE_KEY); } catch { }
         router.push("/dashboard");
       }
@@ -559,9 +614,44 @@ export default function CreatePropertyWizard() {
                           <Label>Alarm Code</Label>
                           <Input value={propertyData.alarmCode || ''} onChange={(e) => setPropertyData({ ...propertyData, alarmCode: e.target.value || null })} placeholder="Enter alarm code" />
                         </div>
-                        <div>
-                          <Label>Property Images URL</Label>
-                          <Input value={propertyData.propertyImages || ''} onChange={(e) => setPropertyData({ ...propertyData, propertyImages: e.target.value || null })} placeholder="Enter property images URL" />
+                        <div className="md:col-span-2">
+                          <Label>Property Images</Label>
+                          <Input type="file" accept="image/*" multiple onChange={handleImageSelection} />
+                          <p className="mt-1 text-xs text-muted-foreground">Upload image files (JPG, PNG, WebP). You can upload multiple images.</p>
+
+                          {existingImages.length > 0 && (
+                            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {existingImages.map((url) => (
+                                <div key={url} className="relative rounded-lg border border-border overflow-hidden">
+                                  <img src={url} alt="Property" className="h-24 w-full object-cover" />
+                                  <button
+                                    type="button"
+                                    className="absolute right-1 top-1 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white"
+                                    onClick={() => removeExistingImage(url)}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {imagePreviews.length > 0 && (
+                            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                              {imagePreviews.map((preview, index) => (
+                                <div key={preview} className="relative rounded-lg border border-border overflow-hidden">
+                                  <img src={preview} alt="Preview" className="h-24 w-full object-cover" />
+                                  <button
+                                    type="button"
+                                    className="absolute right-1 top-1 rounded-full bg-black/70 px-2 py-1 text-[10px] text-white"
+                                    onClick={() => removeSelectedImage(index)}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       <div className="md:col-span-2">
                         <div className="flex items-center justify-between mb-2">
@@ -923,7 +1013,7 @@ export default function CreatePropertyWizard() {
                         <div><strong>Inspection Frequency:</strong> {propertyData.inspectionFrequencyNumber} {propertyData.inspectionFrequencyType}</div>
                         <div><strong>Key Number:</strong> {propertyData.keyNo || "N/A"}</div>
                         <div><strong>Alarm Code:</strong> {propertyData.alarmCode || "N/A"}</div>
-                        <div><strong>Property Images URL:</strong> {propertyData.propertyImages || "N/A"}</div>
+                        <div><strong>Property Images:</strong> {existingImages.length > 0 ? `${existingImages.length} image(s)` : "N/A"}</div>
                         <div><strong>Property Notes:</strong> {propertyData.propertyNotes || "N/A"}</div>
                         <div><strong>Latitude:</strong> {propertyData.latitude || "-"}</div>
                         <div><strong>Longitude:</strong> {propertyData.longitude || "-"}</div>
@@ -1118,5 +1208,3 @@ function MapPickerModal({ onClose, onSelect, initialLat, initialLng }: { onClose
     </div>
   );
 }
-
-

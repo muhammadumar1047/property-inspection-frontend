@@ -174,21 +174,34 @@ const AgencyManagement: React.FC = () => {
     setSelectAllAgencies(false);
   };
 
+  const normalizeId = (id: string | number | null | undefined) => (id == null ? null : String(id));
+  const hasId = (list: Array<string | number>, id: string | number | null | undefined) => {
+    const key = normalizeId(id);
+    if (!key) return false;
+    return list.some((item) => normalizeId(item) === key);
+  };
+
   const derivedRecipients = (() => {
-    const agencyIdSet = new Set(selectedAgencyIds);
+    const agencyIdSet = new Set(
+      selectedAgencyIds.map(normalizeId).filter((id): id is string => !!id)
+    );
     const agencyUsers = allUsers
       .filter((u) => {
-        const aId = u.agencyId ?? u.AgencyId;
+        const aId = normalizeId(u.agencyId ?? u.AgencyId);
         return aId && agencyIdSet.has(aId);
       })
       .map((u) => u.userId ?? u.UserId)
       .filter((id) => id != null);
-    const union = new Set([...agencyUsers, ...selectedUserIds]);
-    return Array.from(union);
+    const unionMap = new Map<string, string | number>();
+    [...agencyUsers, ...selectedUserIds].forEach((id) => {
+      const key = normalizeId(id);
+      if (key) unionMap.set(key, id);
+    });
+    return Array.from(unionMap.values());
   })();
 
   const toggleUserSelection = (userId: string | number) => {
-    setSelectedUserIds((prev) => (prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]));
+    setSelectedUserIds((prev) => (hasId(prev, userId) ? prev.filter((id) => normalizeId(id) !== normalizeId(userId)) : [...prev, userId]));
   };
 
   const handleSendNotification = async (e: React.FormEvent) => {
@@ -197,7 +210,7 @@ const AgencyManagement: React.FC = () => {
       alert('Please enter title and message');
       return;
     }
-    const userIds = Array.from(new Set(derivedRecipients)).filter((id) => typeof id === 'number' && !Number.isNaN(id));
+    const userIds = Array.from(new Set(derivedRecipients)).filter((id) => id != null && normalizeId(id));
     if (userIds.length === 0) {
       alert('Select at least one recipient');
       return;
@@ -1602,7 +1615,7 @@ const AgencyManagement: React.FC = () => {
                           const allIds = agencies.map((a) => a.id);
                           setSelectedAgencyIds(allIds);
                           // Add all users from all agencies
-                          const allUserIds = (recipientGroups.length ? recipientGroups.flatMap((g) => (g.users || []).map((u) => u.userId)) : allUsers.map((u) => (u.userId ?? u.UserId) as number)).filter((id) => typeof id === 'number');
+                          const allUserIds = (recipientGroups.length ? recipientGroups.flatMap((g) => (g.users || []).map((u) => u.userId)) : allUsers.map((u) => (u.userId ?? u.UserId))).filter((id) => id != null);
                           setSelectedUserIds(Array.from(new Set(allUserIds)));
                         } else {
                           setSelectedAgencyIds([]);
@@ -1620,8 +1633,8 @@ const AgencyManagement: React.FC = () => {
                   <div className="p-3 text-sm text-muted-foreground">No agencies</div>
                 ) : (
                   agencies.map((a) => {
-                    const count = allUsers.filter((u) => (u.agencyId ?? u.AgencyId) === a.id).length;
-                    const checked = selectedAgencyIds.includes(a.id);
+                    const count = allUsers.filter((u) => normalizeId(u.agencyId ?? u.AgencyId) === normalizeId(a.id)).length;
+                    const checked = hasId(selectedAgencyIds, a.id);
                     return (
                       <label key={a.id} className="flex items-center gap-3 p-2 text-sm">
                         <input
@@ -1630,14 +1643,14 @@ const AgencyManagement: React.FC = () => {
                           checked={checked}
                           onChange={() => {
                             setSelectedAgencyIds((prev) => {
-                              const next = checked ? prev.filter((id) => id !== a.id) : [...prev, a.id];
+                              const next = checked ? prev.filter((id) => normalizeId(id) !== normalizeId(a.id)) : [...prev, a.id];
                               const agencyUserIds = recipientGroups.length
-                                ? (recipientGroups.find((g) => g.agencyId === a.id)?.users || []).map((u) => u.userId)
-                                : allUsers.filter((u) => (u.agencyId ?? u.AgencyId) === a.id).map((u) => u.userId ?? u.UserId);
+                                ? (recipientGroups.find((g) => normalizeId(g.agencyId) === normalizeId(a.id))?.users || []).map((u) => u.userId)
+                                : allUsers.filter((u) => normalizeId(u.agencyId ?? u.AgencyId) === normalizeId(a.id)).map((u) => u.userId ?? u.UserId);
                               if (!checked) {
                                 setSelectedUserIds((prevUsers) => Array.from(new Set([...prevUsers, ...agencyUserIds])));
                               } else {
-                                setSelectedUserIds((prevUsers) => prevUsers.filter((id) => !agencyUserIds.includes(id)));
+                                setSelectedUserIds((prevUsers) => prevUsers.filter((id) => !agencyUserIds.some((uId) => normalizeId(uId) === normalizeId(id))));
                               }
                               setSelectAllAgencies(next.length === agencies.length);
                               return next;
@@ -1666,9 +1679,9 @@ const AgencyManagement: React.FC = () => {
                   <div className="p-3 text-sm text-muted-foreground">No users available</div>
                 ) : (
                   allUsers.map((u) => {
-                    const id = (u.userId ?? u.UserId) as number;
+                    const id = (u.userId ?? u.UserId) as string | number;
                     const label = (u.username || u.Username || u.email || u.Email || (u.fullname as any) || `User ${id}`) as string;
-                    const checked = selectedUserIds.includes(id);
+                    const checked = hasId(selectedUserIds, id);
                     return (
                       <label key={id} className="flex items-center gap-3 p-2 text-sm">
                         <input
@@ -1679,7 +1692,7 @@ const AgencyManagement: React.FC = () => {
                             // toggling a user should also ensure its agency is selected if not already
                             toggleUserSelection(id);
                             const aId = u.agencyId ?? u.AgencyId;
-                            if (aId && !selectedAgencyIds.includes(aId)) {
+                            if (aId && !hasId(selectedAgencyIds, aId)) {
                               setSelectedAgencyIds((prev) => Array.from(new Set([...prev, aId])));
                             }
                           }}

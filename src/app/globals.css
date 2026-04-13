@@ -533,6 +533,18 @@
     flex-direction: column;
     overflow: visible;
     border-radius: 4px;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .break-before-page {
+    break-before: page;
+    page-break-before: always;
   }
 
 
@@ -571,15 +583,20 @@
       border-radius: 0;
       min-height: auto;
       page-break-after: always;
-      page-break-inside: avoid;
+      page-break-inside: auto;
+      break-inside: auto;
     }
     .a4-page:last-child { page-break-after: auto; }
+
+    .report-page-number { display: none !important; }
 
     .page-break { page-break-before: always; }
     .page-break-inside-avoid { page-break-inside: avoid; }
     .report-section { @apply shadow-none; break-inside: avoid; }
     .report-table { font-size: 10pt; }
     h1, h2, h3 { page-break-after: avoid; }
+    p { orphans: 3; widows: 3; }
+    img, video, iframe { break-inside: avoid; page-break-inside: avoid; }
   }
 }
 
@@ -594,4 +611,11 @@
   box-shadow: none;
   margin-bottom: 0;
   border-radius: 0;
+}
+
+/* PDF mode: enforce fixed page height so the footer lands consistently */
+.report-pdf-mode .a4-page {
+  height: 297mm;
+  max-height: 297mm;
+  overflow: hidden;
 }

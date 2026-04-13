@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Loader2, AlertCircle, ArrowLeft, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InspectionReport from "@/components/InspectionReport";
 import api from "@/lib/api/http";
@@ -12,11 +12,13 @@ import axios from "axios";
 export default function InspectionReportPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params?.id as string;
 
   const [report, setReport] = useState<InspectionReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -91,8 +93,52 @@ export default function InspectionReportPage() {
     );
   }
 
+  const isPdfMode = searchParams?.get("pdf") === "1";
+
+  const handleDownloadPdf = () => {
+    if (!id) return;
+    const currentUrl = new URL(window.location.href);
+    currentUrl.search = "";
+    currentUrl.hash = "";
+    const reportUrl = currentUrl.toString();
+    const rawName = report?.header?.propertyAddress || report?.header?.reportTitle || `inspection-${id}`;
+    const safeName = rawName
+      .toString()
+      .trim()
+      .replace(/[^a-z0-9-_ ]/gi, "")
+      .replace(/\s+/g, "-")
+      .toLowerCase();
+    const filename = `${safeName || `inspection-${id}`}.pdf`;
+    const pdfUrl = `/api/pdf?url=${encodeURIComponent(reportUrl)}&filename=${encodeURIComponent(filename)}`;
+    setDownloading(true);
+    window.location.href = pdfUrl;
+    setTimeout(() => setDownloading(false), 2000);
+  };
+
   return (
-    <div className="min-h-screen bg-white p-0 m-0 selection:bg-primary/10 report-print-preview">
+    <div
+      className={[
+        "min-h-screen bg-white p-0 m-0 selection:bg-primary/10 report-print-preview",
+        isPdfMode ? "report-pdf-mode" : "",
+      ].join(" ")}
+    >
+      {!isPdfMode ? (
+        <div className="print:hidden sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
+          <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-6 py-3">
+            <div className="text-sm font-semibold text-slate-700">Inspection Report</div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => router.back()} className="h-9 px-3">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              <Button onClick={handleDownloadPdf} className="h-9 px-3" disabled={downloading}>
+                <FileDown className="mr-2 h-4 w-4" />
+                {downloading ? "Preparing..." : "Download PDF"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
         {report ? <InspectionReport report={report} /> : null}
       </div>

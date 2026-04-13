@@ -16,15 +16,68 @@ export async function GET(req: NextRequest) {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 1800, deviceScaleFactor: 2 });
 
-    // Ensure colors match screen
+    const target = new URL(targetUrl);
+    if (!target.searchParams.has('pdf')) {
+      target.searchParams.set('pdf', '1');
+    }
+
+    const cookieHeader = req.headers.get('cookie');
+    const authHeader = req.headers.get('authorization');
+    const extraHeaders: Record<string, string> = {};
+    if (cookieHeader) extraHeaders.cookie = cookieHeader;
+    if (authHeader) extraHeaders.authorization = authHeader;
+    if (Object.keys(extraHeaders).length) {
+      await page.setExtraHTTPHeaders(extraHeaders);
+    }
+
+    // Use screen media to match the on-screen report layout.
     await page.emulateMediaType('screen');
-    await page.goto(targetUrl, { waitUntil: 'networkidle0' });
+    await page.goto(target.toString(), { waitUntil: 'networkidle0' });
+
+    await page.waitForSelector('.report-document', { timeout: 30000 });
+
+    // Wait for web fonts to load before rendering.
+    await page.evaluate(async () => {
+      if (document.fonts && "ready" in document.fonts) {
+        await (document.fonts as FontFaceSet).ready;
+      }
+    });
+
+    await page.evaluate(async () => {
+      const images = Array.from(document.images || []);
+      await Promise.all(
+        images.map((img) =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>((resolve) => {
+                img.addEventListener("load", () => resolve(), { once: true });
+                img.addEventListener("error", () => resolve(), { once: true });
+              })
+        )
+      );
+    });
+
+    const pageSize = await page.evaluate(() => {
+      const el = document.querySelector<HTMLElement>(".a4-page");
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    });
+
+    const pdfOptions =
+      pageSize && pageSize.width > 0 && pageSize.height > 0
+        ? {
+            width: `${pageSize.width}px`,
+            height: `${pageSize.height}px`,
+          }
+        : { format: "A4" as const };
 
     const pdfBuffer = await page.pdf({
-      format: 'A4',
+      ...pdfOptions,
       printBackground: true,
-      margin: { top: '0.75in', right: '0.75in', bottom: '0.75in', left: '0.75in' },
+      margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
       displayHeaderFooter: false,
       preferCSSPageSize: true,
     });

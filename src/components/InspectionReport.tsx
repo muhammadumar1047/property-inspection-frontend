@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { InspectionReportData, ReportCondition, ReportMedia } from "@/types/report";
+import { parsePropertyImages } from "@/lib/propertyImages";
 
 const DEFAULT_ACCENT = "#f59e0b";
 
@@ -148,7 +149,7 @@ const MediaGrid = ({
         const isPhoto = m.type === "photo";
         const youtubeEmbed = !isPhoto ? getYoutubeEmbedUrl(m.url) : null;
         return (
-          <div key={m.mediaId} className="rounded-md border border-slate-200 overflow-hidden bg-white">
+          <div key={m.mediaId} className="rounded-md border border-slate-200 overflow-hidden bg-white break-inside-avoid">
             <div className="flex items-center justify-between bg-[var(--report-accent)] px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
               <span className="truncate">{label}</span>
               <span>Image {index + 1}</span>
@@ -209,7 +210,7 @@ const PageFooter = ({
   inspectionDate?: string | null;
   tenantName?: string | null;
 }) => (
-  <div className="mt-auto border-t border-slate-200 px-10 py-3 text-[11px] text-slate-500">
+  <div className="report-footer mt-auto border-t border-slate-200 px-10 py-3 text-[11px] text-slate-500 break-inside-avoid">
     <div className="flex items-center justify-between gap-4">
       <div className="flex flex-wrap items-center gap-6">
         <div className="flex items-center gap-2">
@@ -225,7 +226,7 @@ const PageFooter = ({
           <span className="font-semibold text-slate-600">{displayValue(tenantName)}</span>
         </div>
       </div>
-      <div className="text-[11px] text-slate-400">
+      <div className="text-[11px] text-slate-400 report-page-number">
         <span className="font-semibold text-slate-600">{page}</span> / {total}
       </div>
     </div>
@@ -242,8 +243,8 @@ const resolveCoverImage = (report: InspectionReportData) => {
   if (!raw) return "/property-hero-bg.png";
   if (Array.isArray(raw)) return raw[0] || "/property-hero-bg.png";
   if (typeof raw === "string") {
-    const first = raw.split(",").map((s) => s.trim()).find(Boolean);
-    return first || "/property-hero-bg.png";
+    const images = parsePropertyImages(raw);
+    return images[0] || "/property-hero-bg.png";
   }
   return "/property-hero-bg.png";
 };
@@ -314,7 +315,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
         <div className="px-10 py-6 flex-1">
           <div className="grid gap-6 lg:grid-cols-[1.05fr_1.4fr]">
             <div className="space-y-4">
-              <div className="border border-slate-200 bg-slate-50/80">
+              <div className="border border-slate-200 bg-slate-50/80 break-inside-avoid">
                 <div className="flex">
                   <div className="w-1.5 bg-[var(--report-accent)]" />
                   <div className="flex-1 px-3 py-2">
@@ -324,7 +325,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 </div>
               </div>
 
-              <div className="border border-slate-200 bg-slate-50/80">
+              <div className="border border-slate-200 bg-slate-50/80 break-inside-avoid">
                 <div className="flex">
                   <div className="w-1.5 bg-[var(--report-accent)]" />
                   <div className="flex-1 px-3 py-2">
@@ -334,14 +335,14 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="border border-slate-200 bg-slate-50/80 px-3 py-2">
+              <div className="grid grid-cols-2 gap-3 break-inside-avoid">
+                <div className="border border-slate-200 bg-slate-50/80 px-3 py-2 break-inside-avoid">
                   <div className="text-[11px] uppercase tracking-wide text-slate-500">Lease Start Date</div>
                   <div className="mt-2 inline-flex items-center rounded bg-[var(--report-accent)] px-2 py-1 text-[12px] font-semibold text-white">
                     {formatDate(header.leaseStartDate)}
                   </div>
                 </div>
-                <div className="border border-slate-200 bg-slate-50/80 px-3 py-2">
+                <div className="border border-slate-200 bg-slate-50/80 px-3 py-2 break-inside-avoid">
                   <div className="text-[11px] uppercase tracking-wide text-slate-500">Inspection Date</div>
                   <div className="mt-2 inline-flex items-center rounded bg-[var(--report-accent)] px-2 py-1 text-[12px] font-semibold text-white">
                     {formatDate(header.inspectionDate)}
@@ -349,7 +350,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 </div>
               </div>
 
-              <div className="border border-slate-200 bg-white px-3 py-3">
+              <div className="border border-slate-200 bg-white px-3 py-3 break-inside-avoid">
                 <div className="text-[11px] uppercase tracking-wide text-slate-500">Condition / Action Codes</div>
                 <div className="mt-3 flex items-center gap-4 text-[12px]">
                   <div className="flex items-center gap-2">
@@ -363,7 +364,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 </div>
               </div>
 
-              <div className="border border-slate-200 bg-white">
+              <div className="border border-slate-200 bg-white break-inside-avoid">
                 <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
                   Sample Condition Report
                 </div>
@@ -409,7 +410,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
             </div>
 
             <div className="space-y-4">
-              <div className="border border-slate-200 bg-white px-4 py-3">
+              <div className="border border-slate-200 bg-white px-4 py-3 break-inside-avoid">
                 <div className="inline-flex items-center rounded-sm bg-[var(--report-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
                   How to complete this report
                 </div>
@@ -421,7 +422,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 </div>
               </div>
 
-              <div className="border border-slate-200 bg-white px-4 py-3">
+              <div className="border border-slate-200 bg-white px-4 py-3 break-inside-avoid">
                 <div className="inline-flex items-center rounded-sm bg-[var(--report-accent)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
                   Important information
                 </div>
@@ -462,7 +463,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                   </div>
 
                   {area.items.map((item) => (
-                    <div key={item.itemId} className="border-b border-slate-200 last:border-0">
+                    <div key={item.itemId} className="border-b border-slate-200 last:border-0 break-inside-avoid">
                       <div className="bg-[var(--report-accent)]/90 px-3 py-2 text-[12px] font-semibold uppercase tracking-wide text-white">
                         {displayValue(item.itemName)}
                       </div>
@@ -528,7 +529,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                     const commentEntries = splitComments(item.inspectorComments);
 
                     return (
-                      <div key={item.itemId} className="border-b border-slate-200 last:border-0">
+                      <div key={item.itemId} className="border-b border-slate-200 last:border-0 break-inside-avoid">
                         <div className={`grid grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr] gap-2 px-3 py-2 text-[12px] ${rowBackground}`}>
                           <div className="text-slate-700">{displayValue(item.itemName)}</div>
                           {CONDITION_COLUMNS.map((column) => {
