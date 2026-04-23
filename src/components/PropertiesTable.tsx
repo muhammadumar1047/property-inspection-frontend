@@ -10,6 +10,7 @@ import { InspectionStatus, InspectionType } from "@/types/api";
 import { getInspectionActions, getInspectionReportUrl } from "@/lib/inspection-actions";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
 import { layoutApi } from "@/lib/api/propertyLayout";
 import { userApi } from "@/lib/api/user";
@@ -73,6 +74,27 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
   // Edit inspection modal state
   const [showEditInspectionModal, setShowEditInspectionModal] = useState(false);
   const [editingInspection, setEditingInspection] = useState<any>(null);
+  const [showCreateInspectionModal, setShowCreateInspectionModal] = useState(false);
+  const [createInspectionProperty, setCreateInspectionProperty] = useState<{
+    id: string;
+    address: string;
+    suburb?: string;
+  } | null>(null);
+  const [createInspection, setCreateInspection] = useState<{
+    propertyId: string;
+    inspectorId: string;
+    inspectionType: number;
+    inspectionStatus: number;
+    inspectionDate: string;
+    inspectionTime: string;
+  }>({
+    propertyId: '',
+    inspectorId: '',
+    inspectionType: InspectionType.Entry,
+    inspectionStatus: InspectionStatus.Pending,
+    inspectionDate: new Date().toISOString().split('T')[0],
+    inspectionTime: '09:00',
+  });
   const [editInspection, setEditInspection] = useState<{
     inspectionId: string;
     propertyId: string;
@@ -859,6 +881,77 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
     setShowEditInspectionModal(true);
   };
 
+  const handleOpenCreateInspection = (property: PropertyResponse) => {
+    setCreateInspectionProperty({
+      id: property.id,
+      address: property.address1 || (property as any).Address1 || `Property #${property.id}`,
+      suburb: property.cityOrSuburb || (property as any).PropertySuburb,
+    });
+    setCreateInspection({
+      propertyId: property.id,
+      inspectorId: '',
+      inspectionType: InspectionType.Entry,
+      inspectionStatus: InspectionStatus.Pending,
+      inspectionDate: new Date().toISOString().split('T')[0],
+      inspectionTime: '09:00',
+    });
+    setShowCreateInspectionModal(true);
+  };
+
+  const handleCreateInspection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createInspection.propertyId) return;
+    if (!createInspection.inspectorId) {
+      setError('Please select an inspector.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      const ensureSeconds = (t: string) => t.length === 5 ? `${t}:00` : t;
+      const payload = {
+        propertyId: createInspection.propertyId,
+        agencyId: effectiveAgencyId ? String(effectiveAgencyId) : null,
+        inspectionType: Number(createInspection.inspectionType),
+        inspectionStatus: Number(createInspection.inspectionStatus),
+        inspectorId: createInspection.inspectorId,
+        inspectionDate: new Date(createInspection.inspectionDate).toISOString(),
+        inspectionTime: ensureSeconds(createInspection.inspectionTime),
+      };
+
+      const createdInspection = await inspectionApi.create(payload as any);
+      const enriched = {
+        ...createdInspection,
+        propertyAddress: createdInspection.propertyAddress || createInspectionProperty?.address,
+        propertySubhurb: createdInspection.propertySubhurb || createInspectionProperty?.suburb,
+      };
+
+      const propertyId = createInspection.propertyId;
+      setPropertyInspections(prev => ({
+        ...prev,
+        [propertyId]: [enriched, ...(prev[propertyId] || [])],
+      }));
+
+      setShowCreateInspectionModal(false);
+      setCreateInspectionProperty(null);
+      setCreateInspection({
+        propertyId: '',
+        inspectorId: '',
+        inspectionType: InspectionType.Entry,
+        inspectionStatus: InspectionStatus.Pending,
+        inspectionDate: new Date().toISOString().split('T')[0],
+        inspectionTime: '09:00',
+      });
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.response?.data?.Message || 'Failed to create inspection';
+      setError(message);
+      alert(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleViewReport = (inspectionId: string) => {
     const url = getInspectionReportUrl(inspectionId);
     try {
@@ -1400,10 +1493,19 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                       >
                         <div className="bg-muted-50 border-t border-muted-200 p-4 shadow-sm">
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-medium text-foreground">Property Inspections</h4>
-                            <span className="text-xs text-muted-500">
-                              {propertyInspections[p.id]?.length || 0} inspection(s)
-                            </span>
+                            <div>
+                              <h4 className="text-sm font-medium text-foreground">Property Inspections</h4>
+                              <span className="text-xs text-muted-500">
+                                {propertyInspections[p.id]?.length || 0} inspection(s)
+                              </span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenCreateInspection(p)}
+                            >
+                              Create New Inspection
+                            </Button>
                           </div>
 
                           {loadingInspections[p.id] ? (
@@ -2770,6 +2872,113 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
               <p>No tenancies found for this property.</p>
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Create Inspection Modal */}
+      <Modal
+        isOpen={showCreateInspectionModal}
+        onClose={() => setShowCreateInspectionModal(false)}
+        title="Create New Inspection"
+      >
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 p-6 rounded-lg border border-blue-100/50 shadow-inner">
+          <form onSubmit={handleCreateInspection} className="space-y-6">
+            <div className="text-sm text-muted-600">
+              Property: <span className="font-semibold text-foreground">{createInspectionProperty?.address || 'Selected property'}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Inspector</label>
+                <select
+                  required
+                  className="w-full px-4 py-3 border border-muted-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-card text-sm"
+                  value={createInspection.inspectorId}
+                  onChange={(e) => setCreateInspection({ ...createInspection, inspectorId: e.target.value })}
+                >
+                  <option value="">Select Inspector</option>
+                  {inspectors.map((inspector) => (
+                    <option
+                      key={String(inspector.id ?? inspector.userId ?? inspector.inspectorId ?? inspector.identityUserId ?? '')}
+                      value={String(inspector.id ?? inspector.userId ?? inspector.inspectorId ?? inspector.identityUserId ?? '')}
+                    >
+                      {getInspectorDisplayName(inspector)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Inspection Type</label>
+                <select
+                  required
+                  className="w-full px-4 py-3 border border-muted-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-card text-sm"
+                  value={createInspection.inspectionType}
+                  onChange={(e) => setCreateInspection({ ...createInspection, inspectionType: parseInt(e.target.value) })}
+                >
+                  {inspectionTypes.map((type) => (
+                    <option key={type.inspectionTypeId} value={type.inspectionTypeId}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Status</label>
+                <select
+                  required
+                  className="w-full px-4 py-3 border border-muted-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-card text-sm"
+                  value={createInspection.inspectionStatus}
+                  onChange={(e) => setCreateInspection({ ...createInspection, inspectionStatus: parseInt(e.target.value) })}
+                >
+                  {inspectionStatuses.map((status) => (
+                    <option key={status.inspectionStatusId} value={status.inspectionStatusId}>
+                      {status.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Inspection Date</label>
+                <input
+                  type="date"
+                  required
+                  className="w-full px-4 py-3 border border-muted-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-card text-sm"
+                  value={createInspection.inspectionDate}
+                  onChange={(e) => setCreateInspection({ ...createInspection, inspectionDate: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2">Inspection Time</label>
+                <input
+                  type="time"
+                  required
+                  className="w-full px-4 py-3 border border-muted-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-card text-sm"
+                  value={createInspection.inspectionTime}
+                  onChange={(e) => setCreateInspection({ ...createInspection, inspectionTime: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowCreateInspectionModal(false)}
+                className="px-4 py-2 text-muted-700 bg-card border border-muted-300 rounded-md shadow-sm hover:bg-muted-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md shadow-sm hover:bg-primary/90"
+              >
+                {loading ? 'Creating...' : 'Create Inspection'}
+              </button>
+            </div>
+          </form>
         </div>
       </Modal>
 

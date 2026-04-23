@@ -8,15 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Trash2, Plus, User, Mail, AlertTriangle, MoreVertical, Pencil, Search, Filter, ChevronLeft, ChevronRight, Shield, ShieldCheck, UserCheck, UserX } from "lucide-react";
+import { Trash2, Plus, User, Mail, AlertTriangle, Pencil, Search, Filter, ChevronLeft, ChevronRight, Shield, ShieldCheck, UserCheck, UserX } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/contexts/AuthContext";
 import { userApi } from "@/lib/api/user";
@@ -396,34 +388,28 @@ const UserSettings: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              className="h-8 w-8 p-0 hover:bg-gray-100 border border-gray-200 rounded"
-                            >
-                              <MoreVertical className="h-4 w-4 text-gray-700" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => openEditModal(user)}
-                            >
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={() => openDeleteModal(user)}
-                              className="focus:text-red-600 text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete User
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50/90 p-1 shadow-sm">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => openEditModal(user)}
+                            className="h-10 w-10 rounded-lg text-slate-700 hover:text-amber-700 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:ring-offset-1 transition-all"
+                            title="Edit User"
+                            aria-label="Edit user"
+                          >
+                            <Pencil className="h-5 w-5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => openDeleteModal(user)}
+                            className="h-10 w-10 rounded-lg text-slate-700 hover:text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-1 transition-all"
+                            title="Delete User"
+                            aria-label="Delete user"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

@@ -1121,33 +1121,36 @@ const LayoutManagement: React.FC = () => {
                           {(layout.layoutArea || layout.areas || []).length ?? 0}
                         </TableCell>
                         <TableCell className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                          <div className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50/90 p-1 shadow-sm">
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => openViewModal(layout)}
-                              className="h-9 w-9 p-0 text-primary border-primary/20 hover:text-primary-hover hover:bg-primary/10 hover:border-primary/30 transition-all"
+                              className="h-10 w-10 rounded-lg text-slate-700 hover:text-blue-700 hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-1 transition-all"
                               title="View Layout"
+                              aria-label="View layout"
                             >
-                              <Eye className="w-4 h-4" />
+                              <Eye className="h-5 w-5" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => openEditModal(layout)}
-                              className="h-9 w-9 p-0 text-secondary border-secondary/20 hover:text-secondary-hover hover:bg-secondary/10 hover:border-secondary/30 transition-all"
+                              className="h-10 w-10 rounded-lg text-slate-700 hover:text-amber-700 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:ring-offset-1 transition-all"
                               title="Edit Layout"
+                              aria-label="Edit layout"
                             >
-                              <Edit className="w-4 h-4" />
+                              <Edit className="h-5 w-5" />
                             </Button>
                             <Button
-                              size="sm"
-                              variant="outline"
+                              size="icon"
+                              variant="ghost"
                               onClick={() => setDeleteTarget(layout)}
-                              className="h-9 w-9 p-0 text-red-600 border-red-200 hover:text-red-700 hover:bg-red-50 hover:border-red-300 transition-all"
+                              className="h-10 w-10 rounded-lg text-slate-700 hover:text-red-700 hover:bg-red-100 focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-1 transition-all"
                               title="Delete Layout"
+                              aria-label="Delete layout"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="h-5 w-5" />
                             </Button>
                           </div>
                         </TableCell>

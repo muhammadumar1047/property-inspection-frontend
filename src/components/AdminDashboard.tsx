@@ -67,6 +67,7 @@ import NotificationsBell from "@/components/NotificationsBell";
 const PropertiesTable = dynamic(() => import("@/components/PropertiesTable"), { ssr: false });
 const InspectionManagement = dynamic(() => import("@/components/InspectionManagement"), { ssr: false });
 const Settings = dynamic(() => import("@/components/Settings"), { ssr: false });
+const GeneralSettings = dynamic(() => import("@/components/GeneralSettings"), { ssr: false });
 const UserSettings = dynamic(() => import("@/components/UserSettings"), { ssr: false });
 const AgencySettings = dynamic(() => import("@/components/AgencySettings"), { ssr: false });
 const AgencyManagement = dynamic(() => import("@/components/AgencyManagement"), { ssr: false });
@@ -158,7 +159,7 @@ const settingsMenuItems = [
   { icon: SettingsIcon, label: "General Settings" },
   { icon: Users, label: "User Settings" },
   { icon: Building, label: "Agency Settings" },
-  // { icon: Mail, label: "Email Templates" },
+  { icon: Mail, label: "Email Templates" },
   // { icon: PenTool, label: "Signatures" },
   // { icon: History, label: "Email Logs" },
   //{ icon: Layers, label: "Areas / Items" },
@@ -815,23 +816,13 @@ export default function AdminDashboard() {
       case "settings":
         return <Settings />;
       case "general settings":
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">General Settings</h2>
-            <p className="text-gray-600">General application settings will be displayed here.</p>
-          </div>
-        );
+        return <GeneralSettings />;
       case "user settings":
         return <UserSettings />;
       case "agency settings":
-        return <AgencySettings />;
+        return <AgencySettings view="agency" />;
       case "email templates":
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Email Templates</h2>
-            <p className="text-gray-600">Email template management will be displayed here.</p>
-          </div>
-        );
+        return <AgencySettings view="email-templates" />;
       case "signatures":
         return (
           <div className="p-6">

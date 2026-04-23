@@ -59,9 +59,17 @@ interface EmailTemplate {
   signature?: string;
 }
 
-const AgencySettings: React.FC = () => {
+type AgencySettingsTab = 'details' | 'whitelabel' | 'email-templates';
+
+interface AgencySettingsProps {
+  view?: 'agency' | 'email-templates';
+}
+
+const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
   const { effectiveAgencyId } = useAuth();
-  const [activeTab, setActiveTab] = useState<'details' | 'whitelabel' | 'email-templates'>('details');
+  const [activeTab, setActiveTab] = useState<AgencySettingsTab>(
+    view === 'email-templates' ? 'email-templates' : 'details'
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -142,6 +150,10 @@ const AgencySettings: React.FC = () => {
       loadWhitelabelSettings();
     }
   }, [effectiveAgencyId]);
+
+  useEffect(() => {
+    setActiveTab(view === 'email-templates' ? 'email-templates' : 'details');
+  }, [view]);
 
   // Load countries on details tab mount
   useEffect(() => {
@@ -380,11 +392,14 @@ const AgencySettings: React.FC = () => {
     }));
   };
 
-  const tabs = [
+  const tabs: Array<{ id: AgencySettingsTab; label: string; icon: any }> = [
     { id: 'details', label: 'Agency Details', icon: Building2 },
     { id: 'whitelabel', label: 'Whitelabel Settings', icon: Palette },
     { id: 'email-templates', label: 'Email Templates', icon: Mail }
   ];
+  const visibleTabs = view === 'email-templates'
+    ? tabs.filter((tab) => tab.id === 'email-templates')
+    : tabs.filter((tab) => tab.id !== 'email-templates');
 
   if (loading && !agencyDetails) {
     return (
@@ -403,8 +418,12 @@ const AgencySettings: React.FC = () => {
     <div className="p-6 space-y-6 overflow-visible">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Agency Settings</h2>
-          <p className="text-gray-600">Manage your agency details and branding</p>
+          <h2 className="text-2xl font-bold">{view === 'email-templates' ? 'Email Templates' : 'Agency Settings'}</h2>
+          <p className="text-gray-600">
+            {view === 'email-templates'
+              ? 'Create and manage inspection email templates'
+              : 'Manage your agency details and branding'}
+          </p>
         </div>
         {success && (
           <div className="flex items-center gap-2 text-green-600 bg-green-50 px-4 py-2 rounded-md">
@@ -426,27 +445,29 @@ const AgencySettings: React.FC = () => {
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'details' | 'whitelabel' | 'email-templates')}
-                className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <Icon className="h-4 w-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+      {visibleTabs.length > 1 && (
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            {visibleTabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      )}
 
       {/* Agency Details Tab */}
       {activeTab === 'details' && (

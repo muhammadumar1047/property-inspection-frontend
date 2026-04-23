@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { propertyApi } from "@/lib/api/property";
 import { layoutApi } from "@/lib/api/propertyLayout";
-import type { PropertyResponse, LandlordDto, TenancyDto, TenantDto } from "@/types/api";
+import inspectionApi from "@/lib/api/inspection";
+import type { PropertyResponse, LandlordDto, TenancyDto, TenantDto, LookupDto, UserResponse } from "@/types/api";
+import { InspectionStatus, InspectionType } from "@/types/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Building2, ArrowLeft, Bell, User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Modal from "@/components/ui/Modal";
 
 export default function PropertyDetail({ id }: { id: string }) {
   const [data, setData] = useState<PropertyResponse | null>(null);
@@ -20,6 +23,18 @@ export default function PropertyDetail({ id }: { id: string }) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<any>({});
   const [layoutName, setLayoutName] = useState<string>("");
+  const [inspectionTypes, setInspectionTypes] = useState<LookupDto[]>([]);
+  const [inspectionStatuses, setInspectionStatuses] = useState<LookupDto[]>([]);
+  const [inspectors, setInspectors] = useState<UserResponse[]>([]);
+  const [showCreateInspection, setShowCreateInspection] = useState(false);
+  const [inspectionForm, setInspectionForm] = useState({
+    inspectionType: InspectionType.Entry,
+    inspectionStatus: InspectionStatus.Pending,
+    inspectorId: "",
+    inspectionDate: new Date().toISOString().split("T")[0],
+    inspectionTime: "09:00",
+  });
+  const [inspectionLoading, setInspectionLoading] = useState(false);
   const router = useRouter();
 
   const load = async () => {
@@ -59,6 +74,33 @@ export default function PropertyDetail({ id }: { id: string }) {
     if (id) load(); 
   }, [id]);
 
+  useEffect(() => {
+    const loadInspectionLookup = async () => {
+      try {
+        const [types, statuses, inspectorsList] = await Promise.all([
+          inspectionApi.getInspectionTypes(),
+          inspectionApi.getInspectionStatuses(),
+          inspectionApi.getAvailableInspectors(),
+        ]);
+        setInspectionTypes(types || []);
+        setInspectionStatuses(statuses || []);
+        setInspectors(inspectorsList || []);
+      } catch {
+        // Keep silent; creation modal will still render with empty lookups.
+      }
+    };
+    loadInspectionLookup();
+  }, []);
+
+  const getInspectorDisplayName = (inspector: any): string => {
+    const first = (inspector.firstName || inspector.FirstName || '').toString().trim();
+    const last = (inspector.lastName || inspector.LastName || '').toString().trim();
+    if (first || last) return `${first} ${last}`.trim();
+    if (inspector.username) return inspector.username;
+    if (inspector.email) return inspector.email;
+    return 'User';
+  };
+
   const save = async () => {
     if (!data) return;
     setLoading(true); setError("");
@@ -87,6 +129,43 @@ export default function PropertyDetail({ id }: { id: string }) {
         : (errorData || e?.message || "Failed to save");
       setError(errorMessage);
       setLoading(false);
+    }
+  };
+
+  const createInspection = async () => {
+    if (!data) return;
+    if (!inspectionForm.inspectorId) {
+      setError("Please select an inspector.");
+      return;
+    }
+    setInspectionLoading(true);
+    setError("");
+    try {
+      await inspectionApi.create({
+        propertyId: data.id,
+        inspectionType: Number(inspectionForm.inspectionType),
+        inspectionStatus: Number(inspectionForm.inspectionStatus),
+        inspectorId: String(inspectionForm.inspectorId),
+        inspectionDate: inspectionForm.inspectionDate,
+        inspectionTime: inspectionForm.inspectionTime,
+      } as any);
+      setShowCreateInspection(false);
+      setInspectionForm((prev) => ({
+        ...prev,
+        inspectionType: InspectionType.Entry,
+        inspectionStatus: InspectionStatus.Pending,
+        inspectorId: "",
+        inspectionDate: new Date().toISOString().split("T")[0],
+        inspectionTime: "09:00",
+      }));
+    } catch (e: any) {
+      const errorData = e?.response?.data;
+      const errorMessage = typeof errorData === 'object'
+        ? (errorData.title || errorData.message || JSON.stringify(errorData))
+        : (errorData || e?.message || "Failed to create inspection");
+      setError(errorMessage);
+    } finally {
+      setInspectionLoading(false);
     }
   };
 
@@ -161,7 +240,10 @@ export default function PropertyDetail({ id }: { id: string }) {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Property #{data.id}</h1>
           {!editing ? (
-            <Button onClick={() => setEditing(true)}>Edit</Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setShowCreateInspection(true)}>New Inspection</Button>
+              <Button onClick={() => setEditing(true)}>Edit</Button>
+            </div>
           ) : (
             <div className="space-x-2">
               <Button onClick={save} disabled={loading}>Save</Button>
@@ -171,6 +253,16 @@ export default function PropertyDetail({ id }: { id: string }) {
         </div>
 
         {error && <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">{error}</div>}
+
+        <Card className="border-primary/20">
+          <CardHeader>
+            <CardTitle className="text-primary">Quick Actions</CardTitle>
+            <CardDescription>Create inspections directly from this property</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={() => setShowCreateInspection(true)}>Create New Inspection</Button>
+          </CardContent>
+        </Card>
 
         <Card className="border-primary/20">
           <CardHeader>
@@ -257,6 +349,84 @@ export default function PropertyDetail({ id }: { id: string }) {
           </CardContent>
         </Card>
       </div>
+
+      <Modal isOpen={showCreateInspection} onClose={() => setShowCreateInspection(false)} title="Create Inspection">
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            Creating inspection for: <span className="font-semibold text-foreground">{data.address1}</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Inspector</Label>
+              <select
+                className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
+                value={inspectionForm.inspectorId}
+                onChange={(e) => setInspectionForm({ ...inspectionForm, inspectorId: e.target.value })}
+              >
+                <option value="">Select inspector</option>
+                {inspectors.map((inspector) => (
+                  <option
+                    key={String(inspector.id ?? inspector.userId ?? inspector.identityUserId ?? '')}
+                    value={String(inspector.id ?? inspector.userId ?? inspector.identityUserId ?? '')}
+                  >
+                    {getInspectorDisplayName(inspector)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Inspection Type</Label>
+              <select
+                className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
+                value={inspectionForm.inspectionType}
+                onChange={(e) => setInspectionForm({ ...inspectionForm, inspectionType: parseInt(e.target.value) as any })}
+              >
+                {inspectionTypes.map((t) => (
+                  <option key={String(t.id ?? t.inspectionTypeId ?? t.InspectionTypeId)} value={t.id ?? t.inspectionTypeId ?? t.InspectionTypeId}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Status</Label>
+              <select
+                className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
+                value={inspectionForm.inspectionStatus}
+                onChange={(e) => setInspectionForm({ ...inspectionForm, inspectionStatus: parseInt(e.target.value) as any })}
+              >
+                {inspectionStatuses.map((s) => (
+                  <option key={String(s.id ?? s.inspectionStatusId ?? s.InspectionStatusId)} value={s.id ?? s.inspectionStatusId ?? s.InspectionStatusId}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label>Inspection Date</Label>
+              <Input
+                type="date"
+                value={inspectionForm.inspectionDate}
+                onChange={(e) => setInspectionForm({ ...inspectionForm, inspectionDate: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Inspection Time</Label>
+              <Input
+                type="time"
+                value={inspectionForm.inspectionTime}
+                onChange={(e) => setInspectionForm({ ...inspectionForm, inspectionTime: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowCreateInspection(false)}>Cancel</Button>
+            <Button onClick={createInspection} disabled={inspectionLoading}>
+              {inspectionLoading ? "Creating..." : "Create Inspection"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
