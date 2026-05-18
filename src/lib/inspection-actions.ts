@@ -1,9 +1,22 @@
 import { InspectionStatus } from "@/types/api";
 
-export const REPORT_VIEW_BASE_URL = "http://localhost:3000/inspections";
+export const getReportViewBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/inspections`;
+  }
+  const envUrl = process.env.NEXT_PUBLIC_REPORT_VIEW_BASE_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (envUrl) {
+    return `${envUrl.replace(/\/$/, "")}/inspections`;
+  }
+  return "http://localhost:3000/inspections";
+};
+
+export const REPORT_VIEW_BASE_URL = typeof window !== "undefined"
+  ? `${window.location.origin}/inspections`
+  : "http://localhost:3000/inspections";
 
 export const getInspectionReportUrl = (inspectionId: string) =>
-  `${REPORT_VIEW_BASE_URL}/${inspectionId}/report`;
+  `${getReportViewBaseUrl()}/${inspectionId}/report`;
 
 export type InspectionAction = {
   key: string;
