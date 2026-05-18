@@ -110,12 +110,11 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
             uidParam = `?userId=${encodeURIComponent(String(uid))}`;
           }
         } catch {}
-        const cleanBase = baseURL.replace(/\/api$/, '');
-        //const hubUrl = `${cleanBase}/notificationHub${uidParam}`;
-      //const hubUrl = `https://localhost:7086/notificationHub?userId=${userId}`;
-      debugger;
-      const hubBaseUrl = process.env.NEXT_PUBLIC_SIGNALR_URL || "http://ec2-54-66-59-41.ap-southeast-2.compute.amazonaws.com:8080/notificationHub";
-      const hubUrl = `${hubBaseUrl}?userId=${userId}`;
+        // Dynamically resolve the hub URL based on the API base URL to ensure
+        // it routes through the proxy's /api path in production.
+        // E.g. baseURL = "https://api.easeinspect.com/api" -> hubUrl = "https://api.easeinspect.com/api/notificationHub?userId=..."
+        const hubBaseUrl = baseURL ? `${baseURL}/notificationHub` : '/api/notificationHub';
+        const hubUrl = `${hubBaseUrl}?userId=${userId}`;
 
        
         const hub = new signalR.HubConnectionBuilder()
