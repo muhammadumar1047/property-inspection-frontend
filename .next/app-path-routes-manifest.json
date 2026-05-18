@@ -1,0 +1,12 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/pdf/route": "/api/pdf",
+  "/dashboard/page": "/dashboard",
+  "/dashboard/profile/page": "/dashboard/profile",
+  "/icon.png/route": "/icon.png",
+  "/inspections/[id]/report/page": "/inspections/[id]/report",
+  "/page": "/",
+  "/properties/[id]/page": "/properties/[id]",
+  "/properties/create/page": "/properties/create",
+  "/super-admin/page": "/super-admin"
+}
