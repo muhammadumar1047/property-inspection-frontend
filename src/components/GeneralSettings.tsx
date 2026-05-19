@@ -21,15 +21,15 @@ const GeneralSettings: React.FC = () => {
   const [profile, setProfile] = useState({
     firstName: "John",
     lastName: "Doe",
-    email: "john.doe@propcheck360.com",
+    email: "john.doe@easeinspect.com",
     phone: "+61 412 345 678",
     jobTitle: "Operations Manager",
   });
 
   const [company, setCompany] = useState({
-    companyName: "PropCheck 360",
-    website: "https://propcheck360.com",
-    supportEmail: "support@propcheck360.com",
+    companyName: "EaseInspect",
+    website: "https://easeinspect.com",
+    supportEmail: "support@easeinspect.com",
     address: "Level 8, 100 Market Street, Sydney NSW 2000",
     abn: "12 345 678 901",
   });

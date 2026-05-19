@@ -3,7 +3,7 @@
 import React from "react";
 
 /* ══════════════════════════════════════════════════════
-   PREMIUM REPORT VIEWER — PropCheck360
+   PREMIUM REPORT VIEWER — EaseInspect
    Expert frontend design for professional agencies
    ══════════════════════════════════════════════════════ */
 

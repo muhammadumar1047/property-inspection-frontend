@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PropCheck360 — Property Inspection Platform",
+  title: "EaseInspect — Property Inspection Platform",
   description: "Enterprise-grade property inspection, reporting, and management platform for agencies and corporate teams.",
 };
 

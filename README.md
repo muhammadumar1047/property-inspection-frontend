@@ -1,6 +1,6 @@
-# PropCheck360 Frontend - API Testing Dashboard
+# EaseInspect Frontend - API Testing Dashboard
 
-This is a comprehensive Next.js frontend application designed to test all the PropCheck360 API endpoints. It provides a user-friendly interface to interact with the backend API and verify that all functionality is working correctly.
+This is a comprehensive Next.js frontend application designed to test all the EaseInspect API endpoints. It provides a user-friendly interface to interact with the backend API and verify that all functionality is working correctly.
 
 ## Features
 
@@ -46,8 +46,8 @@ This is a comprehensive Next.js frontend application designed to test all the Pr
 
 ### Prerequisites
 - Node.js 18+ and pnpm
-- PropCheck360 backend running on `http://localhost:5000`
-- PostgreSQL database with the PropCheck360 schema
+- EaseInspect backend running on `http://localhost:5000`
+- PostgreSQL database with the EaseInspect schema
 
 ### Installation
 
@@ -183,7 +183,7 @@ src/
 
 ## Testing the Backend
 
-This frontend is designed to comprehensively test the PropCheck360 backend API. It covers:
+This frontend is designed to comprehensively test the EaseInspect backend API. It covers:
 
 ✅ **Authentication & Authorization**
 ✅ **Agency Management**

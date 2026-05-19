@@ -865,11 +865,11 @@ export default function AdminDashboard() {
       <div className={`border-b border-[var(--sidebar-border)] ${isSidebarCollapsed && !isMobile ? 'px-3 py-5' : 'px-5 py-5'}`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex items-center justify-center shrink-0">
-            <img src="/icon-logo.png" alt="PropCheck360" className="w-9 h-9 rounded-xl shadow-sm" />
+            <img src="/icon-logo.png" alt="EaseInspect" className="w-9 h-9 rounded-xl shadow-sm" />
           </div>
           {(!isSidebarCollapsed || isMobile) && (
             <div className="overflow-hidden">
-              <h1 className="text-lg font-bold text-primary tracking-tight leading-none">PropCheck <span className="text-muted-400">360</span></h1>
+              <h1 className="text-lg font-bold text-primary tracking-tight leading-none">EaseInspect</h1>
               <p className="text-[10px] font-semibold text-muted-400 uppercase tracking-widest mt-1">Enterprise</p>
             </div>
           )}

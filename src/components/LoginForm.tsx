@@ -130,8 +130,8 @@ const LoginForm: React.FC = () => {
                     <img src="/icon-logo.png" alt="" className="w-8 h-8 rounded-lg" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-2xl font-bold tracking-tight text-white leading-none">PropCheck</span>
-                    <span className="text-sm font-medium text-white/60 tracking-[0.2em] uppercase mt-0.5">360 Dashboard</span>
+                    <span className="text-2xl font-bold tracking-tight text-white leading-none">EaseInspect</span>
+                    <span className="text-sm font-medium text-white/60 tracking-[0.2em] uppercase mt-0.5">Dashboard</span>
                   </div>
                 </div>
 
@@ -181,7 +181,7 @@ const LoginForm: React.FC = () => {
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md shrink-0">
               <img src="/icon-logo.png" alt="" className="w-6 h-6 rounded-md" />
             </div>
-            <h1 className="text-2xl font-bold text-primary tracking-tight">PropCheck360</h1>
+            <h1 className="text-2xl font-bold text-primary tracking-tight">EaseInspect</h1>
           </div>
 
 
@@ -265,17 +265,11 @@ const LoginForm: React.FC = () => {
                   )}
                 </Button>
               </form>
-
-              <div className="mt-6 pt-5 border-t border-[var(--border)] text-center">
-                <p className="text-xs text-[var(--muted-400)]">
-                  Test: super@gmail.com / Super123
-                </p>
-              </div>
             </CardContent>
           </Card>
 
           <p className="text-center text-xs text-[var(--muted-400)] mt-6">
-            © 2026 PropCheck360. All rights reserved.
+            © 2026 EaseInspect. All rights reserved.
           </p>
         </div>
       </div>
