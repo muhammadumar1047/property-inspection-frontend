@@ -71,6 +71,7 @@ const GeneralSettings = dynamic(() => import("@/components/GeneralSettings"), { 
 const UserSettings = dynamic(() => import("@/components/UserSettings"), { ssr: false });
 const AgencySettings = dynamic(() => import("@/components/AgencySettings"), { ssr: false });
 const AgencyManagement = dynamic(() => import("@/components/AgencyManagement"), { ssr: false });
+const EmailTemplateManagement = dynamic(() => import("@/components/EmailTemplateManagement").then(m => m.EmailTemplateManagement), { ssr: false });
 const BillingPlans = dynamic(() => import("@/components/BillingPlans"), { ssr: false });
 import LayoutManagement from "@/components/LayoutManagement";
 import UserProfile from "@/components/UserProfile";
@@ -822,7 +823,7 @@ export default function AdminDashboard() {
       case "agency settings":
         return <AgencySettings view="agency" />;
       case "email templates":
-        return <AgencySettings view="email-templates" />;
+        return <EmailTemplateManagement />;
       case "signatures":
         return (
           <div className="p-6">
