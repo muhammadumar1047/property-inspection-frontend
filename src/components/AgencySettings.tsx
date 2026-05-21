@@ -21,7 +21,11 @@ import {
   Plus,
   Edit2,
   Trash2,
-  ChevronLeft
+  ChevronLeft,
+  Globe,
+  Key,
+  DollarSign,
+  RefreshCw
 } from "lucide-react";
 import { agencyApi } from "@/lib/api/agency";
 import { AgencyResponse, AgencyWhitelabelResponse } from "@/types/api";
@@ -668,67 +672,268 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
       {/* Whitelabel Settings Tab */}
       {activeTab === 'whitelabel' && (
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5" />
-                    Whitelabel Settings
-                  </CardTitle>
-                  <CardDescription>
-                    Configure branding for your agency
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUpdateWhitelabel} className="space-y-8">
-                <div className="bg-gray-50 p-6 rounded-lg">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Branding</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div>
-                      <Label>Logo URL</Label>
-                      <Input value={whitelabelSettings.logoUrl || ''} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, logoUrl: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Primary Color</Label>
-                      <Input type="color" value={whitelabelSettings.primaryColor || '#003B73'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, primaryColor: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Secondary Color</Label>
-                      <Input type="color" value={whitelabelSettings.secondaryColor || '#EF4444'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, secondaryColor: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Accent Color</Label>
-                      <Input type="color" value={whitelabelSettings.accentColor || '#10B981'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, accentColor: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Agency Name Color</Label>
-                      <Input type="color" value={(whitelabelSettings as any).agencyNameColor || '#003B73'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, agencyNameColor: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Address Color</Label>
-                      <Input type="color" value={(whitelabelSettings as any).addressColor || '#003B73'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, addressColor: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Font Family</Label>
-                      <Input value={whitelabelSettings.fontFamily || 'Arial, sans-serif'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, fontFamily: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Accent Font Family</Label>
-                      <Input value={(whitelabelSettings as any).accentFontFamily || 'Arial, sans-serif'} onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, accentFontFamily: e.target.value })} />
-                    </div>
-                  </div>
+          <Card className="overflow-hidden border-0 shadow-lg">
+            <CardContent className="p-0 flex flex-col lg:flex-row bg-[#f0f4f8]">
+              {/* Left Sidebar - Controls */}
+              <div className="w-full lg:w-80 border-r bg-white flex flex-col shrink-0 h-[800px] relative z-10 shadow-sm">
+                <div className="p-6 pb-4 border-b text-center">
+                  <h3 className="font-semibold text-gray-900 mb-1">HTML Report</h3>
+                  <button 
+                    onClick={() => setWhitelabelSettings({})} 
+                    className="text-sm text-blue-500 hover:text-blue-600 flex items-center justify-center gap-1 mx-auto"
+                    type="button"
+                  >
+                    Default gray theme <RefreshCw className="h-3 w-3" />
+                  </button>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button type="submit" disabled={loading}>
-                    <Save className="h-4 w-4 mr-2" />
-                    {loading ? 'Saving...' : 'Save Whitelabel Settings'}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                  {/* Logo Upload */}
+                  <div>
+                    <Label className="font-bold text-xs text-gray-700 uppercase tracking-wider">Agency Logo</Label>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Input 
+                        type="file" 
+                        accept="image/png, image/jpeg, image/svg+xml"
+                        className="text-sm cursor-pointer"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            try {
+                              setLoading(true);
+                              const url = await agencyApi.uploadLogo(file);
+                              setWhitelabelSettings(prev => ({ ...prev, logoUrl: url }));
+                            } catch (error) {
+                              console.error('Failed to upload logo', error);
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Colors List */}
+                  {[
+                    { key: 'agencyNameColor', label: '1. Agency Name Colour', type: 'color' },
+                    { key: 'addressColor', label: '2. Address Colour', type: 'color' },
+                    { key: 'primaryColor', label: '3. Accent Colour', type: 'color' },
+                    { key: 'fontFamily', label: '4. Accent Font', type: 'text' },
+                    { key: 'secondaryColor', label: '5. Globe Background Colour', type: 'color' },
+                    { key: 'globeColor', label: '6. Globe Colour', type: 'color' },
+                    { key: 'keyBackgroundColor', label: '7. Key Background Colour', type: 'color' },
+                    { key: 'keyColor', label: '8. Key Colour', type: 'color' },
+                    { key: 'dollarBackgroundColor', label: '9. Dollar Background Colour', type: 'color' },
+                    { key: 'dollarColor', label: '10. Dollar Colour', type: 'color' }
+                  ].map((field) => (
+                    <div key={field.key}>
+                      <Label className="font-bold text-xs text-gray-700">{field.label}</Label>
+                      <div className="flex gap-2 mt-1 relative">
+                        <Input
+                          type="text"
+                          value={(whitelabelSettings as any)[field.key] || (field.type === 'text' ? 'Arial' : '#ffffff')}
+                          onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, [field.key]: e.target.value })}
+                          className="pr-10 bg-white"
+                        />
+                        {field.type === 'color' && (
+                          <div className="absolute right-2 top-2 border rounded overflow-hidden w-6 h-6 p-0.5 bg-gray-100 shadow-inner">
+                             <input 
+                               type="color" 
+                               value={(whitelabelSettings as any)[field.key] || '#ffffff'}
+                               onChange={(e) => setWhitelabelSettings({ ...whitelabelSettings, [field.key]: e.target.value })}
+                               className="w-full h-full p-0 border-0 cursor-pointer block bg-transparent"
+                             />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Main Area - Preview */}
+              <div className="flex-1 p-8 overflow-y-auto h-[800px] flex justify-center items-start relative custom-scrollbar">
+                
+                {/* Mock Report Container (A4 Proportions) */}
+                <div className="w-full max-w-[850px] bg-white shadow-xl relative min-h-[1100px] p-8 shrink-0">
+                  
+                  {/* Top Header Section */}
+                  <div className="flex justify-between items-start mb-8 pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-4">
+                      {whitelabelSettings.logoUrl ? (
+                        <div className="w-24 h-24 flex items-center justify-center p-2" style={{ backgroundColor: whitelabelSettings.primaryColor || '#2e7d32' }}>
+                            <img src={whitelabelSettings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-24 h-24 flex items-center justify-center text-white text-xs text-center p-2" style={{ backgroundColor: whitelabelSettings.primaryColor || '#2e7d32' }}>belle property</div>
+                      )}
+                      
+                      <div style={{ fontFamily: whitelabelSettings.fontFamily || 'Arial' }}>
+                        <h2 className="font-bold text-lg text-gray-800 tracking-wide" style={{ color: (whitelabelSettings as any).agencyNameColor || '#333333' }}>
+                          HORIZON PROPERTY INSPECTIONS PTY LTD 1
+                        </h2>
+                        <div className="text-xs text-gray-500 mt-1 space-y-1" style={{ color: (whitelabelSettings as any).addressColor || '#666666' }}>
+                          <p>245 George Street</p>
+                          <p>+61 2 9123 4567</p>
+                          <p>Hasham Nadeem</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <h1 className="text-gray-800 text-lg font-bold uppercase tracking-widest mb-2" style={{ color: (whitelabelSettings as any).agencyNameColor || '#333333' }}>
+                        ROUTINE INSPECTION REPORT
+                      </h1>
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>State: N/A</p>
+                        <p>Regulation: N/A</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-8">
+                    {/* Left Column */}
+                    <div className="space-y-4">
+                        {/* Address Box */}
+                        <div className="bg-gray-50 border-l-4 p-3 relative shadow-sm" style={{ borderColor: whitelabelSettings.primaryColor || '#e1b12c' }}>
+                            <div className="text-[10px] text-gray-500 font-semibold mb-1 uppercase">Address of Premises</div>
+                            <div className="font-bold text-sm text-gray-800">12 Greenfield Avenue, Unit 5, Canberra, 2601</div>
+                        </div>
+
+                        {/* Tenant Box */}
+                        <div className="bg-gray-50 border-l-4 p-3 relative shadow-sm" style={{ borderColor: whitelabelSettings.primaryColor || '#e1b12c' }}>
+                            <div className="text-[10px] text-gray-500 font-semibold mb-1 uppercase">Tenant's Name(s)</div>
+                            <div className="font-bold text-sm text-gray-800">Ali Raza</div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Lease Start */}
+                            <div className="bg-gray-50 border border-gray-100 p-3 shadow-sm">
+                                <div className="text-[10px] text-gray-500 font-semibold mb-2 uppercase">Lease Start Date</div>
+                                <div className="inline-block text-xs font-bold text-white px-2 py-1 rounded-sm" style={{ backgroundColor: whitelabelSettings.primaryColor || '#e1b12c' }}>08/05/2026</div>
+                            </div>
+                            {/* Inspection Date */}
+                            <div className="bg-gray-50 border border-gray-100 p-3 shadow-sm">
+                                <div className="text-[10px] text-gray-500 font-semibold mb-2 uppercase">Inspection Date</div>
+                                <div className="inline-block text-xs font-bold text-white px-2 py-1 rounded-sm" style={{ backgroundColor: whitelabelSettings.primaryColor || '#e1b12c' }}>08/05/2026</div>
+                            </div>
+                        </div>
+
+                        {/* Condition Codes */}
+                        <div className="border border-gray-100 p-4 shadow-sm mt-4">
+                            <div className="text-[10px] text-gray-500 font-semibold mb-3 uppercase">Condition / Action Codes</div>
+                            <div className="flex gap-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div>
+                                    <span className="text-xs text-gray-600">YES</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-5 h-5 rounded-full bg-red-200 text-red-700 text-xs flex items-center justify-center font-bold">N</div>
+                                    <span className="text-xs text-gray-600">NO</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Sample Condition Report */}
+                        <div className="mt-8 border border-gray-100 shadow-sm">
+                            <div className="text-[10px] text-gray-500 font-semibold p-3 uppercase border-b border-gray-100">Sample Condition Report</div>
+                            <div className="bg-[#e1b12c] text-white font-bold p-2 text-sm uppercase" style={{ backgroundColor: whitelabelSettings.primaryColor || '#e1b12c' }}>
+                                Bedroom 2
+                            </div>
+                            <table className="w-full text-xs text-center text-gray-600">
+                                <thead>
+                                    <tr className="bg-gray-50 border-b border-gray-100">
+                                        <th className="text-left py-2 px-3 font-semibold uppercase text-[10px]">Item</th>
+                                        <th className="py-2 px-1 font-semibold uppercase text-[10px]">Clean</th>
+                                        <th className="py-2 px-1 font-semibold uppercase text-[10px]">Undamaged</th>
+                                        <th className="py-2 px-1 font-semibold uppercase text-[10px]">Working</th>
+                                        <th className="py-2 px-1 font-semibold uppercase text-[10px]">Keys</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b border-gray-50">
+                                        <td className="text-left py-2 px-3">Walls</td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                    </tr>
+                                    <tr className="border-b border-gray-50">
+                                        <td className="text-left py-2 px-3">Blinds / Curtains</td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-red-200 text-red-700 text-xs flex items-center justify-center font-bold">N</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-red-200 text-red-700 text-xs flex items-center justify-center font-bold">N</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                    </tr>
+                                    <tr className="border-b border-gray-50">
+                                        <td className="text-left py-2 px-3">Door / Doorframe</td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                    </tr>
+                                    <tr className="border-b border-gray-50">
+                                        <td className="text-left py-2 px-3">TV aerial port</td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-red-200 text-red-700 text-xs flex items-center justify-center font-bold">N</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-red-200 text-red-700 text-xs flex items-center justify-center font-bold">N</div></td>
+                                    </tr>
+                                    <tr className="">
+                                        <td className="text-left py-2 px-3">Floors covering</td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                        <td className="py-2 px-1"><div className="w-5 h-5 mx-auto rounded-full bg-green-200 text-green-700 text-xs flex items-center justify-center font-bold">Y</div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-6">
+                        <div className="border border-gray-100 p-6 shadow-sm rounded-sm">
+                            <div className="inline-block px-3 py-1 text-white text-xs font-bold uppercase rounded-full mb-4" style={{ backgroundColor: whitelabelSettings.primaryColor || '#e1b12c' }}>
+                                How to complete this report
+                            </div>
+                            <div className="text-[10px] text-gray-600 space-y-3 leading-relaxed text-justify">
+                                <p>Three copies, or one electronic copy, of this condition report should be completed and signed by the landlord or the landlord's agent.</p>
+                                <p>Two copies, or one electronic copy, of the report, which have been completed and signed by the landlord or landlord's agent, must be given to the tenant before or when the tenant signs the agreement. The landlord or landlord's agent keeps the third copy or an electronic copy.</p>
+                                <p>Before the tenancy begins, the landlord or the landlord's agent must inspect the residential premises and record the condition of the premises by indicating whether the particular room item is clean, undamaged and working by placing "Y" (YES) or "N" (NO) in the appropriate column. Where necessary, comments should be included in the report.</p>
+                                <p>If the tenant has agreed to pay for water usage charges under the residential tenancy agreement, the landlord or landlord's agent must also indicate whether the residential premises have the required water efficiency measures.</p>
+                            </div>
+                        </div>
+
+                        <div className="border border-gray-100 p-6 shadow-sm rounded-sm mt-6">
+                            <div className="inline-block px-3 py-1 text-white text-xs font-bold uppercase rounded-full mb-4" style={{ backgroundColor: whitelabelSettings.primaryColor || '#e1b12c' }}>
+                                Important Information
+                            </div>
+                            <div className="text-[10px] text-gray-600 space-y-3 leading-relaxed text-justify">
+                                <p>This condition report is an important record of the condition of the residential premises when the tenancy begins and may be used as evidence of the state of repair or general condition of the premises.</p>
+                                <p>At the end of the tenancy the premises will be inspected and the condition of the premises at that time will be compared to that stated in the original condition report.</p>
+                                <p>A condition report should be filled out whether or not a rental bond is paid.</p>
+                                <p>If you do not have enough space on the report attach a separate sheet.</p>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Floating Save Button */}
+                <div className="absolute bottom-8 right-8 z-50">
+                  <Button 
+                    onClick={handleUpdateWhitelabel} 
+                    disabled={loading} 
+                    className="rounded-full shadow-2xl px-8 py-6 text-base font-bold bg-black text-white hover:bg-gray-800"
+                  >
+                    {loading ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
-              </form>
+
+              </div>
             </CardContent>
           </Card>
         </div>

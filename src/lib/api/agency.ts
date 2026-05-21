@@ -68,6 +68,16 @@ export const agencyApi = {
     const response = await api.get('/agencywhitelabel/default');
     return unwrapApiResponse<DefaultWhitelabelDto>(response.data);
   },
+  uploadLogo: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post('/agencywhitelabel/logo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return unwrapApiResponse<string>(response.data);
+  },
 };
 
 export default agencyApi;
