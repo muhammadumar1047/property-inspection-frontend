@@ -53,6 +53,7 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  MessageSquare,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -72,6 +73,7 @@ const UserSettings = dynamic(() => import("@/components/UserSettings"), { ssr: f
 const AgencySettings = dynamic(() => import("@/components/AgencySettings"), { ssr: false });
 const AgencyManagement = dynamic(() => import("@/components/AgencyManagement"), { ssr: false });
 const EmailTemplateManagement = dynamic(() => import("@/components/EmailTemplateManagement").then(m => m.EmailTemplateManagement), { ssr: false });
+const QuickSuggestions = dynamic(() => import("@/components/QuickSuggestions"), { ssr: false });
 const BillingPlans = dynamic(() => import("@/components/BillingPlans"), { ssr: false });
 import LayoutManagement from "@/components/LayoutManagement";
 import UserProfile from "@/components/UserProfile";
@@ -161,6 +163,7 @@ const settingsMenuItems = [
   { icon: Users, label: "User Settings" },
   { icon: Building, label: "Agency Settings" },
   { icon: Mail, label: "Email Templates" },
+  { icon: MessageSquare, label: "Quick Suggestions" },
   // { icon: PenTool, label: "Signatures" },
   // { icon: History, label: "Email Logs" },
   //{ icon: Layers, label: "Areas / Items" },
@@ -824,6 +827,8 @@ export default function AdminDashboard() {
         return <AgencySettings view="agency" />;
       case "email templates":
         return <EmailTemplateManagement />;
+      case "quick suggestions":
+        return <QuickSuggestions />;
       case "signatures":
         return (
           <div className="p-6">

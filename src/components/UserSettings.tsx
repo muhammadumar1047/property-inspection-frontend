@@ -177,11 +177,13 @@ const UserSettings: React.FC = () => {
   };
 
   const openDeleteModal = (user: UserResponse) => {
+    setError(null);
     setSelectedUser(user);
     setShowDeleteModal(true);
   };
 
   const openEditModal = (user: UserResponse) => {
+    setError(null);
     setSelectedUser(user);
     setEditUser({
       firstName: user.firstName,
@@ -242,7 +244,7 @@ const UserSettings: React.FC = () => {
           <h2 className="text-2xl font-bold">User Management</h2>
           <p className="text-gray-600">Manage users, roles, and permissions</p>
         </div>
-        <Button onClick={() => setShowAddUserModal(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 shadow-sm">
+        <Button onClick={() => { setError(null); setShowAddUserModal(true); }} className="bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2 shadow-sm">
           <Plus className="h-4 w-4" />
           Add User
         </Button>
@@ -451,8 +453,14 @@ const UserSettings: React.FC = () => {
       )}
 
       {/* Add User Modal */}
-      <Modal isOpen={showAddUserModal} onClose={() => setShowAddUserModal(false)} title="Add New User">
+      <Modal isOpen={showAddUserModal} onClose={() => { setError(null); setShowAddUserModal(false); }} title="Add New User">
         <form onSubmit={handleAddUser} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-800 flex gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
           <div>
             <Label htmlFor="firstName">First Name</Label>
             <Input
@@ -532,7 +540,7 @@ const UserSettings: React.FC = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setShowAddUserModal(false)}
+              onClick={() => { setError(null); setShowAddUserModal(false); }}
             >
               Cancel
             </Button>
@@ -553,9 +561,15 @@ const UserSettings: React.FC = () => {
       </Modal>
 
       {/* Edit User Modal */}
-      <Modal isOpen={showEditUserModal} onClose={() => setShowEditUserModal(false)} title="Edit User">
+      <Modal isOpen={showEditUserModal} onClose={() => { setError(null); setShowEditUserModal(false); }} title="Edit User">
         {editUser && selectedUser && (
           <form onSubmit={handleUpdateUser} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-800 flex gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
             <div>
               <Label htmlFor="editFirstName">First Name</Label>
               <Input
@@ -623,7 +637,7 @@ const UserSettings: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowEditUserModal(false)}
+                onClick={() => { setError(null); setShowEditUserModal(false); }}
               >
                 Cancel
               </Button>
@@ -645,9 +659,15 @@ const UserSettings: React.FC = () => {
       {/* Delete User Modal */}
       <Modal
         isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onClose={() => { setError(null); setShowDeleteModal(false); }}
         title="Delete User"
       >
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-800 flex gap-2 mb-4">
+            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-4 bg-red-50 rounded-md">
             <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -686,7 +706,7 @@ const UserSettings: React.FC = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setShowDeleteModal(false)}
+              onClick={() => { setError(null); setShowDeleteModal(false); }}
             >
               Cancel
             </Button>

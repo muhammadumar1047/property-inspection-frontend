@@ -1,4 +1,4 @@
-﻿export interface ApiResponse<T> {
+export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
@@ -911,3 +911,73 @@ export interface UpdateUserRequest {
 //  PropertyResponse, CreatePropertyRequest, InspectionResponse,
 //  CreateInspectionRequest, PropertyLayoutResponse, LayoutAreaResponse,
 //  and LayoutItemResponse directly instead.)
+
+// ---------------------------------------------------------------------------
+// Quick Suggestions DTOs & Enums
+// ---------------------------------------------------------------------------
+
+export enum QuickSuggestionType {
+  EntryExit = 1,
+  Routine = 2,
+}
+
+export interface QuickSuggestionResponse {
+  id: string;
+  agencyId: string;
+  type: QuickSuggestionType;
+  text: string;
+  shortcut?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateQuickSuggestionRequest {
+  agencyId?: string;
+  type: QuickSuggestionType;
+  text: string;
+  shortcut?: string;
+}
+
+export interface UpdateQuickSuggestionRequest {
+  agencyId?: string;
+  text: string;
+  shortcut?: string;
+  isActive: boolean;
+}
+
+export interface QuickSuggestionSettingsResponse {
+  id: string;
+  agencyId: string;
+  isEntryExitEnabled: boolean;
+  isRoutineEnabled: boolean;
+  combineDictionaries: boolean;
+}
+
+export interface UpdateQuickSuggestionSettingsRequest {
+  agencyId?: string;
+  isEntryExitEnabled: boolean;
+  isRoutineEnabled: boolean;
+  combineDictionaries: boolean;
+}
+
+export interface QuickSuggestionImportRow {
+  rowNumber: number;
+  text: string;
+  shortcut?: string;
+  isValid: boolean;
+  validationErrors: string[];
+}
+
+export interface ImportPreviewResult {
+  totalRecords: number;
+  validCount: number;
+  invalidCount: number;
+  rows: QuickSuggestionImportRow[];
+}
+
+export interface CommitImportRequest {
+  agencyId?: string;
+  type: QuickSuggestionType;
+  records: CreateQuickSuggestionRequest[];
+}
+
