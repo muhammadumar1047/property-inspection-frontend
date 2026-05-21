@@ -182,7 +182,7 @@ api.interceptors.response.use(
     const data = error?.response?.data;
     const status = error?.response?.status;
     const url = error?.config?.url;
-    let message: any = data || error.message || 'Request failed';
+    let message: any = data?.message || data || error.message || 'Request failed';
     if (data && typeof data === 'object' && Object.keys(data).length === 0) {
       message = `HTTP ${status ?? ''} at ${url ?? ''}`.trim();
     }

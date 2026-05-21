@@ -49,6 +49,9 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { emailTemplateApi } from "@/lib/api/emailTemplate";
+import { InspectionType } from "@/types/api";
+
 // Type definitions
 export interface EmailTemplateItem {
   id: string;
@@ -67,79 +70,24 @@ export interface EmailTemplateItem {
   status: "Draft" | "Published";
 }
 
-const INITIAL_TEMPLATES: EmailTemplateItem[] = [
-  {
-    id: "tpl-1",
-    name: "Entry Inspection Confirmation",
-    subject: "Upcoming Entry Condition Inspection - %PropertyAddress%",
-    inspectionType: "Entry Inspection",
-    isDefault: true,
-    lastUpdated: "2 hours ago",
-    snippet: "Dear %TenantFullName%, this is to confirm your upcoming Entry Condition Inspection scheduled...",
-    body: "Hi %TenantFullName%,\n\nThis email is to confirm that your Entry Condition Inspection has been scheduled for %InspectionDate%.\n\nWe look forward to meeting you at the property: %PropertyAddress%.\n\nYou can review your preliminary inspection checklist and instructions via the link below:\n\n%InspectionReportLink%\n\nIf you have any questions, please contact %OfficeName%.\n\nWarm regards,",
-    fontFamily: "Inter, sans-serif",
-    lineSpacing: "1.6",
-    primaryColor: "#0f172a",
-    accentColor: "#10b981",
-    backgroundColor: "#f8fafc",
-    status: "Published"
-  },
-  {
-    id: "tpl-2",
-    name: "Exit Inspection Check-out Checklist",
-    subject: "Important: Exit Inspection & Key Return - %PropertyAddress%",
-    inspectionType: "Exit Inspection",
-    isDefault: true,
-    lastUpdated: "Yesterday",
-    snippet: "Hello, as your tenancy is concluding, we have scheduled the final exit inspection on...",
-    body: "Hello %TenantFullName%,\n\nAs your lease is coming to an end, the Exit Inspection for the property at %PropertyAddress% has been scheduled for %InspectionDate%.\n\nTo ensure your bond refund is processed promptly, please ensure that:\n1. All keys are returned to our office.\n2. The property is cleaned in accordance with the check-out checklist.\n\nYou can view your inspection report draft and checklist here:\n%InspectionReportLink%\n\nShould you have any queries, please let us know.\n\nSincerely,",
-    fontFamily: "Inter, sans-serif",
-    lineSpacing: "1.5",
-    primaryColor: "#0f172a",
-    accentColor: "#ef4444",
-    backgroundColor: "#fff5f5",
-    status: "Published"
-  },
-  {
-    id: "tpl-3",
-    name: "Routine Tenant Inspection Notice",
-    subject: "Notice of Upcoming Routine Inspection - %PropertyAddress%",
-    inspectionType: "Routine Inspection",
-    isDefault: true,
-    lastUpdated: "3 days ago",
-    snippet: "Dear Tenant, please note that we will be carrying out a routine inspection of your rental property on...",
-    body: "Dear %TenantFullName%,\n\nPlease be advised that our agency will be conducting a routine inspection of the property located at %PropertyAddress% on %InspectionDate%.\n\nYou do not need to be present for the inspection as we will use our management keys, but you are welcome to attend if you wish.\n\nPlease leave any notes for the inspector in the portal: %InspectionReportLink%.\n\nThank you for your cooperation.\n\nKind regards,",
-    fontFamily: "Inter, sans-serif",
-    lineSpacing: "1.6",
-    primaryColor: "#1e3a8a",
-    accentColor: "#3b82f6",
-    backgroundColor: "#f0f9ff",
-    status: "Published"
-  },
-  {
-    id: "tpl-4",
-    name: "Routine Inspection Follow-up",
-    subject: "Inspection Report Update: Routine Inspection Completed at %PropertyAddress%",
-    inspectionType: "Routine Inspection",
-    isDefault: false,
-    lastUpdated: "5 days ago",
-    snippet: "Hello %TenantFullName%, we want to thank you for maintaining the property so well. The routine...",
-    body: "Hello %TenantFullName%,\n\nWe wanted to say thank you for your time during our routine inspection at %PropertyAddress% on %InspectionDate%.\n\nOur inspector noted that the property is being beautifully maintained. You can access the copy of your completed routine inspection report via this link:\n\n%InspectionReportLink%\n\nThanks again, and please let us know if there are any maintenance requests you would like to submit.\n\nBest regards,",
-    fontFamily: "Inter, sans-serif",
-    lineSpacing: "1.6",
-    primaryColor: "#1e3a8a",
-    accentColor: "#3b82f6",
-    backgroundColor: "#ffffff",
-    status: "Published"
-  }
-];
+const mapEnumToString = (type: InspectionType | number): "Entry Inspection" | "Exit Inspection" | "Routine Inspection" => {
+  if (type === InspectionType.Entry || type === 1) return "Entry Inspection";
+  if (type === InspectionType.Exit || type === 2) return "Exit Inspection";
+  return "Routine Inspection";
+};
+
+const mapStringToEnum = (type: "Entry Inspection" | "Exit Inspection" | "Routine Inspection"): InspectionType => {
+  if (type === "Entry Inspection") return InspectionType.Entry;
+  if (type === "Exit Inspection") return InspectionType.Exit;
+  return InspectionType.Routine;
+};
 
 export const EmailTemplateManagement: React.FC = () => {
   // Navigation State
   const [view, setView] = useState<"list" | "create" | "editor">("list");
   
   // Data States
-  const [templates, setTemplates] = useState<EmailTemplateItem[]>(INITIAL_TEMPLATES);
+  const [templates, setTemplates] = useState<EmailTemplateItem[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateItem | null>(null);
   
   // Filtering & Search
@@ -169,6 +117,7 @@ export const EmailTemplateManagement: React.FC = () => {
   const [testSendStatus, setTestSendStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   
   // UI indicators
+  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string>("Saved just now");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -186,18 +135,36 @@ export const EmailTemplateManagement: React.FC = () => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (view === "editor" && hasUnsavedChanges) {
-      interval = setInterval(() => {
+      interval = setInterval(async () => {
         setIsSaving(true);
-        setTimeout(() => {
+        try {
+          if (selectedTemplate) {
+            await emailTemplateApi.update(selectedTemplate.id, {
+              name: formName,
+              subject: formSubject,
+              inspectionType: mapStringToEnum(formType),
+              isDefault: formIsDefault,
+              body: formBody,
+              fontFamily: formFontFamily,
+              lineSpacing: formLineSpacing,
+              primaryColor: formPrimaryColor,
+              accentColor: formAccentColor,
+              backgroundColor: formBackgroundColor,
+              status: formStatus
+            });
+            setHasUnsavedChanges(false);
+            const now = new Date();
+            setLastSavedTime(`Saved at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`);
+          }
+        } catch (err) {
+          console.error("Autosave failed:", err);
+        } finally {
           setIsSaving(false);
-          setHasUnsavedChanges(false);
-          const now = new Date();
-          setLastSavedTime(`Saved at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`);
-        }, 1000);
-      }, 10000); // Autosave every 10s if dirty
+        }
+      }, 15000); // Autosave every 15s if dirty
     }
     return () => clearInterval(interval);
-  }, [view, hasUnsavedChanges]);
+  }, [view, hasUnsavedChanges, formName, formSubject, formType, formIsDefault, formBody, formFontFamily, formLineSpacing, formPrimaryColor, formAccentColor, formBackgroundColor, formStatus, selectedTemplate]);
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -223,13 +190,44 @@ export const EmailTemplateManagement: React.FC = () => {
     { id: "newsletter", title: "Newsletter Layout", desc: "Multi-section digest style", icon: Grid }
   ];
 
+  // Load email templates from backend api
+  const loadTemplates = async () => {
+    try {
+      setIsLoading(true);
+      const filterEnum = inspectionFilter === "All" ? undefined : mapStringToEnum(inspectionFilter as any);
+      const result = await emailTemplateApi.getTemplates(searchQuery || undefined, filterEnum, 1, 100);
+      
+      const mappedItems: EmailTemplateItem[] = (result.data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        subject: item.subject,
+        inspectionType: mapEnumToString(item.inspectionType),
+        isDefault: item.isDefault,
+        lastUpdated: item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : "Just now",
+        snippet: item.snippet || "",
+        body: item.body || "",
+        fontFamily: item.fontFamily || "Inter, sans-serif",
+        lineSpacing: item.lineSpacing || "1.6",
+        primaryColor: item.primaryColor || "#0f172a",
+        accentColor: item.accentColor || "#10b981",
+        backgroundColor: item.backgroundColor || "#f8fafc",
+        status: item.status || "Published"
+      }));
+      setTemplates(mappedItems);
+    } catch (err: any) {
+      console.error("Error loading templates:", err);
+      triggerToast("Error connecting to server. Failed to load templates.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTemplates();
+  }, [searchQuery, inspectionFilter]);
+
   // Filter templates list
-  const filteredTemplates = templates.filter(t => {
-    const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          t.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = inspectionFilter === "All" || t.inspectionType === inspectionFilter;
-    return matchesSearch && matchesType;
-  });
+  const filteredTemplates = templates;
 
   const getBadgeStyles = (type: string) => {
     switch (type) {
@@ -244,37 +242,53 @@ export const EmailTemplateManagement: React.FC = () => {
   };
 
   // Actions
-  const handleMarkDefault = (id: string, e: React.MouseEvent) => {
+  const handleMarkDefault = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updated = templates.map(t => {
-      if (t.id === id) return { ...t, isDefault: true };
-      // If of same type, unmark default
-      const targetType = templates.find(item => item.id === id)?.inspectionType;
-      if (t.inspectionType === targetType) return { ...t, isDefault: false };
-      return t;
-    });
-    setTemplates(updated);
-    triggerToast("Default template updated successfully.");
+    try {
+      await emailTemplateApi.makeDefault(id);
+      triggerToast("Default template updated successfully.");
+      await loadTemplates();
+    } catch (err: any) {
+      console.error("Error setting default template:", err);
+      triggerToast("Failed to update default template.");
+    }
   };
 
-  const handleDuplicate = (template: EmailTemplateItem, e: React.MouseEvent) => {
+  const handleDuplicate = async (template: EmailTemplateItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    const newTpl: EmailTemplateItem = {
-      ...template,
-      id: `tpl-${Date.now()}`,
-      name: `${template.name} (Copy)`,
-      isDefault: false,
-      lastUpdated: "Just now"
-    };
-    setTemplates([newTpl, ...templates]);
-    triggerToast("Template duplicated.");
+    try {
+      await emailTemplateApi.create({
+        name: `${template.name} (Copy)`,
+        subject: template.subject,
+        inspectionType: mapStringToEnum(template.inspectionType),
+        isDefault: false,
+        body: template.body,
+        fontFamily: template.fontFamily,
+        lineSpacing: template.lineSpacing,
+        primaryColor: template.primaryColor,
+        accentColor: template.accentColor,
+        backgroundColor: template.backgroundColor,
+        status: template.status
+      });
+      triggerToast("Template duplicated.");
+      await loadTemplates();
+    } catch (err: any) {
+      console.error("Error duplicating template:", err);
+      triggerToast("Failed to duplicate template.");
+    }
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm("Are you sure you want to delete this template?")) {
-      setTemplates(templates.filter(t => t.id !== id));
-      triggerToast("Template deleted.");
+      try {
+        await emailTemplateApi.delete(id);
+        triggerToast("Template deleted successfully.");
+        await loadTemplates();
+      } catch (err: any) {
+        console.error("Error deleting template:", err);
+        triggerToast("Failed to delete template.");
+      }
     }
   };
 
@@ -294,48 +308,44 @@ export const EmailTemplateManagement: React.FC = () => {
     setView("editor");
   };
 
-  const handleSaveTemplate = () => {
+  const handleSaveTemplate = async () => {
     if (!formName.trim() || !formSubject.trim()) {
       alert("Please enter a name and subject for the template.");
       return;
     }
 
-    const tplData: EmailTemplateItem = {
-      id: selectedTemplate ? selectedTemplate.id : `tpl-${Date.now()}`,
-      name: formName,
-      subject: formSubject,
-      inspectionType: formType,
-      isDefault: formIsDefault,
-      lastUpdated: "Just now",
-      snippet: formBody.substring(0, 100) + "...",
-      body: formBody,
-      fontFamily: formFontFamily,
-      lineSpacing: formLineSpacing,
-      primaryColor: formPrimaryColor,
-      accentColor: formAccentColor,
-      backgroundColor: formBackgroundColor,
-      status: formStatus
-    };
+    setIsSaving(true);
+    try {
+      const payload = {
+        name: formName,
+        subject: formSubject,
+        inspectionType: mapStringToEnum(formType),
+        isDefault: formIsDefault,
+        body: formBody,
+        fontFamily: formFontFamily,
+        lineSpacing: formLineSpacing,
+        primaryColor: formPrimaryColor,
+        accentColor: formAccentColor,
+        backgroundColor: formBackgroundColor,
+        status: formStatus
+      };
 
-    let updatedTemplates = [...templates];
-
-    // If marked default, unmark others of same inspection type
-    if (formIsDefault) {
-      updatedTemplates = updatedTemplates.map(t => 
-        t.inspectionType === formType ? { ...t, isDefault: false } : t
-      );
+      if (selectedTemplate) {
+        await emailTemplateApi.update(selectedTemplate.id, payload);
+        triggerToast("Template saved successfully.");
+      } else {
+        await emailTemplateApi.create(payload);
+        triggerToast("Template created successfully.");
+      }
+      setView("list");
+      setSelectedTemplate(null);
+      await loadTemplates();
+    } catch (err: any) {
+      console.error("Error saving template:", err);
+      triggerToast("Failed to save template.");
+    } finally {
+      setIsSaving(false);
     }
-
-    if (selectedTemplate) {
-      updatedTemplates = updatedTemplates.map(t => t.id === selectedTemplate.id ? tplData : t);
-    } else {
-      updatedTemplates = [tplData, ...updatedTemplates];
-    }
-
-    setTemplates(updatedTemplates);
-    triggerToast("Template saved successfully.");
-    setView("list");
-    setSelectedTemplate(null);
   };
 
   const handleCreateNew = () => {
@@ -356,7 +366,6 @@ export const EmailTemplateManagement: React.FC = () => {
   };
 
   const insertMergeTag = (tag: string) => {
-    // Append at cursor position or simply at the end of body
     setFormBody(prev => prev + " " + tag);
     setHasUnsavedChanges(true);
   };
@@ -395,6 +404,7 @@ export const EmailTemplateManagement: React.FC = () => {
 
   // Dynamic preview compiler (replaces merge tags with preview data)
   const compilePreview = (subjectOrBody: string) => {
+    if (!subjectOrBody) return "";
     return subjectOrBody
       .replace(/%TenantFullName%/g, "Jane Smith")
       .replace(/%PropertyAddress%/g, "Unit 12, 45 Oxford Street, Paddington NSW 2021")
@@ -404,17 +414,22 @@ export const EmailTemplateManagement: React.FC = () => {
       .replace(/%InspectionReportLink%/g, "https://easeinspect.com/reports/preview-491a");
   };
 
-  const handleSendTestEmailSubmit = (e: React.FormEvent) => {
+  const handleSendTestEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!testEmailAddress) return;
     setTestSendStatus("sending");
-    setTimeout(() => {
-      if (testEmailAddress.includes("@")) {
-        setTestSendStatus("success");
-      } else {
-        setTestSendStatus("error");
-      }
-    }, 1500);
+    try {
+      const prefix = testEmailMessage ? `<p><strong>Note:</strong> ${testEmailMessage}</p><hr />` : "";
+      await emailTemplateApi.sendTestEmail({
+        to: testEmailAddress,
+        subject: `[TEST] ${compilePreview(formSubject)}`,
+        body: prefix + compilePreview(formBody)
+      });
+      setTestSendStatus("success");
+    } catch (err: any) {
+      console.error("Test email failed:", err);
+      setTestSendStatus("error");
+    }
   };
 
   // Build Layout templates when proceeding to Editor from Create page
@@ -495,7 +510,12 @@ export const EmailTemplateManagement: React.FC = () => {
           </div>
 
           {/* Cards Grid */}
-          {filteredTemplates.length > 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-4">
+              <RefreshCw className="w-10 h-10 text-[#3b82f6] animate-spin" />
+              <p className="text-slate-500 text-sm font-medium">Fetching email templates...</p>
+            </div>
+          ) : filteredTemplates.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTemplates.map((template) => (
                 <div 
@@ -647,7 +667,7 @@ export const EmailTemplateManagement: React.FC = () => {
                     id="create-name"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    placeholder="e.g. Ingoing Report Signature Request" 
+                    placeholder="e.g. Entry Report Signature Request" 
                     className="border-slate-200 h-11 focus:ring-[#3b82f6] focus:border-[#3b82f6]"
                   />
                 </div>
@@ -676,7 +696,7 @@ export const EmailTemplateManagement: React.FC = () => {
                       id="create-subject"
                       value={formSubject}
                       onChange={(e) => setFormSubject(e.target.value)}
-                      placeholder="e.g. Schedule for Ingoing Condition Report at %PropertyAddress%" 
+                      placeholder="e.g. Schedule for Entry Condition Report at %PropertyAddress%" 
                       className="border-slate-200 h-11 pr-32 focus:ring-[#3b82f6] focus:border-[#3b82f6]"
                     />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
