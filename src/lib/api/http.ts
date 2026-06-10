@@ -162,6 +162,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// ── 401 queuing ──────────────────────────────────────────────
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((p) => {
+    if (error) {
+      p.reject(error);
+    } else if (token) {
+      p.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => {
     try {
@@ -190,17 +205,35 @@ api.interceptors.response.use(
 
     // Handle authentication errors (401, 403) by automatically redirecting to login
     if (error.response?.status === 401 || error.response?.status === 403) {
+      // Skip auth-timeout redirect for the login endpoint itself — let the caller handle bad-credentials
+      const requestUrl = error?.config?.url || '';
+      if (requestUrl.includes('/auth/login')) {
+        return Promise.reject(error);
+      }
+
       console.log('Authentication error detected:', error.response?.status);
 
-      // Use the global auth timeout handler if available
-      if (authTimeoutHandler) {
-        authTimeoutHandler();
-      } else {
-        // Fallback: Clear user data and redirect
-        localStorage.removeItem('user');
-        if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-          window.location.href = '/';
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        // Use the global auth timeout handler if available
+        if (authTimeoutHandler) {
+          authTimeoutHandler();
+        } else {
+          // Fallback: Clear user data and redirect
+          localStorage.removeItem('user');
+          if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+            window.location.href = '/';
+          }
         }
+
+        processQueue(error);
+        isRefreshing = false;
+      } else {
+        // A refresh is already in progress — queue this request's rejection
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve: (token) => resolve(token) as any, reject });
+        });
       }
     }
 

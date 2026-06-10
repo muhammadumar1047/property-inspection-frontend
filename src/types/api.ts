@@ -180,6 +180,8 @@ export interface BillingPlanFilter {
 export interface LoginDto {
   email: string;
   password: string;
+  RememberMe?: boolean;
+  IsWebClient?: boolean;
 }
 
 export interface LoginResultDto {
@@ -568,7 +570,7 @@ export interface PropertyRequestBase {
   tenancies: TenancyDto[];
 }
 
-export interface CreatePropertyRequest extends PropertyRequestBase {}
+export interface CreatePropertyRequest extends PropertyRequestBase { }
 
 export interface UpdatePropertyRequest extends PropertyRequestBase {
   id: string;
