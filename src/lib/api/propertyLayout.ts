@@ -28,7 +28,6 @@ export const layoutApi = {
 
   // Used by property creation flows – backed by /api/PropertyLayout
   getAll: async (): Promise<PropertyLayoutResponse[]> => {
-    debugger;
     const res = await api.get('/PropertyLayout');
     //const body = res.data?.Data ?? res.data?.data ?? res.data;
     const body = res.data?.data?.data ?? res.data?.Data ?? res.data;

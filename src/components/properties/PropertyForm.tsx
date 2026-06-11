@@ -1146,26 +1146,26 @@ export default function PropertyForm({ onSuccess, propertyId, onClose, mode }: P
                     <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="flex items-center gap-2 mb-3">
                             <Info className="w-4 h-4 text-primary" />
-                            <h4 className="font-semibold text-sm">Layout Details: {selectedLayoutDetails.layoutName || selectedLayoutDetails.name}</h4>
+                            <h4 className="font-semibold text-sm">Layout Details: {selectedLayoutDetails.name}</h4>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {selectedLayoutDetails.areas?.map((area: any) => (
+                            {selectedLayoutDetails.layoutArea?.map((area: any) => (
                                 <div key={area.id} className="bg-card border border-[var(--border)] p-3 rounded-md shadow-sm">
-                                    <p className="text-sm font-bold text-primary mb-1">{area.name}</p>
+                                    <p className="text-sm font-bold text-primary mb-1">{area.areaName}</p>
                                     <div className="flex flex-wrap gap-1">
-                                        {area.items?.map((item: any) => (
+                                        {area.layoutItem?.map((item: any) => (
                                             <span key={item.id} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-sm border border-[var(--border)]/50">
-                                                {item.name}
+                                                {item.itemName}
                                             </span>
                                         ))}
-                                        {(!area.items || area.items.length === 0) && (
+                                        {(!area.layoutItem || area.layoutItem.length === 0) && (
                                             <span className="text-[10px] text-muted-foreground italic">No items</span>
                                         )}
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        {(!selectedLayoutDetails.areas || selectedLayoutDetails.areas.length === 0) && (
+                        {(!selectedLayoutDetails.layoutArea || selectedLayoutDetails.layoutArea.length === 0) && (
                             <p className="text-sm text-muted-foreground italic bg-muted/30 p-4 rounded-md text-center border border-dashed mt-3">
                                 This layout has no predefined areas or items.
                             </p>
