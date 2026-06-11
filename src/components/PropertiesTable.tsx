@@ -84,14 +84,12 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
     propertyId: string;
     inspectorId: string;
     inspectionType: number;
-    inspectionStatus: number;
     inspectionDate: string;
     inspectionTime: string;
   }>({
     propertyId: '',
     inspectorId: '',
     inspectionType: InspectionType.Entry,
-    inspectionStatus: InspectionStatus.Pending,
     inspectionDate: new Date().toISOString().split('T')[0],
     inspectionTime: '09:00',
   });
@@ -891,7 +889,6 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
       propertyId: property.id,
       inspectorId: '',
       inspectionType: InspectionType.Entry,
-      inspectionStatus: InspectionStatus.Pending,
       inspectionDate: new Date().toISOString().split('T')[0],
       inspectionTime: '09:00',
     });
@@ -914,7 +911,7 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
         propertyId: createInspection.propertyId,
         agencyId: effectiveAgencyId ? String(effectiveAgencyId) : null,
         inspectionType: Number(createInspection.inspectionType),
-        inspectionStatus: Number(createInspection.inspectionStatus),
+        inspectionStatus: InspectionStatus.Pending,
         inspectorId: createInspection.inspectorId,
         inspectionDate: new Date(createInspection.inspectionDate).toISOString(),
         inspectionTime: ensureSeconds(createInspection.inspectionTime),
@@ -939,7 +936,6 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
         propertyId: '',
         inspectorId: '',
         inspectionType: InspectionType.Entry,
-        inspectionStatus: InspectionStatus.Pending,
         inspectionDate: new Date().toISOString().split('T')[0],
         inspectionTime: '09:00',
       });
@@ -2918,22 +2914,6 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                   {inspectionTypes.map((type) => (
                     <option key={type.inspectionTypeId} value={type.inspectionTypeId}>
                       {type.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2">Status</label>
-                <select
-                  required
-                  className="w-full px-4 py-3 border border-muted-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-card text-sm"
-                  value={createInspection.inspectionStatus}
-                  onChange={(e) => setCreateInspection({ ...createInspection, inspectionStatus: parseInt(e.target.value) })}
-                >
-                  {inspectionStatuses.map((status) => (
-                    <option key={status.inspectionStatusId} value={status.inspectionStatusId}>
-                      {status.name}
                     </option>
                   ))}
                 </select>

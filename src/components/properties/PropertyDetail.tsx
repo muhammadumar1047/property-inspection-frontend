@@ -29,7 +29,6 @@ export default function PropertyDetail({ id }: { id: string }) {
   const [showCreateInspection, setShowCreateInspection] = useState(false);
   const [inspectionForm, setInspectionForm] = useState({
     inspectionType: InspectionType.Entry,
-    inspectionStatus: InspectionStatus.Pending,
     inspectorId: "",
     inspectionDate: new Date().toISOString().split("T")[0],
     inspectionTime: "09:00",
@@ -63,15 +62,15 @@ export default function PropertyDetail({ id }: { id: string }) {
       }
     } catch (e: any) {
       const errorData = e?.response?.data;
-      const errorMessage = typeof errorData === 'object' 
-        ? (errorData.title || errorData.message || JSON.stringify(errorData)) 
+      const errorMessage = typeof errorData === 'object'
+        ? (errorData.title || errorData.message || JSON.stringify(errorData))
         : (errorData || e?.message || "Failed to load property");
       setError(errorMessage);
     } finally { setLoading(false); }
   };
 
-  useEffect(() => { 
-    if (id) load(); 
+  useEffect(() => {
+    if (id) load();
   }, [id]);
 
   useEffect(() => {
@@ -144,7 +143,7 @@ export default function PropertyDetail({ id }: { id: string }) {
       await inspectionApi.create({
         propertyId: data.id,
         inspectionType: Number(inspectionForm.inspectionType),
-        inspectionStatus: Number(inspectionForm.inspectionStatus),
+        inspectionStatus: InspectionStatus.Pending,
         inspectorId: String(inspectionForm.inspectorId),
         inspectionDate: inspectionForm.inspectionDate,
         inspectionTime: inspectionForm.inspectionTime,
@@ -153,7 +152,6 @@ export default function PropertyDetail({ id }: { id: string }) {
       setInspectionForm((prev) => ({
         ...prev,
         inspectionType: InspectionType.Entry,
-        inspectionStatus: InspectionStatus.Pending,
         inspectorId: "",
         inspectionDate: new Date().toISOString().split("T")[0],
         inspectionTime: "09:00",
@@ -384,20 +382,6 @@ export default function PropertyDetail({ id }: { id: string }) {
                 {inspectionTypes.map((t) => (
                   <option key={String(t.id ?? t.inspectionTypeId ?? t.InspectionTypeId)} value={t.id ?? t.inspectionTypeId ?? t.InspectionTypeId}>
                     {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label>Status</Label>
-              <select
-                className="h-11 w-full rounded-md border border-border bg-white px-3 py-2"
-                value={inspectionForm.inspectionStatus}
-                onChange={(e) => setInspectionForm({ ...inspectionForm, inspectionStatus: parseInt(e.target.value) as any })}
-              >
-                {inspectionStatuses.map((s) => (
-                  <option key={String(s.id ?? s.inspectionStatusId ?? s.InspectionStatusId)} value={s.id ?? s.inspectionStatusId ?? s.InspectionStatusId}>
-                    {s.name}
                   </option>
                 ))}
               </select>
