@@ -11,10 +11,15 @@ import { unwrapApiResponse } from './helpers';
 export const layoutApi = {
   getPaged: async (
     pageNumber: number,
-    pageSize: number
+    pageSize: number,
+    filters?: { search?: string; layoutType?: number }
   ): Promise<{ data: PropertyLayoutResponse[]; page: number; pageSize: number; totalCount: number; totalPages: number }> => {
+    const params: Record<string, string | number> = { pageNumber, pageSize };
+    if (filters?.search) params.search = filters.search;
+    if (filters?.layoutType !== undefined && filters.layoutType !== null) params.layoutType = filters.layoutType;
+
     const response = await api.get<ApiResponse<PagedResult<PropertyLayoutResponse>>>('/propertylayout', {
-      params: { pageNumber, pageSize },
+      params,
     });
     const paged = unwrapApiResponse<PagedResult<PropertyLayoutResponse>>(response.data);
     return {

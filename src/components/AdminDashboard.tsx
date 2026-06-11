@@ -75,11 +75,14 @@ const AgencyManagement = dynamic(() => import("@/components/AgencyManagement"), 
 const EmailTemplateManagement = dynamic(() => import("@/components/EmailTemplateManagement").then(m => m.EmailTemplateManagement), { ssr: false });
 const QuickSuggestions = dynamic(() => import("@/components/QuickSuggestions"), { ssr: false });
 const BillingPlans = dynamic(() => import("@/components/BillingPlans"), { ssr: false });
-import LayoutManagement from "@/components/LayoutManagement";
 import UserProfile from "@/components/UserProfile";
 import ReferenceData from "@/components/ReferenceData";
 import PropertyCreation from "@/components/PropertyCreation";
 import GlobalSearch from "@/components/GlobalSearch";
+import LayoutsList from "@/components/layouts/LayoutsList";
+import LayoutForm from "@/components/layouts/LayoutForm";
+import LayoutFormEmbedded from "@/components/layouts/LayoutFormEmbedded";
+import LayoutViewerEmbedded from "@/components/layouts/LayoutViewerEmbedded";
 
 
 type StatCard = {
@@ -216,6 +219,8 @@ export default function AdminDashboard() {
   const [propertyCount, setPropertyCount] = useState(0);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
+  const [editingLayoutId, setEditingLayoutId] = useState<string | null>(null);
+  const [viewingLayoutId, setViewingLayoutId] = useState<string | null>(null);
   const [showingSearchResults, setShowingSearchResults] = useState<{ type: 'properties' | 'inspections' | null, query: string }>({ type: null, query: '' });
   const router = useRouter();
   const { logout, user, isSuperAdmin, impersonatedAgencyId, impersonatedAgencyName, effectiveAgencyId, stopImpersonating } = useAuth();
@@ -731,9 +736,9 @@ export default function AdminDashboard() {
                     {computedInspectionTypeData.map((d) => (
                       <div key={d.label} className="grid grid-cols-5 items-center gap-2">
                         <div className="col-span-1 text-xs text-muted-foreground">{d.label}</div>
-                          <div className="col-span-4 h-2 bg-muted rounded">
-                            <div className="h-2 bg-primary rounded" style={{ width: `${Math.round((d.value / maxTypeValue) * 100)}%` }} />
-                          </div>
+                        <div className="col-span-4 h-2 bg-muted rounded">
+                          <div className="h-2 bg-primary rounded" style={{ width: `${Math.round((d.value / maxTypeValue) * 100)}%` }} />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -814,9 +819,41 @@ export default function AdminDashboard() {
           searchQuery={showingSearchResults.type === 'inspections' ? showingSearchResults.query : undefined}
           onClearSearch={clearSearchResults}
         />;
-      // reports removed for now
       case "layout management":
-        return <LayoutManagement />;
+        return (
+          <LayoutsList
+            embedded={true}
+            onCreateLayout={() => setActiveSection('create layout')}
+            onEditLayout={(id) => { setEditingLayoutId(id); setActiveSection('edit layout'); }}
+            onViewLayout={(id) => { setViewingLayoutId(id); setActiveSection('view layout'); }}
+          />
+        );
+      case "create layout":
+        return (
+          <LayoutForm
+            mode="create"
+            embedded={true}
+            onBack={() => { setActiveSection('layout management'); }}
+            onSuccess={() => { setActiveSection('layout management'); }}
+          />
+        );
+      case "edit layout":
+        return editingLayoutId ? (
+          <LayoutFormEmbedded
+            layoutId={editingLayoutId}
+            onBack={() => { setEditingLayoutId(null); setActiveSection('layout management'); }}
+            onSuccess={() => { setEditingLayoutId(null); setActiveSection('layout management'); }}
+          />
+        ) : null;
+      case "view layout":
+        return viewingLayoutId ? (
+          <LayoutViewerEmbedded
+            layoutId={viewingLayoutId}
+            onBack={() => { setViewingLayoutId(null); setActiveSection('layout management'); }}
+            onEdit={(id) => { setViewingLayoutId(null); setEditingLayoutId(id); setActiveSection('edit layout'); }}
+          />
+        ) : null;
+      // reports removed for now
       case "settings":
         return <Settings />;
       case "general settings":
@@ -936,7 +973,7 @@ export default function AdminDashboard() {
                       : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
                     }`}
                 >
-                  <SettingsIcon className="w-[18px] h-[18px] shrink-0" />
+                  <Layers className="w-[18px] h-[18px] shrink-0" />
                   {(!isSidebarCollapsed || isMobile) && <span className="flex-1 text-left text-sm truncate">Layout Management</span>}
                 </button>
               </li>
