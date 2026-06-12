@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import type { WhitelabelBrandingDto } from "@/types/api";
 
 /* ══════════════════════════════════════════════════════
    PREMIUM REPORT VIEWER — EaseInspect
@@ -63,12 +64,16 @@ function PageFooter({ report, pageNum, totalPages }: { report: any; pageNum: num
 }
 
 /* ─── Page Header (inner pages) ─── */
-function InnerHeader({ report }: { report: any }) {
+function InnerHeader({ report, branding }: { report: any; branding?: BrandingInfo }) {
   return (
     <div className="flex items-center justify-between px-10 py-4 border-b border-slate-100">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--primary-700)] flex items-center justify-center">
-          <span className="text-white text-xs font-black">P</span>
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-primary-700)] flex items-center justify-center overflow-hidden">
+          {branding?.logoUrl ? (
+            <img src={branding.logoUrl} alt={report.agencyName} className="w-6 h-6 object-contain" />
+          ) : (
+            <span className="text-white text-xs font-black">P</span>
+          )}
         </div>
         <span className="text-sm font-bold text-slate-800 tracking-tight">{report.agencyName}</span>
       </div>
@@ -77,12 +82,23 @@ function InnerHeader({ report }: { report: any }) {
   );
 }
 
+type BrandingInfo = {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  fontFamily?: string;
+  accentFontFamily?: string;
+  logoUrl?: string | null;
+  nameColor?: string;
+  addressColor?: string;
+};
+
 /* ─── Section Label ─── */
 function SectionLabel({ title, id, subtitle }: { title: string; id?: string; subtitle?: string }) {
   return (
     <div id={id} className="scroll-mt-6 mb-5">
       <div className="flex items-center gap-3">
-        <div className="w-1 h-6 rounded-full bg-gradient-to-b from-[var(--primary)] to-[var(--primary-600)]" />
+        <div className="w-1 h-6 rounded-full bg-gradient-to-b from-[var(--brand-primary)] to-[var(--brand-primary-700)]" />
         <div>
           <h3 className="text-sm font-bold text-slate-900 uppercase tracking-[0.08em]">{title}</h3>
           {subtitle && <p className="text-[11px] text-slate-400 mt-0.5">{subtitle}</p>}
@@ -97,11 +113,43 @@ export default function ReportViewer({
   report,
   editable,
   onSave,
+  branding,
 }: {
   report: any;
   editable?: boolean;
   onSave?: (changed: any) => Promise<void>;
+  branding?: WhitelabelBrandingDto | null;
 }) {
+  // Resolve whitelabel branding — fall back to defaults
+  const brandPrimary = branding?.primaryColor || "var(--primary)";
+  const brandSecondary = branding?.secondaryColor || "var(--primary-700)";
+  const brandAccent = branding?.accentColor || "var(--accent)";
+  const brandFont = branding?.fontFamily || undefined;
+  const brandAccentFont = branding?.accentFontFamily || brandFont;
+  const brandNameColor = branding?.agencyNameColor || "#ffffff";
+  const brandAddressColor = branding?.addressColor || "rgba(255,255,255,0.5)";
+  const brandLogoUrl = branding?.logoUrl || null;
+  const brandAccentForeground = branding?.accentColor ? "#ffffff" : "var(--accent-foreground)";
+
+  const cssVars = {
+    "--brand-primary": brandPrimary,
+    "--brand-primary-700": brandSecondary,
+    "--brand-accent": brandAccent,
+    "--brand-accent-foreground": brandAccentForeground,
+    fontFamily: brandFont,
+  } as React.CSSProperties;
+
+  const brandingInfo: BrandingInfo = {
+    primaryColor: brandPrimary,
+    secondaryColor: brandSecondary,
+    accentColor: brandAccent,
+    fontFamily: brandFont,
+    accentFontFamily: brandAccentFont,
+    logoUrl: brandLogoUrl,
+    nameColor: brandNameColor,
+    addressColor: brandAddressColor,
+  };
+
   React.useEffect(() => {
     // Handle initial hash scrolling after data is likely rendered
     const hash = window.location.hash;
@@ -196,13 +244,13 @@ export default function ReportViewer({
       item.mediaItems?.forEach((media: any) => {
         // Only push if not already added by legacy logic (to avoid duplicates)
         if (!allImages.find(x => x.imgId === media.id)) {
-           allImages.push({ 
-             area: area.name, 
-             item: item.name, 
-             imgId: media.id, 
-             comment: media.comments || item.comments, 
-             url: media.url 
-           });
+          allImages.push({
+            area: area.name,
+            item: item.name,
+            imgId: media.id,
+            comment: media.comments || item.comments,
+            url: media.url
+          });
         }
       });
     });
@@ -218,12 +266,12 @@ export default function ReportViewer({
   ];
 
   return (
-    <div className="flex gap-8">
+    <div className="flex gap-8" style={cssVars}>
 
       {/* ═══════════ SIDEBAR ═══════════ */}
       <nav className="w-52 shrink-0 print:hidden sticky top-6 self-start">
         <div className="rounded-2xl overflow-hidden border border-slate-200/80 bg-white shadow-lg shadow-slate-200/50">
-          <div className="bg-gradient-to-br from-[var(--primary)] to-[var(--primary-700)] px-5 py-4">
+          <div className="bg-gradient-to-br from-[var(--brand-primary)] to-[var(--brand-primary-700)] px-5 py-4">
             <p className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-medium">Navigation</p>
             <p className="font-bold text-white text-sm mt-0.5">Report Sections</p>
           </div>
@@ -232,9 +280,9 @@ export default function ReportViewer({
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] text-slate-500 hover:bg-slate-50 hover:text-[var(--primary)] transition-all duration-200"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] text-slate-500 hover:bg-slate-50 hover:text-[var(--brand-primary)] transition-all duration-200"
               >
-                <span className="w-6 h-6 rounded-md bg-slate-100 group-hover:bg-[var(--primary-50)] flex items-center justify-center text-[10px] font-bold text-slate-400 group-hover:text-[var(--primary)] transition-colors">
+                <span className="w-6 h-6 rounded-md bg-slate-100 group-hover:bg-[var(--brand-primary)]/10 flex items-center justify-center text-[10px] font-bold text-slate-400 group-hover:text-[var(--brand-primary)] transition-colors">
                   {s.icon}
                 </span>
                 <span className="font-medium">{s.label}</span>
@@ -256,20 +304,24 @@ export default function ReportViewer({
             {/* Property image background */}
             <div className="absolute inset-0">
               <img src="/property-hero-bg.png" alt="" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/90 via-[var(--primary)]/85 to-[#001d3a]/95" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--brand-primary)]/90 via-[var(--brand-primary)]/85 to-[var(--brand-primary-700)]/95" />
             </div>
 
             <div className="relative px-10 pt-10 pb-8">
               {/* Agency row */}
               <div className="flex items-start justify-between mb-12">
                 <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center border border-white/15 shadow-lg shadow-black/10">
-                    <span className="text-3xl font-black text-white/90">P</span>
+                  <div className="w-24 h-24 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center border border-white/15 shadow-lg shadow-black/10 overflow-hidden shrink-0">
+                    {brandLogoUrl ? (
+                      <img src={brandLogoUrl} alt={report.agencyName} className="w-20 h-20 object-contain" />
+                    ) : (
+                      <span className="text-4xl font-black text-white/90">P</span>
+                    )}
                   </div>
                   <div>
-                    <h1 className="text-xl font-extrabold tracking-tight leading-tight">{report.agencyName}</h1>
-                    <p className="text-white/50 text-[13px] mt-1">{report.agencyAddress}</p>
-                    <p className="text-white/50 text-[13px]">{report.agencyPhone}</p>
+                    <h1 className="text-xl font-extrabold tracking-tight leading-tight" style={{ color: brandNameColor }}>{report.agencyName}</h1>
+                    <p className="text-[13px] mt-1" style={{ color: brandAddressColor }}>{report.agencyAddress}</p>
+                    <p className="text-[13px]" style={{ color: brandAddressColor }}>{report.agencyPhone}</p>
                   </div>
                 </div>
                 <div className="bg-white/[0.07] backdrop-blur-md rounded-xl px-5 py-3 border border-white/10">
@@ -280,7 +332,7 @@ export default function ReportViewer({
 
               {/* Title block */}
               <div className="border-t border-white/10 pt-8">
-                <div className="inline-block bg-[var(--accent)] text-[var(--accent-foreground)] text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded mb-3">
+                <div className="inline-block bg-[var(--brand-accent)] text-[var(--brand-accent-foreground)] text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded mb-3">
                   Condition Report
                 </div>
                 <h2 className="text-4xl font-black tracking-tight leading-[1.1]">{report.reportTitle}</h2>
@@ -321,15 +373,15 @@ export default function ReportViewer({
                 {/* Right — Inspection */}
                 <div className="p-6">
                   <div className="flex items-center gap-2.5 mb-5">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--primary-50)] flex items-center justify-center">
-                      <svg className="w-4 h-4 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: brandingInfo.primaryColor + '15' }}>
+                      <svg className="w-4 h-4" style={{ color: brandingInfo.primaryColor }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                     </div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">Inspection Details</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Type</p>
-                      <span className="inline-block text-[13px] font-bold text-[var(--primary)] bg-[var(--primary-50)] px-2.5 py-0.5 rounded-md">Ingoing</span>
+                      <span className="inline-block text-[13px] font-bold px-2.5 py-0.5 rounded-md" style={{ color: brandingInfo.primaryColor, backgroundColor: brandingInfo.primaryColor + '15' }}>Ingoing</span>
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Inspector</p>
@@ -369,14 +421,14 @@ export default function ReportViewer({
                 {/* Important Information */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-1.5 h-5 rounded-full bg-[var(--primary)]" />
+                    <div className="w-1.5 h-5 rounded-full" style={{ backgroundColor: brandingInfo.primaryColor }} />
                     <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-slate-700">Important Information</p>
                   </div>
                   <ul className="space-y-2.5 list-none">
                     {selectedGuidelines.importantInformation.map((text, i) => (
                       <li key={i} className="flex gap-3 items-start">
                         <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm mt-px">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: brandingInfo.primaryColor }} />
                         </span>
                         <p className="text-[12px] text-slate-500 leading-relaxed">{text}</p>
                       </li>
@@ -395,7 +447,7 @@ export default function ReportViewer({
            ║     PAGE 2 — STANDARDS & CHECKS      ║
            ╚══════════════════════════════════════╝ */}
         <section id="standards" className="a4-page">
-          <InnerHeader report={report} />
+          <InnerHeader report={report} branding={brandingInfo} />
           <div className="px-10 py-8 flex-1 space-y-6">
 
             {/* Communication Facilities */}
@@ -477,14 +529,14 @@ export default function ReportViewer({
         {areas.map((area: any, areaIdx: number) => {
           const items = area.items || area.reportItems || [];
           const areaName = area.name || area.areaName || `Area ${areaIdx + 1}`;
-          
+
           return (
             <section key={areaIdx} id={`area-${areaIdx}`} className="a4-page !overflow-visible">
-              <InnerHeader report={report} />
+              <InnerHeader report={report} branding={brandingInfo} />
               <div className="px-10 py-8 flex-1">
                 {/* Area Header */}
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-700)] flex items-center justify-center shadow-md shadow-[var(--primary)]/20">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ background: `linear-gradient(to bottom right, ${brandingInfo.primaryColor}, ${brandingInfo.secondaryColor})`, boxShadow: `0 4px 6px -1px ${brandingInfo.primaryColor}33` }}>
                     <span className="text-white font-black text-sm">{areaIdx + 1}</span>
                   </div>
                   <div>
@@ -570,7 +622,7 @@ export default function ReportViewer({
            ╚══════════════════════════════════════╝ */}
         {allImages.length > 0 && (
           <section id="media" className="a4-page">
-            <InnerHeader report={report} />
+            <InnerHeader report={report} branding={brandingInfo} />
             <div className="px-10 py-8 flex-1">
               <SectionLabel title="Photos & Media" subtitle={`${allImages.length} images captured during inspection`} id="media-heading" />
               <div className="grid grid-cols-3 gap-5 mt-6">
@@ -582,8 +634,8 @@ export default function ReportViewer({
                   >
                     <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 relative flex items-center justify-center overflow-hidden">
                       {img.url ? (
-                        <img 
-                          src={img.url} 
+                        <img
+                          src={img.url}
                           alt={`${img.area} - ${img.item}`}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
@@ -615,20 +667,24 @@ export default function ReportViewer({
            ║     LAST PAGE — SUMMARY              ║
            ╚══════════════════════════════════════╝ */}
         <section id="summary" className="a4-page">
-          <InnerHeader report={report} />
+          <InnerHeader report={report} branding={brandingInfo} />
           <div className="px-10 py-8 flex-1 space-y-10">
             {/* Summary Stats */}
             <div>
               <SectionLabel title="Inspection Summary" subtitle="Overview of findings" />
               <div className="grid grid-cols-4 gap-4 mt-4">
                 {[
-                  { value: areaCount, label: "Areas", color: "from-[var(--primary)] to-[var(--primary-700)]" },
+                  { value: areaCount, label: "Areas", isBrand: true },
                   { value: areas.reduce((a: number, ar: any) => a + (ar.items || ar.reportItems || []).length, 0), label: "Items", color: "from-emerald-500 to-emerald-600" },
                   { value: allImages.length, label: "Photos", color: "from-blue-500 to-blue-600" },
                   { value: report.inspectionDate, label: "Date", color: "from-amber-500 to-amber-600", isText: true },
                 ].map((stat, i) => (
                   <div key={i} className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                    <div className={`h-1.5 bg-gradient-to-r ${stat.color}`} />
+                    {(stat as any).isBrand ? (
+                      <div className="h-1.5" style={{ background: `linear-gradient(to right, ${brandingInfo.primaryColor}, ${brandingInfo.secondaryColor})` }} />
+                    ) : (
+                      <div className={`h-1.5 bg-gradient-to-r ${(stat as any).color || ''}`} />
+                    )}
                     <div className="p-4 text-center">
                       <p className={`${(stat as any).isText ? 'text-sm' : 'text-3xl'} font-black text-slate-800`}>{stat.value}</p>
                       <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-medium mt-1">{stat.label}</p>

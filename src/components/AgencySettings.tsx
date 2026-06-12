@@ -738,14 +738,15 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
                   {[
                     { key: 'agencyNameColor', label: '1. Agency Name Colour', type: 'color' },
                     { key: 'addressColor', label: '2. Address Colour', type: 'color' },
-                    { key: 'primaryColor', label: '3. Accent Colour', type: 'color' },
-                    { key: 'fontFamily', label: '4. Accent Font', type: 'text' },
-                    { key: 'secondaryColor', label: '5. Globe Background Colour', type: 'color' },
-                    { key: 'globeColor', label: '6. Globe Colour', type: 'color' },
-                    { key: 'keyBackgroundColor', label: '7. Key Background Colour', type: 'color' },
-                    { key: 'keyColor', label: '8. Key Colour', type: 'color' },
-                    { key: 'dollarBackgroundColor', label: '9. Dollar Background Colour', type: 'color' },
-                    { key: 'dollarColor', label: '10. Dollar Colour', type: 'color' }
+                    { key: 'primaryColor', label: '3. Primary Colour', type: 'color' },
+                    { key: 'accentColor', label: '4. Accent Colour', type: 'color' },
+                    { key: 'fontFamily', label: '5. Accent Font', type: 'text' },
+                    { key: 'secondaryColor', label: '6. Globe Background Colour', type: 'color' },
+                    { key: 'globeColor', label: '7. Globe Colour', type: 'color' },
+                    { key: 'keyBackgroundColor', label: '8. Key Background Colour', type: 'color' },
+                    { key: 'keyColor', label: '9. Key Colour', type: 'color' },
+                    { key: 'dollarBackgroundColor', label: '10. Dollar Background Colour', type: 'color' },
+                    { key: 'dollarColor', label: '11. Dollar Colour', type: 'color' }
                   ].map((field) => (
                     <div key={field.key}>
                       <Label className="font-bold text-xs text-gray-700">{field.label}</Label>

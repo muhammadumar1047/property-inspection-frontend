@@ -97,17 +97,17 @@ export const propertyApi = {
     const response = await api.get(`/property?${params.toString()}`);
     const envelope = response.data;
     const pagedResult = envelope?.Data;
-    
+
     if (pagedResult && typeof pagedResult === 'object' && ('Data' in pagedResult || 'data' in pagedResult)) {
       const data = (pagedResult.Data ?? pagedResult.data) as PropertyResponse[];
       const totalCount = (pagedResult.TotalCount ?? pagedResult.totalCount ?? data?.length ?? 0) as number;
       return { data, totalCount };
     }
-    
+
     if (Array.isArray(pagedResult)) {
       return { data: pagedResult as PropertyResponse[], totalCount: pagedResult.length };
     }
-    
+
     return { data: [], totalCount: 0 };
   },
 
@@ -237,18 +237,18 @@ export const inspectionApi = {
     const response = await api.get(`/inspection?${params.toString()}`);
     const envelope = response.data;
     const pagedResult = envelope?.Data;
-    
+
     if (pagedResult && typeof pagedResult === 'object' && ('Data' in pagedResult || 'data' in pagedResult)) {
-        return {
-            data: pagedResult.Data ?? pagedResult.data,
-            totalCount: pagedResult.TotalCount ?? pagedResult.totalCount ?? pagedResult.Data?.length ?? 0
-        };
+      return {
+        data: pagedResult.Data ?? pagedResult.data,
+        totalCount: pagedResult.TotalCount ?? pagedResult.totalCount ?? pagedResult.Data?.length ?? 0
+      };
     }
-    
+
     if (Array.isArray(pagedResult)) {
       return { data: pagedResult as InspectionResponse[], totalCount: pagedResult.length };
     }
-    
+
     // Fallback for previous structures or direct arrays
     return Array.isArray(envelope) ? { data: envelope, totalCount: envelope.length } : { data: [], totalCount: 0 };
   },
@@ -473,14 +473,16 @@ export const layoutApi = {
 export const reportApi = {
   getInspectionReport: async (inspectionId: string): Promise<import('@/types/api').ReportDto> => {
     const response = await api.get(`/report/inspection/${inspectionId}`);
-    return response.data?.Data ?? response.data;
+    const envelope = response.data;
+    return (envelope && "data" in envelope ? envelope.data : envelope) as import('@/types/api').ReportDto;
   },
   updateInspectionReport: async (
     inspectionId: string,
     payload: Partial<{ notes: string; reportAreas: any }>
   ): Promise<import('@/types/api').ReportDto> => {
     const response = await api.put(`/report/inspection/${inspectionId}`, payload);
-    return response.data?.Data ?? response.data;
+    const envelope = response.data;
+    return (envelope && "data" in envelope ? envelope.data : envelope) as import('@/types/api').ReportDto;
   },
 };
 

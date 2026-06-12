@@ -6,7 +6,7 @@ import PropertyDetail from "@/components/properties/PropertyDetail";
 import ReportViewer from "@/components/ReportViewer";
 import { reportApi } from "@/lib/api";
 import { mapApiReportToViewer } from "@/lib/report-mapping";
-import type { ReportDto } from "@/types/api";
+import type { ReportDto, WhitelabelBrandingDto } from "@/types/api";
 
 export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
@@ -14,6 +14,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const inspectionIdParam = search?.get("viewReportForInspectionId");
   const mode = (search?.get('mode') || '').toLowerCase();
   const [report, setReport] = useState<ReportDto | null>(null);
+  const [branding, setBranding] = useState<WhitelabelBrandingDto | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
@@ -29,6 +30,12 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         if (r) {
           const mapped = mapApiReportToViewer(r);
           setReport(mapped as any);
+
+          // Use whitelabel branding embedded in the report header (same API response)
+          const embeddedBranding = mapped.branding;
+          if (embeddedBranding && Object.keys(embeddedBranding).some(k => (embeddedBranding as any)[k])) {
+            setBranding(embeddedBranding);
+          }
         }
       } catch (e: any) {
         setReportError(e?.response?.data?.message || e?.message || "Failed to load report");
@@ -44,7 +51,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   if (report) {
     const statusId = Number(report.inspection?.inspectionStatus);
     const isPendingOrActive = [1, 2, 3].includes(statusId);
-    
+
     if (mode === 'edit' && isPendingOrActive) {
       return (
         <div className="p-10 text-center bg-amber-50 rounded-xl border border-amber-200 m-6">
@@ -55,7 +62,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       );
     }
 
-    return <ReportViewer report={report} editable={mode === 'edit' && statusId === 4} onSave={async (changed) => {
+    return <ReportViewer report={report} branding={branding} editable={mode === 'edit' && statusId === 4} onSave={async (changed) => {
       try {
         const updated = await reportApi.updateInspectionReport(report.inspectionId, changed);
         setReport(updated);

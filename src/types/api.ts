@@ -814,6 +814,9 @@ export interface ReportDto extends BaseEntityDto {
   reportType: string;
   notes?: string | null;
   inspection?: InspectionResponse | null;
+  header?: {
+    agencyWhiteLabel?: WhitelabelBrandingDto | null;
+  } | null;
   reportAreas: ReportAreaDto[];
 }
 

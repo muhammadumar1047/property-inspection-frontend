@@ -5,7 +5,10 @@ import { ReportDto, InspectionResponse } from '@/types/api';
  */
 export function mapApiReportToViewer(dto: ReportDto) {
   const inspection = dto.inspection;
-  
+
+  // Extract embedded whitelabel branding from the report header (same response)
+  const embeddedBranding = dto.header?.agencyWhiteLabel ?? null;
+
   // Extract agency info
   const agency = inspection?.agency;
   const agencyAddressParts = [
@@ -28,7 +31,7 @@ export function mapApiReportToViewer(dto: ReportDto) {
       items: (area.reportItems || []).map(item => {
         // Find conditions. Backend typical descriptions: "Clean", "Undamaged", "Working", "Keys"
         const findCondition = (desc: string) => {
-          const cond = item.reportItemConditions?.find(c => 
+          const cond = item.reportItemConditions?.find(c =>
             c.description.toLowerCase() === desc.toLowerCase()
           );
           if (!cond || !cond.value) return null;
@@ -60,6 +63,8 @@ export function mapApiReportToViewer(dto: ReportDto) {
 
   return {
     id: dto.id || dto.inspectionId,
+    agencyId: agency?.id || null,
+    branding: embeddedBranding,
     agencyName: agency?.legalBusinessName || 'Agency Name',
     agencyAddress: agencyAddressParts.join(', '),
     agencyPhone: agency?.phoneNumber || '',
@@ -90,13 +95,13 @@ export function mapApiReportToViewer(dto: ReportDto) {
     },
     areas: mappedAreas,
     signatures: {
-      inspector: { 
-        name: inspection?.inspectorName || '', 
-        date: inspection?.inspectionDate?.split('T')[0] || '' 
+      inspector: {
+        name: inspection?.inspectorName || '',
+        date: inspection?.inspectionDate?.split('T')[0] || ''
       },
-      tenant: { 
-        name: inspection?.tenancySnapshots?.[0]?.fullName || 'Tenant', 
-        date: inspection?.inspectionDate?.split('T')[0] || '' 
+      tenant: {
+        name: inspection?.tenancySnapshots?.[0]?.fullName || 'Tenant',
+        date: inspection?.inspectionDate?.split('T')[0] || ''
       }
     }
   };
