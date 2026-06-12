@@ -52,6 +52,19 @@ export const agencyApi = {
     const response = await api.get('/agencywhitelabel', { params: agencyId ? { agencyId } : undefined });
     return unwrapApiResponse<AgencyWhitelabelResponse>(response.data);
   },
+  createWhitelabel: async (payload: {
+    agencyNameColor?: string;
+    addressColor?: string;
+    accentColor?: string | null;
+    accentFontFamily?: string | null;
+    logoUrl?: string | null;
+    primaryColor?: string | null;
+    secondaryColor?: string | null;
+    fontFamily?: string | null;
+  }): Promise<AgencyWhitelabelResponse> => {
+    const response = await api.post('/agencywhitelabel', payload);
+    return unwrapApiResponse<AgencyWhitelabelResponse>(response.data);
+  },
   updateWhitelabel: async (whitelabelId: string, payload: Partial<AgencyWhitelabelResponse>) => {
     const response = await api.put(`/agencywhitelabel/${whitelabelId}`, payload);
     return unwrapApiResponse<AgencyWhitelabelResponse>(response.data);
