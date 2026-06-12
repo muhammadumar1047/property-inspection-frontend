@@ -99,9 +99,6 @@ const GeneralSettings: React.FC = () => {
           <p className="text-gray-600">Manage your account profile, preferences, notifications, and security.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="text-xs px-2.5 py-1 bg-white">
-            SaaS Configuration
-          </Badge>
           <Button onClick={handleSaveAll} disabled={saving}>
             <Save className="h-4 w-4 mr-2" />
             {saving ? "Saving..." : "Save Changes"}

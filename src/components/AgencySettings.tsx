@@ -782,11 +782,11 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
                   <div className="flex justify-between items-start mb-8 pb-4 border-b border-gray-100">
                     <div className="flex items-center gap-4">
                       {whitelabelSettings.logoUrl ? (
-                        <div className="w-24 h-24 flex items-center justify-center p-2" style={{ backgroundColor: whitelabelSettings.primaryColor || '#2e7d32' }}>
+                        <div className="w-28 h-28 flex items-center justify-center p-2">
                           <img src={whitelabelSettings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
                         </div>
                       ) : (
-                        <div className="w-24 h-24 flex items-center justify-center text-white text-xs text-center p-2" style={{ backgroundColor: whitelabelSettings.primaryColor || '#2e7d32' }}>belle property</div>
+                        <div className="w-28 h-28 flex items-center justify-center text-gray-400 text-xs text-center p-2 border border-dashed border-gray-300 rounded">No logo</div>
                       )}
 
                       <div style={{ fontFamily: whitelabelSettings.fontFamily || 'Arial' }}>
@@ -942,20 +942,20 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
 
                 </div>
 
-                {/* Floating Save Button */}
-                <div className="absolute bottom-8 right-8 z-50">
-                  <Button
-                    onClick={handleUpdateWhitelabel}
-                    disabled={loading}
-                    className="rounded-full shadow-2xl px-8 py-6 text-base font-bold bg-black text-white hover:bg-gray-800"
-                  >
-                    {loading ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </div>
-
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Changes Button — placed at the bottom of the page */}
+          <div className="flex justify-end mt-6">
+            <Button
+              onClick={handleUpdateWhitelabel}
+              disabled={loading}
+              className="px-8 py-3 text-base font-bold bg-black text-white hover:bg-gray-800 rounded-lg shadow-md"
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
         </div>
       )}
       {/* Email Templates Tab */}

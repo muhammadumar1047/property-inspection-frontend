@@ -888,13 +888,6 @@ export default function AdminDashboard() {
           </div>
         );
 
-      case "integration":
-        return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Integration</h2>
-            <p className="text-gray-600">Third-party integrations and API connections will be displayed here.</p>
-          </div>
-        );
       default:
         return null;
     }
@@ -1018,21 +1011,6 @@ export default function AdminDashboard() {
                 )}
               </li>
 
-              {/* Integration Item */}
-              <li>
-                <button
-                  onClick={() => { handleNavigation('integration'); if (isMobile) setIsMobileSidebarOpen(false); }}
-                  title={isSidebarCollapsed && !isMobile ? 'Integration' : undefined}
-                  className={`w-full flex items-center gap-3 rounded-xl transition-all duration-200 cursor-pointer ${isSidebarCollapsed && !isMobile ? 'justify-center h-10 px-0' : 'h-10 px-3'
-                    } ${activeSection === 'integration'
-                      ? 'bg-[var(--primary)] text-white shadow-sm font-semibold'
-                      : 'text-[var(--muted-600)] hover:bg-[var(--muted-100)] hover:text-[var(--foreground)]'
-                    }`}
-                >
-                  <Plug className="w-[18px] h-[18px] shrink-0" />
-                  {(!isSidebarCollapsed || isMobile) && <span className="flex-1 text-left text-sm">Integration</span>}
-                </button>
-              </li>
             </ul>
           </div>
         )}
