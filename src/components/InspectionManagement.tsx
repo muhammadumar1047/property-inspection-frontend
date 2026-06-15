@@ -143,6 +143,19 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
     const loadInspections = async () => {
       setLoading(true);
       setError('');
+
+      // When search results are provided from GlobalSearch, use them directly
+      const hasActiveFilters = filters.typeId || filters.statusId || filters.inspectorId
+        || filters.suburb || filters.inspectionDate || filters.dateFrom || filters.dateTo
+        || filters.searchProperty;
+
+      if (searchResults && searchResults.length > 0 && !hasActiveFilters) {
+        setInspections(searchResults);
+        setTotalCount(searchResults.length);
+        setLoading(false);
+        return;
+      }
+
       try {
         const apiFilters = {
           ...(filters.typeId && { inspectionType: filters.typeId }),
@@ -167,7 +180,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
     };
 
     loadInspections();
-  }, [page, pageSize, filters]);
+  }, [page, pageSize, filters, searchResults]);
 
   const handleCreateInspection = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,14 +200,14 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
         inspectionTime: ensureSeconds(newInspection.inspectionTime),
       };
       const createdInspection = await inspectionApi.create(payload as any);
-      
+
       // Ensure property details are populated immediately for the UI
       const enriched = {
         ...enrichInspectionDisplayFields(createdInspection),
         propertyAddress: createdInspection.propertyAddress || selectedProperty?.address,
         propertySubhurb: createdInspection.propertySubhurb || selectedProperty?.suburb
       };
-      
+
       alert('Inspection created successfully');
 
       // Add the new inspection to the current list with display fields populated
@@ -1326,11 +1339,11 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
                               3: 'InSync',
                               4: 'Completed',
                               5: 'Closed'
-                            } as Record<number, string>)[statusId] || 
-                            (inspection as any).inspectionStatusName || 
-                            (inspection as any).statusName || 
+                            } as Record<number, string>)[statusId] ||
+                            (inspection as any).inspectionStatusName ||
+                            (inspection as any).statusName ||
                             'Unknown';
-                          
+
                           const colorClass = ([3, 4, 5].includes(statusId))
                             ? 'bg-green-100 text-green-800'
                             : 'bg-yellow-100 text-yellow-800';
