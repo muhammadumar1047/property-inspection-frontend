@@ -8,6 +8,7 @@ import propertyApi from '@/lib/api/property';
 import referenceApi from '@/lib/api/reference';
 import { getInspectionActions, getInspectionReportUrl } from '@/lib/inspection-actions';
 import Modal from './ui/Modal';
+import CloseReportModal, { CloseReportData } from './CloseReportModal';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Edit, Trash2, SlidersHorizontal } from 'lucide-react';
@@ -83,7 +84,8 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
   const [editPropertySearchResults, setEditPropertySearchResults] = useState<any[]>([]);
   const [showEditPropertyResults, setShowEditPropertyResults] = useState(false);
   const [selectedEditProperty, setSelectedEditProperty] = useState<any>(null);
-
+  const [showCloseReportModal, setShowCloseReportModal] = useState(false);
+  const [closingInspection, setClosingInspection] = useState<InspectionResponse | null>(null);
 
   const getInspectorDisplayName = (inspector: any): string => {
     const first = (inspector.firstName || inspector.FirstName || '').trim();
@@ -308,7 +310,17 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
     }
   };
 
-  const handleCloseReport = async (inspectionId: string) => {
+  const handleCloseReport = (inspectionId: string) => {
+    const inspection = inspections.find(i => i.id === inspectionId);
+    if (inspection) {
+      setClosingInspection(inspection);
+      setShowCloseReportModal(true);
+    }
+  };
+
+  const handleCloseReportSubmit = async (data: CloseReportData) => {
+    if (!closingInspection) return;
+    const inspectionId = closingInspection.id;
     try {
       setLoading(true);
       const inspection = await inspectionApi.getById(inspectionId);
@@ -322,12 +334,18 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
         address: inspection.propertyAddress || '',
         inspectionDate: inspection.inspectionDate,
         inspectionTime: inspection.inspectionTime,
+        inspectionCompletedDate: data.inspectionCompletedDate || null,
+        inspectionCloseDate: data.inspectionCloseDate || null,
+        signatureImageUrl: data.signatureImageUrl || null,
+        signatureDate: data.signatureDate || null,
       } as any);
       if (!ok) throw new Error('Failed to close report');
       const updated = await inspectionApi.getById(inspectionId);
       const enriched = enrichInspectionDisplayFields(updated as any);
       setInspections(prev => prev.map(i => i.id === inspectionId ? enriched : i));
       onInspectionChange?.();
+      setShowCloseReportModal(false);
+      setClosingInspection(null);
     } catch (e: any) {
       alert(e?.response?.data?.Message || e?.response?.data?.message || e?.message || 'Failed to close report');
     } finally {
@@ -1272,6 +1290,18 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
           </form>
         </div>
       </Modal>
+
+      {/* Close Report Modal */}
+      <CloseReportModal
+        isOpen={showCloseReportModal}
+        onClose={() => {
+          setShowCloseReportModal(false);
+          setClosingInspection(null);
+        }}
+        inspection={closingInspection}
+        onCloseReport={handleCloseReportSubmit}
+        loading={loading}
+      />
 
       <div className="bg-card border border-border overflow-hidden sm:rounded-md">
         <div className="px-4 py-5 sm:px-6">

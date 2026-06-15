@@ -76,7 +76,6 @@ export const inspectionApi = {
   },
 
   update: async (id: string, payload: UpdateInspectionRequest): Promise<boolean> => {
-    debugger;
     const response = await api.put<ApiResponse<boolean>>(`/inspection/${id}`, payload);
     return unwrapApiResponse<boolean>(response.data);
   },

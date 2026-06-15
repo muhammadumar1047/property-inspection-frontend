@@ -96,6 +96,7 @@ export interface UserResponse extends BaseEntityDto {
   lastName: string;
   email: string;
   profileImage: string;
+  signatureImage?: string | null;
   agencyId?: string | null;
   agencyName?: string | null;
   isSuperAdmin: boolean;
@@ -609,6 +610,10 @@ export interface InspectionResponse {
   inspectionStatus: InspectionStatus;
   inspectionDate: string;
   inspectionTime: string;
+  inspectionCompletedDate?: string | null;
+  inspectionCloseDate?: string | null;
+  signatureImageUrl?: string | null;
+  signatureDate?: string | null;
   property?: PropertyResponse | null;
   agency?: AgencyResponse | null;
   inspector?: UserResponse | null;
@@ -638,6 +643,10 @@ export interface UpdateInspectionRequest {
   address?: string | null;
   inspectionDate: string;
   inspectionTime: string;
+  inspectionCompletedDate?: string | null;
+  inspectionCloseDate?: string | null;
+  signatureImageUrl?: string | null;
+  signatureDate?: string | null;
 }
 
 export interface RecentInspectionDto {
