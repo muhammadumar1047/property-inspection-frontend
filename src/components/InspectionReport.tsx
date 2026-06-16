@@ -402,9 +402,8 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 ].map((label, rowIdx) => (
                   <div
                     key={label}
-                    className={`grid grid-cols-[2.2fr_repeat(4,0.9fr)] gap-2 px-3 py-1.5 text-[12px] ${
-                      rowIdx % 2 === 0 ? "bg-white" : "bg-slate-100/70"
-                    }`}
+                    className={`grid grid-cols-[2.2fr_repeat(4,0.9fr)] gap-2 px-3 py-1.5 text-[12px] ${rowIdx % 2 === 0 ? "bg-white" : "bg-slate-100/70"
+                      }`}
                   >
                     <div className="text-slate-700">{label}</div>
                     <div className="flex justify-center">
@@ -485,9 +484,8 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                       {(item.conditions || []).map((condition, conditionIndex) => (
                         <div
                           key={condition.id}
-                          className={`grid grid-cols-[2.2fr_0.9fr_2fr] gap-3 px-3 py-2 text-[12px] ${
-                            conditionIndex % 2 === 0 ? "bg-white" : "bg-slate-100/70"
-                          }`}
+                          className={`grid grid-cols-[2.2fr_0.9fr_2fr] gap-3 px-3 py-2 text-[12px] ${conditionIndex % 2 === 0 ? "bg-white" : "bg-slate-100/70"
+                            }`}
                         >
                           <div className="text-slate-700">{displayValue(condition.description)}</div>
                           <div className="flex items-center gap-2">
@@ -732,7 +730,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
       ) : null}
 
       {activeMedia ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-200">
+        <div className="media-viewer-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-200">
           <div className="absolute inset-0" onClick={closeMediaViewer} />
           <div className="relative z-10 w-full max-w-7xl rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">

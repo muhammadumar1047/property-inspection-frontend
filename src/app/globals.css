@@ -348,6 +348,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
@@ -355,49 +356,138 @@
 
 /* ──────────── Keyframe Animations ──────────── */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
-}
-@keyframes pulse-ring {
-  0%   { transform: scale(0.9); opacity: 1; }
-  100% { transform: scale(1.4); opacity: 0; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-.animate-fade-in   { animation: fadeIn   var(--transition-normal) both; }
-.animate-slide-up  { animation: slideUp  var(--transition-normal) both; }
-.animate-slide-down{ animation: slideDown var(--transition-normal) both; }
-.animate-scale-in  { animation: scaleIn  var(--transition-normal) both; }
-.animate-shimmer   { animation: shimmer  2s linear infinite; background-size: 200% 100%; }
-.animate-float     { animation: float    3s ease-in-out infinite; }
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) both;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-normal) both;
+}
+
+.animate-slide-down {
+  animation: slideDown var(--transition-normal) both;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-normal) both;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background-size: 200% 100%;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
 
 /* Stagger children utility */
-.stagger-children > * { animation: slideUp var(--transition-normal) both; }
-.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children>* {
+  animation: slideUp var(--transition-normal) both;
+}
+
+.stagger-children>*:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.stagger-children>*:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.stagger-children>*:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.stagger-children>*:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.stagger-children>*:nth-child(5) {
+  animation-delay: 240ms;
+}
+
+.stagger-children>*:nth-child(6) {
+  animation-delay: 300ms;
+}
 
 /* ──────────── Modern utilities ──────────── */
 .glass {
@@ -437,18 +527,36 @@
   @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium;
   transition: all var(--transition-normal);
 }
-.step-indicator.active    { @apply bg-primary text-primary-foreground shadow-md; }
-.step-indicator.completed { @apply bg-secondary text-secondary-foreground; }
-.step-indicator.inactive  { @apply bg-muted text-muted-foreground; }
+
+.step-indicator.active {
+  @apply bg-primary text-primary-foreground shadow-md;
+}
+
+.step-indicator.completed {
+  @apply bg-secondary text-secondary-foreground;
+}
+
+.step-indicator.inactive {
+  @apply bg-muted text-muted-foreground;
+}
 
 /* Scrollbar styling */
-.scrollbar-thin::-webkit-scrollbar { width: 6px; }
-.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: var(--muted-300);
   border-radius: 9999px;
 }
-.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--muted-400); }
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-400);
+}
 
 /* ──────────── Report styling ──────────── */
 @layer base {
@@ -475,7 +583,9 @@
     z-index: 50;
   }
 
-  .print-content { padding-bottom: 96px; }
+  .print-content {
+    padding-bottom: 96px;
+  }
 
   .report-table {
     @apply w-full border-collapse;
@@ -527,7 +637,7 @@
     background: white;
     width: 100%;
     min-height: 297mm;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
     margin-bottom: 32px;
     display: flex;
     flex-direction: column;
@@ -569,13 +679,34 @@
   }
 
   @media print {
-    @page { margin: 0; size: A4; }
-    html, body, * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    body { font-size: 11pt; line-height: 1.4; margin: 0; padding: 0; background: white !important; }
+    @page {
+      margin: 0;
+      size: A4;
+    }
 
-    .no-print, .print\:hidden { display: none !important; }
+    html,
+    body,
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
 
-    .report-document { max-width: none; }
+    body {
+      font-size: 11pt;
+      line-height: 1.4;
+      margin: 0;
+      padding: 0;
+      background: white !important;
+    }
+
+    .no-print,
+    .print\:hidden {
+      display: none !important;
+    }
+
+    .report-document {
+      max-width: none;
+    }
 
     .a4-page {
       box-shadow: none;
@@ -586,17 +717,62 @@
       page-break-inside: auto;
       break-inside: auto;
     }
-    .a4-page:last-child { page-break-after: auto; }
 
-    .report-page-number { display: none !important; }
+    .a4-page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
 
-    .page-break { page-break-before: always; }
-    .page-break-inside-avoid { page-break-inside: avoid; }
-    .report-section { @apply shadow-none; break-inside: avoid; }
-    .report-table { font-size: 10pt; }
-    h1, h2, h3 { page-break-after: avoid; }
-    p { orphans: 3; widows: 3; }
-    img, video, iframe { break-inside: avoid; page-break-inside: avoid; }
+    /* Hide media viewer overlay in print/PDF mode */
+    .media-viewer-overlay {
+      display: none !important;
+    }
+
+    /* Clean wrapper for PDF output */
+    .report-pdf-viewer-wrapper {
+      box-shadow: none !important;
+      background: white !important;
+      border-radius: 0 !important;
+    }
+
+    .report-page-number {
+      display: none !important;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .page-break-inside-avoid {
+      page-break-inside: avoid;
+    }
+
+    .report-section {
+      @apply shadow-none;
+      break-inside: avoid;
+    }
+
+    .report-table {
+      font-size: 10pt;
+    }
+
+    h1,
+    h2,
+    h3 {
+      page-break-after: avoid;
+    }
+
+    p {
+      orphans: 3;
+      widows: 3;
+    }
+
+    img,
+    video,
+    iframe {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
   }
 }
 
@@ -604,18 +780,76 @@
 .report-print-preview .report-document {
   max-width: none;
 }
-.report-print-preview .report-document > * + * {
+
+.report-print-preview .report-document>*+* {
   margin-top: 0;
 }
+
 .report-print-preview .a4-page {
   box-shadow: none;
   margin-bottom: 0;
   border-radius: 0;
 }
 
-/* PDF mode: enforce fixed page height so the footer lands consistently */
+/* PDF mode: emulate a PDF document viewer experience */
+.report-pdf-mode .report-document {
+  max-width: none !important;
+  margin: 0 auto;
+  background: white;
+}
+
+.report-pdf-mode .report-document>*+* {
+  margin-top: 0 !important;
+}
+
 .report-pdf-mode .a4-page {
-  height: 297mm;
-  max-height: 297mm;
+  height: auto;
+  min-height: 297mm;
+  margin-bottom: 0;
+  box-shadow: none;
+  border-radius: 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.report-pdf-mode .a4-page:last-child {
+  border-bottom: none;
+}
+
+/* PDF viewer wrapper: drop shadow around the entire document */
+.report-pdf-viewer-wrapper {
+  background: white;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 2px;
   overflow: hidden;
+  max-width: 1250px;
+  width: 100%;
+}
+
+/* ── PDF Generation Mode (data-pdf-mode="true") ──
+   These rules ensure clean PDF output without UI chrome, blank pages,
+   or accidental overlay captures when Puppeteer renders the page. */
+
+/* Prevent trailing blank page by removing page-break from the last A4 page */
+[data-pdf-mode="true"] .a4-page:last-child {
+  break-after: auto !important;
+  page-break-after: auto !important;
+}
+
+/* Strip wrapper shadow and set clean white background for PDF */
+[data-pdf-mode="true"] .report-pdf-viewer-wrapper {
+  box-shadow: none !important;
+  background: white !important;
+  border-radius: 0 !important;
+}
+
+/* Clean white background for the page container (overrides bg-slate-200) */
+[data-pdf-mode="true"].min-h-screen {
+  background: white !important;
+}
+
+/* Hide any fixed-position overlays (media lightbox viewer) during PDF capture */
+[data-pdf-mode="true"] .media-viewer-overlay {
+  display: none !important;
 }

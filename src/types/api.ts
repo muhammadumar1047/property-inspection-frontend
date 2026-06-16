@@ -614,6 +614,7 @@ export interface InspectionResponse {
   inspectionCloseDate?: string | null;
   signatureImageUrl?: string | null;
   signatureDate?: string | null;
+  pdfUrl?: string | null;
   property?: PropertyResponse | null;
   agency?: AgencyResponse | null;
   inspector?: UserResponse | null;

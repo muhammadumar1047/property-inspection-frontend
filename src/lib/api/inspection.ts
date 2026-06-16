@@ -146,6 +146,46 @@ export const inspectionApi = {
     const groupedRaw = unwrapApiResponse<any>(response.data);
     return normalizeGroupedSearch(groupedRaw);
   },
+
+  /** Generate or retrieve the PDF report for a closed inspection. */
+  generatePdf: async (id: string): Promise<{ pdfUrl: string; cached: boolean }> => {
+    const response = await api.get<any>(`/report/inspection/${id}/pdf`);
+    return response.data as { pdfUrl: string; cached: boolean };
+  },
+
+  /** Send the inspection report PDF via email to a recipient. */
+  sendReportEmail: async (id: string, recipientEmail: string): Promise<boolean> => {
+    const response = await api.post<ApiResponse<boolean>>(`/report/inspection/${id}/send-email`, {
+      recipientEmail,
+    });
+    return unwrapApiResponse<boolean>(response.data);
+  },
+
+  /**
+   * Send the inspection report PDF via email with full details.
+   * Supports custom subject, body, and template ID.
+   */
+  sendReportEmailWithDetails: async (
+    id: string,
+    payload: {
+      recipientEmail: string;
+      subject?: string;
+      body?: string;
+      templateId?: string;
+      sendFromEmail?: string;
+      sendFromName?: string;
+    },
+  ): Promise<boolean> => {
+    const response = await api.post<ApiResponse<boolean>>(`/report/inspection/${id}/send-email`, {
+      recipientEmail: payload.recipientEmail,
+      subject: payload.subject,
+      body: payload.body,
+      templateId: payload.templateId,
+      sendFromEmail: payload.sendFromEmail,
+      sendFromName: payload.sendFromName,
+    });
+    return unwrapApiResponse<boolean>(response.data);
+  },
 };
 
 export default inspectionApi;

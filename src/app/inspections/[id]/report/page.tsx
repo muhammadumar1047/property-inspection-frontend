@@ -1,42 +1,67 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, ArrowLeft } from "lucide-react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Loader2, AlertCircle, ArrowLeft, Download, CheckCircle2, RotateCcw, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InspectionReport from "@/components/InspectionReport";
+import SendEmailModal from "@/components/SendEmailModal";
 import api from "@/lib/api/http";
+import { inspectionApi } from "@/lib/api/inspection";
 import type { InspectionReportData, InspectionReportResponse } from "@/types/report";
+import type { InspectionResponse } from "@/types/api";
+import { InspectionStatus } from "@/types/api";
 import axios from "axios";
 
 export default function InspectionReportPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params?.id as string;
+  const isPdfMode = searchParams.get("pdf") === "1";
 
   const [report, setReport] = useState<InspectionReportData | null>(null);
+  const [inspection, setInspection] = useState<InspectionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [pdfMessage, setPdfMessage] = useState<string | null>(null);
+  const [reopening, setReopening] = useState(false);
+  const [showSendEmailModal, setShowSendEmailModal] = useState(false);
+
+  const isClosed = inspection?.inspectionStatus === InspectionStatus.Closed;
 
   useEffect(() => {
     if (!id) return;
 
-    const loadReport = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await api.get<InspectionReportResponse>(`/report/inspection/${id}`);
-        const envelope = response.data;
+
+        const [reportResponse, inspectionResponse] = await Promise.all([
+          api.get<InspectionReportResponse>(`/report/inspection/${id}`),
+          api.get<any>(`/inspection/${id}`),
+        ]);
+
+        const envelope = reportResponse.data;
         const reportData =
           (envelope && "data" in envelope ? envelope.data : (envelope as any)?.Data ?? envelope) as
-            | InspectionReportData
-            | null;
+          | InspectionReportData
+          | null;
 
         if (!reportData || !reportData.inspectionId) {
           setError("Inspection report data is empty.");
           return;
         }
         setReport(reportData);
+
+        const inspEnvelope = inspectionResponse.data;
+        const inspData: InspectionResponse =
+          inspEnvelope && "data" in inspEnvelope
+            ? inspEnvelope.data
+            : (inspEnvelope as any)?.Data ?? inspEnvelope;
+        setInspection(inspData ?? null);
       } catch (err: any) {
         console.error("Failed to load report:", err);
         const msg = axios.isAxiosError(err)
@@ -48,8 +73,83 @@ export default function InspectionReportPage() {
       }
     };
 
-    loadReport();
+    loadData();
   }, [id]);
+
+  const handleDownloadPdf = useCallback(async () => {
+    if (!id || !isClosed || pdfDownloading) return;
+    try {
+      setPdfDownloading(true);
+      setPdfMessage("Generating PDF...");
+
+      const result = await inspectionApi.generatePdf(id);
+
+      if (result.pdfUrl) {
+        setPdfMessage(result.cached ? "PDF retrieved from storage." : "PDF generated successfully.");
+        // Append S3 response-content-disposition=inline to force the browser to
+        // display the PDF in-browser instead of auto-downloading it. Without this
+        // parameter, S3 serves PDFs with Content-Disposition: attachment which
+        // triggers an immediate file download.
+        const separator = result.pdfUrl.includes("?") ? "&" : "?";
+        window.open(result.pdfUrl + separator + "response-content-disposition=inline", "_blank");
+      }
+    } catch (err: any) {
+      console.error("PDF download failed:", err);
+      const msg = axios.isAxiosError(err)
+        ? err.response?.data?.message || err.response?.data?.Message || err.message
+        : err?.message || "Failed to generate PDF.";
+      setPdfMessage(msg);
+    } finally {
+      setPdfDownloading(false);
+      // Clear message after 5 seconds
+      setTimeout(() => setPdfMessage(null), 5000);
+    }
+  }, [id, isClosed, pdfDownloading]);
+
+  const handleReopen = useCallback(async () => {
+    if (!id || !isClosed || reopening) return;
+    try {
+      setReopening(true);
+
+      // Fetch the full inspection data needed for the update payload
+      const inspectionData = await api.get<any>(`/inspection/${id}`);
+      const inspEnvelope = inspectionData.data;
+      const insp: any =
+        inspEnvelope && "data" in inspEnvelope
+          ? inspEnvelope.data
+          : (inspEnvelope as any)?.Data ?? inspEnvelope;
+
+      const ok = await inspectionApi.update(id, {
+        id,
+        propertyId: insp.propertyId ?? insp.PropertyId,
+        agencyId: insp.agencyId ?? insp.AgencyId ?? null,
+        inspectionType: Number(insp.inspectionType ?? insp.InspectionType),
+        inspectionStatus: InspectionStatus.Completed,
+        inspectorId: insp.inspectorId ?? insp.InspectorId,
+        address: insp.propertyAddress ?? insp.address ?? "",
+        inspectionDate: insp.inspectionDate ?? insp.InspectionDate,
+        inspectionTime: insp.inspectionTime ?? insp.InspectionTime,
+      } as any);
+
+      if (!ok) throw new Error("Failed to reopen report");
+
+      // Reload the page to reflect the status change
+      window.location.reload();
+    } catch (err: any) {
+      console.error("Reopen failed:", err);
+      const msg = axios.isAxiosError(err)
+        ? err.response?.data?.message || err.response?.data?.Message || err.message
+        : err?.message || "Failed to reopen report.";
+      alert(msg);
+    } finally {
+      setReopening(false);
+    }
+  }, [id, isClosed, reopening]);
+
+  const handleSendEmail = useCallback(() => {
+    if (!id || !isClosed) return;
+    setShowSendEmailModal(true);
+  }, [id, isClosed]);
 
   if (loading) {
     return (
@@ -92,10 +192,102 @@ export default function InspectionReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-0 m-0 selection:bg-primary/10 report-print-preview">
-      <div className="transition-all duration-700 animate-in fade-in slide-in-from-bottom-4">
-        {report ? <InspectionReport report={report} /> : null}
+    <div
+      className="min-h-screen bg-slate-200 selection:bg-primary/10"
+      {...(isPdfMode ? { "data-pdf-mode": "true" } : {})}
+    >
+      {/* ── Action Bar (hidden in PDF mode so Puppeteer captures clean report only) ── */}
+      {!isPdfMode && (
+        <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
+          <div className="max-w-[1250px] mx-auto px-6 py-3 flex items-center justify-center gap-3 flex-wrap">
+            {/* Status message */}
+            {pdfMessage && (
+              <span
+                className={`text-xs ${pdfMessage.includes("failed") || pdfMessage.includes("Failed")
+                  ? "text-rose-500"
+                  : "text-emerald-600"
+                  }`}
+              >
+                {pdfMessage.includes("successfully") || pdfMessage.includes("retrieved") ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
+                ) : null}
+                {pdfMessage}
+              </span>
+            )}
+
+            {/* Download PDF button */}
+            <Button
+              onClick={handleDownloadPdf}
+              disabled={!isClosed || pdfDownloading}
+              className="h-10 rounded-xl font-semibold gap-2 text-sm shadow-md"
+              variant={isClosed ? "default" : "secondary"}
+              title={
+                !isClosed
+                  ? "PDF download is only available for closed inspection reports"
+                  : "Download PDF"
+              }
+            >
+              {pdfDownloading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  Download PDF
+                </>
+              )}
+            </Button>
+
+            {/* Reopen button — only visible when report is closed */}
+            {isClosed && (
+              <Button
+                onClick={handleReopen}
+                disabled={reopening}
+                variant="outline"
+                className="h-10 rounded-xl font-semibold gap-2 text-sm"
+              >
+                {reopening ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RotateCcw className="w-4 h-4" />
+                )}
+                Reopen
+              </Button>
+            )}
+
+            {/* Send Email button — only visible when report is closed */}
+            {isClosed && (
+              <Button
+                onClick={handleSendEmail}
+                variant="outline"
+                className="h-10 rounded-xl font-semibold gap-2 text-sm"
+              >
+                <Mail className="w-4 h-4" />
+                Send Email
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── PDF-style Viewer ── */}
+      <div className="flex justify-center py-8 px-4">
+        <div className="report-pdf-viewer-wrapper report-pdf-mode">
+          <InspectionReport report={report} />
+        </div>
       </div>
+
+      {/* ── Send Email Modal ── */}
+      <SendEmailModal
+        isOpen={showSendEmailModal}
+        onClose={() => setShowSendEmailModal(false)}
+        inspectionId={id}
+        inspectionType={inspection?.inspectionType!}
+      />
+
+      {/* No bottom toolbar — removed to keep the UI clean */}
     </div>
   );
 }
