@@ -1058,8 +1058,8 @@ const LayoutManagement: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="responsive-table-wrapper">
+            <Table className="responsive-table">
               <TableHeader>
                 <TableRow className="bg-gray-50 border-b border-gray-200">
                   <TableHead className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { StateDto, PropertyTypeDto, InspectionTypeDto, InspectionStatusDto } from '@/types/api';
 import { referenceApi } from '@/lib/api';
-import { 
-  RefreshCw, 
-  Map, 
-  Building2, 
-  ClipboardCheck, 
-  CheckCircle2, 
-  Settings2, 
+import {
+  RefreshCw,
+  Map,
+  Building2,
+  ClipboardCheck,
+  CheckCircle2,
+  Settings2,
   Search,
   ChevronRight
 } from 'lucide-react';
@@ -130,11 +130,10 @@ const ReferenceData: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.id
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
                   ? 'border-blue-600 text-blue-800 font-bold'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+                }`}
             >
               {tab.label} ({tab.data.length})
             </button>
@@ -156,7 +155,7 @@ const ReferenceData: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="responsive-cards">
         <Card className="border-0 shadow-sm bg-white overflow-hidden">
           <CardContent className="p-5">
             <div className="flex items-center">

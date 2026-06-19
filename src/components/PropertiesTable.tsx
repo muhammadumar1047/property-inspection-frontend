@@ -1161,7 +1161,7 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="responsive-filters">
           {/* Active/Inactive Filter */}
           <div>
             <label className="block text-sm font-medium text-muted-700 mb-2">Status</label>
@@ -1347,8 +1347,8 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
         )}
       </div>
 
-      <div className="bg-card border border-border rounded-md overflow-auto">
-        <Table>
+      <div className="bg-card border border-border rounded-md responsive-table-wrapper">
+        <Table className="responsive-table">
           <TableHeader>
             <TableRow>
               <TableHead>Property</TableHead>
@@ -1515,8 +1515,8 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                               </div>
                             </div>
                           ) : propertyInspections[p.id]?.length > 0 ? (
-                            <div className="overflow-x-auto">
-                              <Table>
+                            <div className="responsive-table-wrapper">
+                              <Table className="responsive-table">
                                 <TableHeader>
                                   <TableRow className="bg-primary/5">
                                     <TableHead className="text-foreground">Inspection ID</TableHead>
@@ -2804,7 +2804,7 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div className="responsive-grid-3 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-muted-700 mb-1">Email</label>
                     <p className="text-sm text-foreground">{tenancy.email || 'N/A'}</p>

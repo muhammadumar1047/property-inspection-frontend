@@ -610,7 +610,7 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="responsive-filters">
           {/* Search Input - Property Address Only */}
           <div className="lg:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -1311,8 +1311,8 @@ const InspectionManagement: React.FC<InspectionManagementProps> = ({ onInspectio
         {loading ? (
           <div className="px-4 py-5 sm:px-6 text-center">Loading...</div>
         ) : (
-          <div className="px-4 pb-4 sm:px-6 overflow-x-auto">
-            <Table className="min-w-[900px]">
+          <div className="px-4 pb-4 sm:px-6 responsive-table-wrapper">
+            <Table className="responsive-table">
               <TableHeader>
                 <TableRow className="bg-primary/5">
                   <TableHead className="text-foreground">Inspection ID</TableHead>

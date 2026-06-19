@@ -268,8 +268,8 @@ export default function LayoutsList({ embedded = false, onCreateLayout, onEditLa
 
                 {/* Table */}
                 <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <Table>
+                    <div className="responsive-table-wrapper">
+                        <Table className="responsive-table">
                             <TableHeader>
                                 <TableRow className="bg-[var(--muted-50)] border-b border-[var(--border)]">
                                     <TableHead className="px-6 py-4 text-left text-xs font-medium text-[var(--muted-500)] uppercase tracking-wider">

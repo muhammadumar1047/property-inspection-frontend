@@ -137,7 +137,7 @@ const GeneralSettings: React.FC = () => {
 
           <div className="space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Profile Information</h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="responsive-grid-3">
               <div>
                 <Label htmlFor="firstName">First Name</Label>
                 <Input id="firstName" value={profile.firstName} onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))} />
@@ -166,7 +166,7 @@ const GeneralSettings: React.FC = () => {
               <Building2 className="h-4 w-4" />
               Company Details
             </h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="responsive-grid-3">
               <div>
                 <Label htmlFor="companyName">Company Name</Label>
                 <Input id="companyName" value={company.companyName} onChange={(e) => setCompany((c) => ({ ...c, companyName: e.target.value }))} />
@@ -192,7 +192,7 @@ const GeneralSettings: React.FC = () => {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="responsive-grid-2">
         <Card className="border-gray-200 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">

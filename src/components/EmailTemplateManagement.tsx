@@ -1,24 +1,24 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  Mail, 
-  Search, 
-  Filter, 
-  Plus, 
-  Copy, 
-  Eye, 
-  Trash2, 
-  Edit3, 
-  ArrowLeft, 
-  Check, 
-  CheckSquare, 
-  FileText, 
-  UploadCloud, 
-  Sparkles, 
-  Smartphone, 
-  Monitor, 
-  Send, 
+import {
+  Mail,
+  Search,
+  Filter,
+  Plus,
+  Copy,
+  Eye,
+  Trash2,
+  Edit3,
+  ArrowLeft,
+  Check,
+  CheckSquare,
+  FileText,
+  UploadCloud,
+  Sparkles,
+  Smartphone,
+  Monitor,
+  Send,
   ChevronRight,
   RefreshCw,
   FolderOpen,
@@ -85,15 +85,15 @@ const mapStringToEnum = (type: "Entry Inspection" | "Exit Inspection" | "Routine
 export const EmailTemplateManagement: React.FC = () => {
   // Navigation State
   const [view, setView] = useState<"list" | "create" | "editor">("list");
-  
+
   // Data States
   const [templates, setTemplates] = useState<EmailTemplateItem[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateItem | null>(null);
-  
+
   // Filtering & Search
   const [searchQuery, setSearchQuery] = useState("");
   const [inspectionFilter, setInspectionFilter] = useState<string>("All");
-  
+
   // Edit/Form states
   const [formName, setFormName] = useState("");
   const [formSubject, setFormSubject] = useState("");
@@ -107,7 +107,7 @@ export const EmailTemplateManagement: React.FC = () => {
   const [formAccentColor, setFormAccentColor] = useState("#3b82f6");
   const [formBackgroundColor, setFormBackgroundColor] = useState("#f8fafc");
   const [formStatus, setFormStatus] = useState<"Draft" | "Published">("Published");
-  
+
   // Modals
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewTab, setPreviewTab] = useState<"desktop" | "mobile">("desktop");
@@ -115,7 +115,7 @@ export const EmailTemplateManagement: React.FC = () => {
   const [testEmailAddress, setTestEmailAddress] = useState("");
   const [testEmailMessage, setTestEmailMessage] = useState("");
   const [testSendStatus, setTestSendStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
-  
+
   // UI indicators
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -196,7 +196,7 @@ export const EmailTemplateManagement: React.FC = () => {
       setIsLoading(true);
       const filterEnum = inspectionFilter === "All" ? undefined : mapStringToEnum(inspectionFilter as any);
       const result = await emailTemplateApi.getTemplates(searchQuery || undefined, filterEnum, 1, 100);
-      
+
       const mappedItems: EmailTemplateItem[] = (result.data || []).map(item => ({
         id: item.id,
         name: item.name,
@@ -380,7 +380,7 @@ export const EmailTemplateManagement: React.FC = () => {
     if (!e.target.files?.length) return;
     const file = e.target.files[0];
     setUploadProgress(10);
-    
+
     // Simulate upload ticks
     const interval = setInterval(() => {
       setUploadProgress(prev => {
@@ -450,7 +450,7 @@ export const EmailTemplateManagement: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 antialiased py-6 px-4 md:px-8 space-y-6 overflow-x-hidden">
-      
+
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-xl border border-slate-700 animate-slide-up">
@@ -464,14 +464,14 @@ export const EmailTemplateManagement: React.FC = () => {
       {/* ──────────────────────────────────────────────────────── */}
       {view === "list" && (
         <div className="space-y-6 animate-fade-in">
-          
+
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Email Templates</h1>
               <p className="text-slate-500 text-sm mt-1">Manage automated client communications, notifications, and follow-ups for inspections.</p>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <Button onClick={handleCreateNew} className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl shadow-md flex items-center gap-2 px-5 py-6">
                 <Plus className="w-5 h-5" />
@@ -485,14 +485,14 @@ export const EmailTemplateManagement: React.FC = () => {
             {/* Search */}
             <div className="relative col-span-1 md:col-span-2">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
+              <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search templates by name, subject, or keywords..." 
+                placeholder="Search templates by name, subject, or keywords..."
                 className="pl-10 h-11 border-slate-200 rounded-xl focus:ring-[#3b82f6] focus:border-[#3b82f6]"
               />
             </div>
-            
+
             {/* Dropdown filter */}
             <div className="relative">
               <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -516,9 +516,9 @@ export const EmailTemplateManagement: React.FC = () => {
               <p className="text-slate-500 text-sm font-medium">Fetching email templates...</p>
             </div>
           ) : filteredTemplates.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               {filteredTemplates.map((template) => (
-                <div 
+                <div
                   key={template.id}
                   onClick={() => handleOpenEdit(template)}
                   className="group relative bg-white border border-slate-100 rounded-2xl p-5 hover:border-slate-200 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[220px]"
@@ -529,7 +529,7 @@ export const EmailTemplateManagement: React.FC = () => {
                       <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-full uppercase tracking-wider ${getBadgeStyles(template.inspectionType)}`}>
                         {template.inspectionType}
                       </span>
-                      
+
                       {template.isDefault && (
                         <span className="bg-slate-100 text-slate-700 px-2 py-1 text-[10px] font-bold rounded-lg flex items-center gap-1 border border-slate-200">
                           <Check className="w-3 h-3 text-slate-800" /> Default
@@ -544,7 +544,7 @@ export const EmailTemplateManagement: React.FC = () => {
                     <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                       <Clock className="w-3 h-3" /> Updated {template.lastUpdated}
                     </p>
-                    
+
                     <p className="text-sm text-slate-500 mt-3 line-clamp-2 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
                       {template.snippet}
                     </p>
@@ -555,17 +555,16 @@ export const EmailTemplateManagement: React.FC = () => {
                     <button
                       onClick={(e) => handleMarkDefault(template.id, e)}
                       disabled={template.isDefault}
-                      className={`text-xs font-semibold py-1.5 px-3 rounded-lg border transition-all ${
-                        template.isDefault 
+                      className={`text-xs font-semibold py-1.5 px-3 rounded-lg border transition-all ${template.isDefault
                           ? "bg-slate-50 text-slate-400 border-slate-100 cursor-default"
                           : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
-                      }`}
+                        }`}
                     >
                       Make Default
                     </button>
 
                     <div className="flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedTemplate(template);
@@ -582,14 +581,14 @@ export const EmailTemplateManagement: React.FC = () => {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => handleDuplicate(template, e)}
                         title="Duplicate template"
                         className="p-2 hover:bg-slate-100 text-slate-500 hover:text-slate-800 rounded-lg transition-colors"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => handleDelete(template.id, e)}
                         title="Delete template"
                         className="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
@@ -617,8 +616,8 @@ export const EmailTemplateManagement: React.FC = () => {
             <div className="text-xs text-slate-400">
               Showing {filteredTemplates.length} of {templates.length} templates
             </div>
-            
-            <button 
+
+            <button
               onClick={() => triggerToast("Global Office default fallback templates synchronized.")}
               className="text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl px-4 py-2.5 hover:bg-slate-50 transition-colors shadow-sm self-start"
             >
@@ -637,8 +636,8 @@ export const EmailTemplateManagement: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setView("list")} 
+              <button
+                onClick={() => setView("list")}
                 className="p-2 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -648,7 +647,7 @@ export const EmailTemplateManagement: React.FC = () => {
                 <p className="text-xs text-slate-400 mt-0.5">Define your template properties and select a starting layout.</p>
               </div>
             </div>
-            
+
             <Button onClick={proceedToEditor} className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl shadow-md px-6">
               Continue to Editor <ChevronRight className="w-4 h-4 ml-1.5" />
             </Button>
@@ -663,11 +662,11 @@ export const EmailTemplateManagement: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label htmlFor="create-name" className="text-slate-700 font-semibold">Template Name</Label>
-                  <Input 
+                  <Input
                     id="create-name"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    placeholder="e.g. Entry Report Signature Request" 
+                    placeholder="e.g. Entry Report Signature Request"
                     className="border-slate-200 h-11 focus:ring-[#3b82f6] focus:border-[#3b82f6]"
                   />
                 </div>
@@ -692,17 +691,17 @@ export const EmailTemplateManagement: React.FC = () => {
                     <span className="text-[10px] text-slate-400">Click to insert merge tag</span>
                   </div>
                   <div className="relative">
-                    <Input 
+                    <Input
                       id="create-subject"
                       value={formSubject}
                       onChange={(e) => setFormSubject(e.target.value)}
-                      placeholder="e.g. Schedule for Entry Condition Report at %PropertyAddress%" 
+                      placeholder="e.g. Schedule for Entry Condition Report at %PropertyAddress%"
                       className="border-slate-200 h-11 pr-32 focus:ring-[#3b82f6] focus:border-[#3b82f6]"
                     />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      <select 
+                      <select
                         onChange={(e) => {
-                          if(e.target.value) {
+                          if (e.target.value) {
                             insertMergeTagToSubject(e.target.value);
                             e.target.value = "";
                           }
@@ -749,12 +748,12 @@ export const EmailTemplateManagement: React.FC = () => {
               </div>
 
               <div className="flex items-center space-x-2 pt-2">
-                <Checkbox 
-                  id="create-is-default" 
-                  checked={formIsDefault} 
+                <Checkbox
+                  id="create-is-default"
+                  checked={formIsDefault}
                   onCheckedChange={(checked) => setFormIsDefault(Boolean(checked))}
                 />
-                <label 
+                <label
                   htmlFor="create-is-default"
                   className="text-sm font-semibold text-slate-700 cursor-pointer"
                 >
@@ -766,26 +765,25 @@ export const EmailTemplateManagement: React.FC = () => {
 
           {/* Template Selection Split Panel */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
+
             {/* Left side layouts list */}
             <div className="col-span-2 space-y-4">
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Layout className="w-5 h-5 text-[#3b82f6]" /> Use a Template
               </h2>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {presetLayouts.map(layout => {
                   const Icon = layout.icon;
                   const isSelected = selectedLayoutType === layout.title;
                   return (
-                    <div 
+                    <div
                       key={layout.id}
                       onClick={() => setSelectedLayoutType(layout.title)}
-                      className={`group border rounded-xl p-4 cursor-pointer transition-all ${
-                        isSelected 
-                          ? "bg-blue-50/50 border-[#3b82f6] ring-1 ring-[#3b82f6]" 
+                      className={`group border rounded-xl p-4 cursor-pointer transition-all ${isSelected
+                          ? "bg-blue-50/50 border-[#3b82f6] ring-1 ring-[#3b82f6]"
                           : "bg-white border-slate-200 hover:border-slate-300"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`p-2.5 rounded-lg ${isSelected ? "bg-[#3b82f6] text-white" : "bg-slate-100 text-slate-500"}`}>
@@ -796,7 +794,7 @@ export const EmailTemplateManagement: React.FC = () => {
                           <p className="text-xs text-slate-400">{layout.desc}</p>
                         </div>
                       </div>
-                      
+
                       {/* Mini Thumbnail mockup */}
                       <div className="mt-3 bg-slate-100 rounded-lg p-2 h-20 flex flex-col gap-1.5 justify-center overflow-hidden">
                         <div className="w-1/3 h-2 bg-slate-200 rounded"></div>
@@ -815,10 +813,10 @@ export const EmailTemplateManagement: React.FC = () => {
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-indigo-500" /> Build Your Own
               </h2>
-              
+
               <div className="space-y-4">
                 {/* Visual Editor */}
-                <div 
+                <div
                   onClick={() => { setSelectedLayoutType("Blank Canvas"); proceedToEditor(); }}
                   className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-4 text-center cursor-pointer transition-all hover:shadow-md flex flex-col items-center justify-center min-h-[125px]"
                 >
@@ -850,8 +848,8 @@ export const EmailTemplateManagement: React.FC = () => {
           {/* Top Panel bar */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setView("list")} 
+              <button
+                onClick={() => setView("list")}
                 className="p-2 hover:bg-slate-100 text-slate-600 rounded-xl transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -863,7 +861,7 @@ export const EmailTemplateManagement: React.FC = () => {
                     {formType}
                   </span>
                 </div>
-                
+
                 {/* Autosave status indicator */}
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
@@ -885,8 +883,8 @@ export const EmailTemplateManagement: React.FC = () => {
                 <option value="Draft">Draft Status</option>
               </select>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   triggerToast("Template version history loaded.");
                 }}
@@ -895,15 +893,15 @@ export const EmailTemplateManagement: React.FC = () => {
                 Version History
               </Button>
 
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setIsPreviewOpen(true)}
                 className="h-10 text-xs border-slate-200 text-[#3b82f6] hover:bg-blue-50/50 rounded-xl"
               >
                 <Eye className="w-4 h-4 mr-1.5" /> Preview
               </Button>
 
-              <Button 
+              <Button
                 onClick={handleSaveTemplate}
                 className="h-10 text-xs bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl shadow-sm"
               >
@@ -914,10 +912,10 @@ export const EmailTemplateManagement: React.FC = () => {
 
           {/* Main Layout Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            
+
             {/* Left side editor canvas */}
             <div className="lg:col-span-3 space-y-4">
-              
+
               {/* Rich editing toolbar mockup */}
               <div className="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm flex flex-wrap items-center gap-1">
                 {/* Font selection */}
@@ -939,21 +937,21 @@ export const EmailTemplateManagement: React.FC = () => {
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600 active:bg-slate-200" title="Bold"><Bold className="w-4 h-4" /></button>
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Italic"><Italic className="w-4 h-4" /></button>
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Underline"><Underline className="w-4 h-4" /></button>
-                
+
                 <div className="w-px h-6 bg-slate-200 mx-1"></div>
 
                 {/* Alignment */}
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Align Left"><AlignLeft className="w-4 h-4" /></button>
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Align Center"><AlignCenter className="w-4 h-4" /></button>
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Align Right"><AlignRight className="w-4 h-4" /></button>
-                
+
                 <div className="w-px h-6 bg-slate-200 mx-1"></div>
 
                 {/* Lists & blocks */}
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Bulleted List"><List className="w-4 h-4" /></button>
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Hyperlink"><LinkIcon className="w-4 h-4" /></button>
                 <button className="p-1.5 hover:bg-slate-100 rounded text-slate-600" title="Insert Image"><ImageFormIcon className="w-4 h-4" /></button>
-                <button 
+                <button
                   onClick={() => {
                     setFormBody(prev => prev + "\n---------------------------------------------\n");
                     setHasUnsavedChanges(true);
@@ -974,7 +972,7 @@ export const EmailTemplateManagement: React.FC = () => {
               <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-3">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email Details</span>
-                  <button 
+                  <button
                     onClick={() => setIsSendTestOpen(true)}
                     className="text-xs font-bold text-[#3b82f6] flex items-center gap-1 hover:underline"
                   >
@@ -983,7 +981,7 @@ export const EmailTemplateManagement: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-xs text-slate-400">Subject Line</label>
-                  <Input 
+                  <Input
                     value={formSubject}
                     onChange={(e) => { setFormSubject(e.target.value); setHasUnsavedChanges(true); }}
                     className="border-slate-200 font-medium text-slate-800"
@@ -992,7 +990,7 @@ export const EmailTemplateManagement: React.FC = () => {
               </div>
 
               {/* Editor Workspace Canvas */}
-              <div 
+              <div
                 className="rounded-2xl p-6 min-h-[480px] flex items-start justify-center shadow-inner overflow-y-auto"
                 style={{ backgroundColor: formBackgroundColor }}
               >
@@ -1000,7 +998,7 @@ export const EmailTemplateManagement: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-md border border-slate-100 w-full max-w-[620px] overflow-hidden flex flex-col">
                   {/* Branded Header banner color bar */}
                   <div className="h-4" style={{ backgroundColor: formAccentColor }}></div>
-                  
+
                   {/* Email header details */}
                   <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div>
@@ -1025,7 +1023,7 @@ export const EmailTemplateManagement: React.FC = () => {
 
                     {/* Styled Call-to-action button representation */}
                     <div className="pt-2 text-center">
-                      <button 
+                      <button
                         className="text-white text-xs font-bold py-2.5 px-6 rounded-lg shadow-sm"
                         style={{ backgroundColor: formAccentColor }}
                       >
@@ -1046,14 +1044,14 @@ export const EmailTemplateManagement: React.FC = () => {
 
             {/* Right side sidebar tools */}
             <div className="space-y-6">
-              
+
               {/* Section 1: Mail Merge Fields */}
               <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-4 space-y-3">
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">Mail Merge Fields</h3>
                   <p className="text-xs text-slate-400">Click a variable tag to append it into the editor canvas.</p>
                 </div>
-                
+
                 {/* Grouped tags */}
                 <div className="space-y-3 pt-1">
                   {/* Categories */}
@@ -1107,7 +1105,7 @@ export const EmailTemplateManagement: React.FC = () => {
                 {/* Asset search */}
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input 
+                  <input
                     value={assetSearchQuery}
                     onChange={(e) => setAssetSearchQuery(e.target.value)}
                     placeholder="Search asset files..."
@@ -1120,7 +1118,7 @@ export const EmailTemplateManagement: React.FC = () => {
                   {uploadedAssets
                     .filter(a => a.name.toLowerCase().includes(assetSearchQuery.toLowerCase()))
                     .map((asset, idx) => (
-                      <div 
+                      <div
                         key={idx}
                         onClick={() => {
                           setFormBody(prev => prev + `\n![${asset.name}](${asset.url})\n`);
@@ -1145,22 +1143,22 @@ export const EmailTemplateManagement: React.FC = () => {
                   <h3 className="font-bold text-slate-900 text-sm">Theme Settings</h3>
                   <p className="text-xs text-slate-400">Match the communication style to corporate guidelines.</p>
                 </div>
-                
+
                 <div className="space-y-3 pt-1">
                   <div>
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Primary Color</label>
                     <div className="flex gap-2">
-                      <input 
-                        type="color" 
-                        value={formPrimaryColor} 
+                      <input
+                        type="color"
+                        value={formPrimaryColor}
                         onChange={(e) => { setFormPrimaryColor(e.target.value); setHasUnsavedChanges(true); }}
-                        className="w-8 h-8 rounded border p-0.5 cursor-pointer focus:outline-none" 
+                        className="w-8 h-8 rounded border p-0.5 cursor-pointer focus:outline-none"
                       />
-                      <input 
-                        type="text" 
-                        value={formPrimaryColor} 
+                      <input
+                        type="text"
+                        value={formPrimaryColor}
                         onChange={(e) => { setFormPrimaryColor(e.target.value); setHasUnsavedChanges(true); }}
-                        className="h-8 flex-1 border border-slate-200 rounded px-2 text-xs focus:outline-none" 
+                        className="h-8 flex-1 border border-slate-200 rounded px-2 text-xs focus:outline-none"
                       />
                     </div>
                   </div>
@@ -1168,17 +1166,17 @@ export const EmailTemplateManagement: React.FC = () => {
                   <div>
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Accent Accent Color</label>
                     <div className="flex gap-2">
-                      <input 
-                        type="color" 
-                        value={formAccentColor} 
+                      <input
+                        type="color"
+                        value={formAccentColor}
                         onChange={(e) => { setFormAccentColor(e.target.value); setHasUnsavedChanges(true); }}
-                        className="w-8 h-8 rounded border p-0.5 cursor-pointer focus:outline-none" 
+                        className="w-8 h-8 rounded border p-0.5 cursor-pointer focus:outline-none"
                       />
-                      <input 
-                        type="text" 
-                        value={formAccentColor} 
+                      <input
+                        type="text"
+                        value={formAccentColor}
                         onChange={(e) => { setFormAccentColor(e.target.value); setHasUnsavedChanges(true); }}
-                        className="h-8 flex-1 border border-slate-200 rounded px-2 text-xs focus:outline-none" 
+                        className="h-8 flex-1 border border-slate-200 rounded px-2 text-xs focus:outline-none"
                       />
                     </div>
                   </div>
@@ -1186,17 +1184,17 @@ export const EmailTemplateManagement: React.FC = () => {
                   <div>
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Background Canvas</label>
                     <div className="flex gap-2">
-                      <input 
-                        type="color" 
-                        value={formBackgroundColor} 
+                      <input
+                        type="color"
+                        value={formBackgroundColor}
                         onChange={(e) => { setFormBackgroundColor(e.target.value); setHasUnsavedChanges(true); }}
-                        className="w-8 h-8 rounded border p-0.5 cursor-pointer focus:outline-none" 
+                        className="w-8 h-8 rounded border p-0.5 cursor-pointer focus:outline-none"
                       />
-                      <input 
-                        type="text" 
-                        value={formBackgroundColor} 
+                      <input
+                        type="text"
+                        value={formBackgroundColor}
                         onChange={(e) => { setFormBackgroundColor(e.target.value); setHasUnsavedChanges(true); }}
-                        className="h-8 flex-1 border border-slate-200 rounded px-2 text-xs focus:outline-none" 
+                        className="h-8 flex-1 border border-slate-200 rounded px-2 text-xs focus:outline-none"
                       />
                     </div>
                   </div>
@@ -1216,7 +1214,7 @@ export const EmailTemplateManagement: React.FC = () => {
       {isPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-up">
-            
+
             {/* Modal Header */}
             <div className="flex justify-between items-center px-6 py-4 bg-slate-50 border-b border-slate-100">
               <div>
@@ -1225,29 +1223,27 @@ export const EmailTemplateManagement: React.FC = () => {
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">Simulated rendering of dynamic properties and data.</p>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 {/* Tab layout selector toggle */}
                 <div className="bg-slate-200 p-0.5 rounded-lg flex items-center gap-0.5">
-                  <button 
+                  <button
                     onClick={() => setPreviewTab("desktop")}
-                    className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
-                      previewTab === "desktop" ? "bg-white text-slate-800 shadow" : "text-slate-500 hover:text-slate-800"
-                    }`}
+                    className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${previewTab === "desktop" ? "bg-white text-slate-800 shadow" : "text-slate-500 hover:text-slate-800"
+                      }`}
                   >
                     <Monitor className="w-3.5 h-3.5" /> Desktop
                   </button>
-                  <button 
+                  <button
                     onClick={() => setPreviewTab("mobile")}
-                    className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${
-                      previewTab === "mobile" ? "bg-white text-slate-800 shadow" : "text-slate-500 hover:text-slate-800"
-                    }`}
+                    className={`p-1.5 rounded-md text-xs font-semibold flex items-center gap-1 transition-all ${previewTab === "mobile" ? "bg-white text-slate-800 shadow" : "text-slate-500 hover:text-slate-800"
+                      }`}
                   >
                     <Smartphone className="w-3.5 h-3.5" /> Mobile
                   </button>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={() => setIsPreviewOpen(false)}
                   className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1 hover:bg-slate-100 rounded-lg transition-colors"
                 >
@@ -1258,9 +1254,9 @@ export const EmailTemplateManagement: React.FC = () => {
 
             {/* Modal Body */}
             <div className="p-6 bg-[#f8fafc] flex-1 overflow-y-auto flex items-start justify-center">
-              
+
               <div className={`transition-all duration-300 w-full ${previewTab === "mobile" ? "max-w-[360px]" : "max-w-[620px]"}`}>
-                
+
                 <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden flex flex-col">
                   {/* Accent Header */}
                   <div className="h-3" style={{ backgroundColor: formAccentColor }}></div>
@@ -1278,7 +1274,7 @@ export const EmailTemplateManagement: React.FC = () => {
 
                   {/* Compiled Body Copy */}
                   <div className="p-5 space-y-4">
-                    <div 
+                    <div
                       style={{ fontFamily: formFontFamily, lineHeight: formLineSpacing }}
                       className="text-slate-700 text-sm whitespace-pre-wrap"
                     >
@@ -1286,7 +1282,7 @@ export const EmailTemplateManagement: React.FC = () => {
                     </div>
 
                     <div className="pt-2 text-center">
-                      <button 
+                      <button
                         className="text-white text-xs font-bold py-2.5 px-6 rounded-lg shadow-sm"
                         style={{ backgroundColor: formAccentColor }}
                       >
@@ -1307,14 +1303,14 @@ export const EmailTemplateManagement: React.FC = () => {
 
             {/* Modal Footer */}
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
-              <Button 
+              <Button
                 variant="outline"
                 onClick={() => setIsPreviewOpen(false)}
                 className="border-slate-200 text-slate-600 rounded-xl"
               >
                 Close
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
                   setIsPreviewOpen(false);
                   setIsSendTestOpen(true);
@@ -1335,13 +1331,13 @@ export const EmailTemplateManagement: React.FC = () => {
       {isSendTestOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-up">
-            
+
             {/* Header */}
             <div className="flex justify-between items-center px-5 py-4 border-b border-slate-100 bg-slate-50">
               <h3 className="font-bold text-slate-800 flex items-center gap-1.5">
                 <Send className="w-4 h-4 text-[#3b82f6]" /> Send Test Email
               </h3>
-              <button 
+              <button
                 onClick={() => { setIsSendTestOpen(false); setTestSendStatus("idle"); }}
                 className="text-slate-400 hover:text-slate-600 text-sm font-bold"
               >
@@ -1354,7 +1350,7 @@ export const EmailTemplateManagement: React.FC = () => {
               <form onSubmit={handleSendTestEmailSubmit} className="p-5 space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="test-recipient" className="text-slate-700 font-semibold">Recipient Email Address</Label>
-                  <Input 
+                  <Input
                     id="test-recipient"
                     type="email"
                     required
@@ -1378,15 +1374,15 @@ export const EmailTemplateManagement: React.FC = () => {
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     variant="outline"
                     onClick={() => setIsSendTestOpen(false)}
                     className="border-slate-200 text-slate-600 rounded-xl"
                   >
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     type="submit"
                     className="bg-[#3b82f6] hover:bg-[#2563eb] text-white rounded-xl shadow-sm"
                   >
@@ -1417,7 +1413,7 @@ export const EmailTemplateManagement: React.FC = () => {
                   <h4 className="font-bold text-slate-800">Email dispatched successfully!</h4>
                   <p className="text-xs text-slate-400 mt-1">Dispatched to <strong>{testEmailAddress}</strong>. Check inbox/spam folder.</p>
                 </div>
-                <Button 
+                <Button
                   onClick={() => { setIsSendTestOpen(false); setTestSendStatus("idle"); }}
                   className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl"
                 >
@@ -1437,14 +1433,14 @@ export const EmailTemplateManagement: React.FC = () => {
                   <p className="text-xs text-slate-400 mt-1">Invalid domain or sandbox mailing capacity limit hit.</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => { setTestSendStatus("idle"); }}
                     className="flex-1 border-slate-200 text-slate-700"
                   >
                     Try Again
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => { setIsSendTestOpen(false); setTestSendStatus("idle"); }}
                     className="flex-1 bg-slate-900 text-white"
                   >

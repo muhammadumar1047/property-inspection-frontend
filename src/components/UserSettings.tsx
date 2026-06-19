@@ -336,8 +336,8 @@ const UserSettings: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="responsive-table-wrapper">
+              <Table className="responsive-table">
                 <TableHeader>
                   <TableRow>
                     <TableHead>User</TableHead>
@@ -353,7 +353,7 @@ const UserSettings: React.FC = () => {
                     <TableRow key={user.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
+                          <Avatar className="h-8 w-8">
                             <AvatarImage src={user.profileImage} alt="Profile" />
                             <AvatarFallback className="text-xs">
                               {getInitials(user)}
@@ -612,17 +612,16 @@ const UserSettings: React.FC = () => {
                         setEditUser((prev) =>
                           prev
                             ? {
-                                ...prev,
-                                roleIds: checked
-                                  ? prev.roleIds.filter((id) => id !== r.id)
-                                  : [...prev.roleIds, r.id],
-                              }
+                              ...prev,
+                              roleIds: checked
+                                ? prev.roleIds.filter((id) => id !== r.id)
+                                : [...prev.roleIds, r.id],
+                            }
                             : prev,
                         )
                       }
-                      className={`px-2 py-1 rounded-md border text-xs ${
-                        checked ? "bg-primary text-primary-foreground" : "bg-background"
-                      }`}
+                      className={`px-2 py-1 rounded-md border text-xs ${checked ? "bg-primary text-primary-foreground" : "bg-background"
+                        }`}
                     >
                       {r.name}
                     </button>
@@ -676,19 +675,19 @@ const UserSettings: React.FC = () => {
               <p className="text-sm text-red-600">This action cannot be undone.</p>
             </div>
           </div>
-          
+
           {selectedUser && (
             <div className="p-4 border rounded-md">
               <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src={selectedUser.profileImage && selectedUser.profileImage.trim() !== "" ? selectedUser.profileImage : undefined}
-                  alt="Profile"
-                />
-                <AvatarFallback className="text-xs">
-                  {getInitials(selectedUser)}
-                </AvatarFallback>
-              </Avatar>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={selectedUser.profileImage && selectedUser.profileImage.trim() !== "" ? selectedUser.profileImage : undefined}
+                    alt="Profile"
+                  />
+                  <AvatarFallback className="text-xs">
+                    {getInitials(selectedUser)}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <div className="font-medium">
                     {`${selectedUser.firstName} ${selectedUser.lastName}`.trim() || selectedUser.email}

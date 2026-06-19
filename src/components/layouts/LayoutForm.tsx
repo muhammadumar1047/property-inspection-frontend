@@ -502,7 +502,7 @@ export default function LayoutForm({ mode, initialData, existingLayoutCount = 0,
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="responsive-grid-3">
                             <div className="space-y-2">
                                 <Label className="text-sm font-medium text-[var(--muted-700)]" htmlFor="layout-name">Layout Name</Label>
                                 <Input

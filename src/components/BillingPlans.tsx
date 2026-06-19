@@ -27,8 +27,8 @@ export default function BillingPlans() {
   // Modals state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<{type: 'delete' | 'deactivate' | 'activate', planId: string} | null>(null);
-  
+  const [confirmAction, setConfirmAction] = useState<{ type: 'delete' | 'deactivate' | 'activate', planId: string } | null>(null);
+
   // Form State
   const [editingPlan, setEditingPlan] = useState<Partial<BillingPlan> | null>(null);
 
@@ -202,7 +202,7 @@ export default function BillingPlans() {
             Clear All
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="responsive-filters">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Search Plans</label>
             <input
@@ -255,11 +255,11 @@ export default function BillingPlans() {
             Manage subscription tiers, pricing, and access scopes.
           </p>
         </div>
-        <div className="px-4 pb-6 sm:px-6 overflow-x-auto">
+        <div className="px-4 pb-6 sm:px-6 responsive-table-wrapper">
           {error && (
             <div className="mb-4 text-sm text-red-600">{error}</div>
           )}
-          <Table>
+          <Table className="responsive-table">
             <TableHeader>
               <TableRow>
                 <TableHead>Plan Name</TableHead>
@@ -280,11 +280,10 @@ export default function BillingPlans() {
                     ${plan.priceMonthly} / ${plan.priceYearly}
                   </TableCell>
                   <TableCell>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      plan.status === 'active' 
-                        ? 'bg-emerald-100 text-emerald-800' 
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${plan.status === 'active'
+                        ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-muted text-muted-foreground'
-                    }`}>
+                      }`}>
                       {plan.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                   </TableCell>
@@ -367,48 +366,48 @@ export default function BillingPlans() {
       {isFormOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" onClick={() => setIsFormOpen(false)} />
-          
+
           <div className="relative w-full max-w-lg bg-white shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300 sm:rounded-l-2xl overflow-hidden">
-            
+
             {/* Drawer Header */}
             <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white z-10 shadow-sm">
               <div>
-                 <h2 className="text-xl font-bold text-gray-900">
-                   {editingPlan?.id ? 'Edit Billing Plan' : 'Create New Plan'}
-                 </h2>
-                 <p className="text-xs text-gray-500 mt-1">Configure pricing and features for this tier.</p>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {editingPlan?.id ? 'Edit Billing Plan' : 'Create New Plan'}
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">Configure pricing and features for this tier.</p>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setIsFormOpen(false)} className="rounded-full hover:bg-gray-100 shrink-0">
                 <X className="h-5 w-5 text-gray-500" />
               </Button>
             </div>
-            
+
             {/* Drawer Body Scrollable */}
             <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
               <form className="space-y-8">
-                
+
                 {/* Basic Details */}
                 <div className="space-y-4">
                   <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
                     <span className="w-5 h-px bg-blue-200"></span> Basic Details
                   </h3>
-                  
+
                   <div className="space-y-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                     <div>
                       <Label className="text-gray-700">Plan Name <span className="text-red-500">*</span></Label>
-                      <Input 
-                        value={editingPlan?.name || ''} 
-                        onChange={e => setEditingPlan({...editingPlan, name: e.target.value})} 
+                      <Input
+                        value={editingPlan?.name || ''}
+                        onChange={e => setEditingPlan({ ...editingPlan, name: e.target.value })}
                         placeholder="e.g. Starter Tier"
                         className="mt-1.5"
                       />
                     </div>
                     <div>
                       <Label className="text-gray-700">Description</Label>
-                      <textarea 
+                      <textarea
                         className="mt-1.5 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:border-transparent min-h-[80px]"
                         value={editingPlan?.description || ''}
-                        onChange={e => setEditingPlan({...editingPlan, description: e.target.value})}
+                        onChange={e => setEditingPlan({ ...editingPlan, description: e.target.value })}
                         placeholder="What is this plan best for?"
                       />
                     </div>
@@ -420,69 +419,69 @@ export default function BillingPlans() {
                   <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
                     <span className="w-5 h-px bg-blue-200"></span> Pricing & Limits
                   </h3>
-                  
+
                   <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                     <div>
                       <Label className="text-gray-700">Monthly Price ($)</Label>
-                      <Input 
-                        type="number" 
-                        value={editingPlan?.priceMonthly ?? ''} 
-                        onChange={e => setEditingPlan({...editingPlan, priceMonthly: Number(e.target.value)})} 
+                      <Input
+                        type="number"
+                        value={editingPlan?.priceMonthly ?? ''}
+                        onChange={e => setEditingPlan({ ...editingPlan, priceMonthly: Number(e.target.value) })}
                         className="mt-1.5"
                       />
                     </div>
                     <div>
                       <Label className="text-gray-700">Yearly Price ($)</Label>
-                      <Input 
-                        type="number" 
-                        value={editingPlan?.priceYearly ?? ''} 
-                        onChange={e => setEditingPlan({...editingPlan, priceYearly: Number(e.target.value)})} 
+                      <Input
+                        type="number"
+                        value={editingPlan?.priceYearly ?? ''}
+                        onChange={e => setEditingPlan({ ...editingPlan, priceYearly: Number(e.target.value) })}
                         className="mt-1.5"
                       />
                     </div>
                     <div>
                       <Label className="text-gray-700">User Limits</Label>
-                      <Input 
-                        type="number" 
-                        value={editingPlan?.userLimits ?? ''} 
-                        onChange={e => setEditingPlan({...editingPlan, userLimits: Number(e.target.value)})} 
+                      <Input
+                        type="number"
+                        value={editingPlan?.userLimits ?? ''}
+                        onChange={e => setEditingPlan({ ...editingPlan, userLimits: Number(e.target.value) })}
                         className="mt-1.5"
                         placeholder="e.g. 5"
                       />
                     </div>
                     <div>
                       <Label className="text-gray-700">Trial Days</Label>
-                      <Input 
-                        type="number" 
-                        value={editingPlan?.trialDays ?? ''} 
-                        onChange={e => setEditingPlan({...editingPlan, trialDays: Number(e.target.value)})} 
+                      <Input
+                        type="number"
+                        value={editingPlan?.trialDays ?? ''}
+                        onChange={e => setEditingPlan({ ...editingPlan, trialDays: Number(e.target.value) })}
                         className="mt-1.5"
                         placeholder="e.g. 14"
                       />
                     </div>
-                    
+
                     <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 pt-4 border-t border-gray-200/60">
                       <div>
                         <Label className="text-gray-700 flex justify-between items-center mb-1.5 h-6">
                           Properties Limit
                           <label className="flex items-center gap-2 text-xs font-normal cursor-pointer text-gray-500 hover:text-gray-900 leading-none">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer h-3.5 w-3.5"
                               checked={editingPlan?.propertiesLimit == null}
                               onChange={(e) => setEditingPlan({
-                                ...editingPlan, 
+                                ...editingPlan,
                                 propertiesLimit: e.target.checked ? null : 0
                               })}
                             />
                             Unlimited
                           </label>
                         </Label>
-                        <Input 
+                        <Input
                           type={editingPlan?.propertiesLimit == null ? 'text' : 'number'}
                           disabled={editingPlan?.propertiesLimit == null}
                           value={editingPlan?.propertiesLimit == null ? 'Unlimited' : (editingPlan?.propertiesLimit ?? '')}
-                          onChange={e => setEditingPlan({...editingPlan, propertiesLimit: Number(e.target.value)})} 
+                          onChange={e => setEditingPlan({ ...editingPlan, propertiesLimit: Number(e.target.value) })}
                           className="w-full disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-200"
                           placeholder="e.g. 50"
                         />
@@ -491,23 +490,23 @@ export default function BillingPlans() {
                         <Label className="text-gray-700 flex justify-between items-center mb-1.5 h-6">
                           Inspections Limit
                           <label className="flex items-center gap-2 text-xs font-normal cursor-pointer text-gray-500 hover:text-gray-900 leading-none">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer h-3.5 w-3.5"
                               checked={editingPlan?.inspectionsLimit == null}
                               onChange={(e) => setEditingPlan({
-                                ...editingPlan, 
+                                ...editingPlan,
                                 inspectionsLimit: e.target.checked ? null : 0
                               })}
                             />
                             Unlimited
                           </label>
                         </Label>
-                        <Input 
+                        <Input
                           type={editingPlan?.inspectionsLimit == null ? 'text' : 'number'}
                           disabled={editingPlan?.inspectionsLimit == null}
                           value={editingPlan?.inspectionsLimit == null ? 'Unlimited' : (editingPlan?.inspectionsLimit ?? '')}
-                          onChange={e => setEditingPlan({...editingPlan, inspectionsLimit: Number(e.target.value)})} 
+                          onChange={e => setEditingPlan({ ...editingPlan, inspectionsLimit: Number(e.target.value) })}
                           className="w-full disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed disabled:border-gray-200"
                           placeholder="e.g. 100"
                         />
@@ -526,16 +525,16 @@ export default function BillingPlans() {
                       <Plus className="h-3.5 w-3.5 mr-1" /> Add
                     </Button>
                   </div>
-                  
+
                   <div className="space-y-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                     {editingPlan?.features?.map((f, i) => (
                       <div key={f.id} className="flex items-center gap-2 group">
                         <div className="w-6 h-6 bg-white border rounded-full text-[10px] text-gray-500 flex items-center justify-center font-bold shadow-sm shrink-0">
-                          {i+1}
+                          {i + 1}
                         </div>
-                        <Input 
-                          value={f.name} 
-                          onChange={(e) => updateFeature(f.id, e.target.value)} 
+                        <Input
+                          value={f.name}
+                          onChange={(e) => updateFeature(f.id, e.target.value)}
                           placeholder="e.g. 24/7 Priority Support"
                           className="h-9 bg-white"
                         />
@@ -555,7 +554,7 @@ export default function BillingPlans() {
 
                 {/* Status Toggle */}
                 <div className="space-y-4">
-                   <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
                     <span className="w-5 h-px bg-blue-200"></span> Settings
                   </h3>
                   <div className="flex flex-row items-center justify-between p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -564,27 +563,27 @@ export default function BillingPlans() {
                       <p className="text-sm text-gray-500 mt-0.5">Allow users to subscribe to this plan</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer scale-110">
-                      <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
                         checked={editingPlan?.status === 'active'}
-                        onChange={(e) => setEditingPlan({...editingPlan, status: e.target.checked ? 'active' : 'inactive'})}
+                        onChange={(e) => setEditingPlan({ ...editingPlan, status: e.target.checked ? 'active' : 'inactive' })}
                       />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
                   </div>
                 </div>
-                
+
                 {/* Spacer block to ensure scrolling reaches bottom comfortably */}
                 <div className="h-4"></div>
 
               </form>
             </div>
-            
+
             {/* Drawer Footer */}
             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0 z-10">
               <Button variant="outline" onClick={() => setIsFormOpen(false)} className="bg-white">
-                 Cancel
+                Cancel
               </Button>
               <Button className="bg-blue-600 hover:bg-blue-700 px-6" onClick={handleSaveForm}>
                 Save Plan
@@ -608,8 +607,8 @@ export default function BillingPlans() {
                   {confirmAction.type === 'delete' ? 'Delete Plan?' : confirmAction.type === 'deactivate' ? 'Deactivate Plan?' : 'Activate Plan?'}
                 </h3>
                 <p className="text-gray-500 text-sm px-2">
-                  {confirmAction.type === 'delete' 
-                    ? 'Are you sure you want to completely remove this plan? This action is permanent and cannot be undone.' 
+                  {confirmAction.type === 'delete'
+                    ? 'Are you sure you want to completely remove this plan? This action is permanent and cannot be undone.'
                     : `Are you sure you want to ${confirmAction.type} this subscription plan? Users ${confirmAction.type === 'deactivate' ? 'will no longer be able to' : 'will now be able to'} select it.`}
                 </p>
               </div>
@@ -617,7 +616,7 @@ export default function BillingPlans() {
                 <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={() => setIsConfirmOpen(false)}>
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   className={`flex-1 rounded-xl h-11 text-white shadow-sm ${confirmAction.type === 'delete' ? 'bg-red-600 hover:bg-red-700' : (confirmAction.type === 'deactivate' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700')}`}
                   onClick={executeConfirmAction}
                 >

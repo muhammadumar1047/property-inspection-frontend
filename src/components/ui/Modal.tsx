@@ -40,7 +40,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, widthCl
       <div className="absolute inset-0 overflow-y-auto">
         <div className="min-h-full flex items-start justify-center p-4 sm:p-6 md:pt-[8vh]">
           <div
-            className={`relative bg-white rounded-2xl shadow-[var(--shadow-modal)] w-full ${widthClassName || 'max-w-3xl'} max-h-[85vh] overflow-hidden animate-scale-in`}
+            className={`relative bg-white rounded-2xl shadow-[var(--shadow-modal)] w-full ${widthClassName || 'max-w-3xl modal-responsive'} max-h-[85vh] overflow-hidden animate-scale-in`}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">

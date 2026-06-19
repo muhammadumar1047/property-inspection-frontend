@@ -853,3 +853,345 @@
 [data-pdf-mode="true"] .media-viewer-overlay {
   display: none !important;
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   RESPONSIVE UTILITIES
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Responsive Table Wrapper ── */
+.responsive-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-300) transparent;
+}
+
+.responsive-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+
+.responsive-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.responsive-table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--muted-300);
+  border-radius: 9999px;
+}
+
+.responsive-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-400);
+}
+
+/* ── Responsive Table (min-width approach) ── */
+.responsive-table {
+  min-width: 100%;
+  width: max-content;
+}
+
+@media (max-width: 1023px) {
+  .responsive-table {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ── Responsive Modal Widths ── */
+@media (max-width: 640px) {
+  .modal-responsive {
+    max-width: calc(100vw - 16px) !important;
+    margin: 0 8px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .modal-responsive {
+    max-width: min(90vw, 640px) !important;
+  }
+}
+
+/* ── Responsive Grid Helpers ── */
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.responsive-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.responsive-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ── Responsive Filter Grid ── */
+.responsive-filters {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .responsive-filters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-filters {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-filters {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* ── Responsive Card Grid ── */
+.responsive-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 480px) {
+  .responsive-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ── Responsive Typography ── */
+@media (max-width: 640px) {
+  .text-responsive-h1 {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  .text-responsive-h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.75rem !important;
+  }
+
+  .text-responsive-h3 {
+    font-size: 1.125rem !important;
+    line-height: 1.5rem !important;
+  }
+
+  .text-responsive-body {
+    font-size: 0.875rem !important;
+  }
+
+  .text-responsive-sm {
+    font-size: 0.75rem !important;
+  }
+}
+
+/* ── Responsive Spacing ── */
+@media (max-width: 640px) {
+  .section-padding-responsive {
+    padding: 1rem !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .section-padding-responsive {
+    padding: 1.5rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-padding-responsive {
+    padding: 2rem !important;
+  }
+}
+
+/* ── Responsive Form Grid ── */
+.responsive-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Responsive Two-Column Layout ── */
+.responsive-two-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .responsive-two-col {
+    flex-direction: row;
+  }
+
+  .responsive-two-col>* {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ── Responsive Button Group ── */
+.responsive-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .responsive-btn-group {
+    flex-direction: row;
+    width: auto;
+  }
+}
+
+/* ── Mobile-First Padding Container ── */
+.content-container {
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .content-container {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-container {
+    padding: 1.5rem;
+  }
+}
+
+/* ── Responsive Stat Cards ── */
+@media (max-width: 640px) {
+  .stat-card-value {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+}
+
+/* ── Touch-friendly tap targets for mobile ── */
+@media (max-width: 640px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ── Responsive modal body padding ── */
+@media (max-width: 640px) {
+  .modal-body-sm {
+    padding: 1rem !important;
+  }
+}
+
+/* ── Responsive tab navigation ── */
+@media (max-width: 640px) {
+  .responsive-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .responsive-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .responsive-tabs>* {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Responsive header actions ── */
+@media (max-width: 640px) {
+  .header-actions-stack {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}
+
+/* ── Responsive sidebar spacing ── */
+@media (max-width: 1023px) {
+  .sidebar-spacer {
+    display: none;
+  }
+}
+
+/* ── Prevent content overflow ── */
+.overflow-guard {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ── Responsive impersonation banner ── */
+@media (max-width: 640px) {
+  .impersonation-banner-responsive {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+  }
+}

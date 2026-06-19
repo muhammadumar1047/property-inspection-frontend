@@ -571,7 +571,7 @@ export default function AdminDashboard() {
         if (analyticsLoading) {
           return (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="responsive-cards">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Card key={i} className="animate-pulse">
                     <CardContent className="p-6 pt-4">
@@ -631,7 +631,7 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger-children">
+            <div className="responsive-cards gap-5 stagger-children">
               {stats.map((stat) => (
                 <Card key={stat.title} className="group">
                   <CardContent className="p-5">
@@ -653,14 +653,14 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Recent Inspections</CardTitle>
                   <CardDescription>Latest property inspection activities</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
+                  <Table className="responsive-table">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Property</TableHead>
@@ -714,7 +714,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Analytics Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Monthly Inspections</CardTitle>
@@ -747,7 +747,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Top Suburbs */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="responsive-grid-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Top Suburbs</CardTitle>
@@ -1072,7 +1072,7 @@ export default function AdminDashboard() {
 
       <div className="flex-1 flex flex-col overflow-visible min-w-0">
         {impersonatedAgencyId && (
-          <div className="bg-amber-500 text-white px-6 py-3 flex items-center justify-between shadow-md z-50 shrink-0 relative">
+          <div className="bg-amber-500 text-white px-6 py-3 flex items-center justify-between shadow-md z-50 shrink-0 relative impersonation-banner-responsive">
             <div className="flex items-center gap-2 font-medium text-sm">
               <Shield className="w-5 h-5 shrink-0" />
               <span>Tenant impersonation active: You are viewing <span className="font-bold">{impersonatedAgencyName || 'Agency'}</span> as its admin would see, including all inspections, properties, and related features.</span>
@@ -1103,9 +1103,9 @@ export default function AdminDashboard() {
               <h1 className="text-lg font-semibold text-[var(--foreground)] capitalize truncate">{activeSection}</h1>
             </div>
 
-            {/* Center — Search bar */}
+            {/* Center — Search bar (hidden on mobile, visible md+) */}
             {(!isSuperAdmin || !!impersonatedAgencyId) && (
-              <div className="flex-1 max-w-xl transition-all duration-300">
+              <div className="hidden md:block flex-1 max-w-xl transition-all duration-300">
                 <GlobalSearch
                   setActiveSection={setActiveSection}
                   setShowingSearchResults={setShowingSearchResults}

@@ -656,7 +656,7 @@ export default function PropertyForm({ onSuccess, propertyId, onClose, mode }: P
                             <CardDescription>Complete all sections below to set up the property</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-8">
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                            <div className="responsive-grid-2 gap-8">
                                 {/* Left column */}
                                 <div className="space-y-8">
                                     <SectionCard icon={Home} title="Basic Information">
@@ -684,7 +684,7 @@ export default function PropertyForm({ onSuccess, propertyId, onClose, mode }: P
                     </Card>
                 ) : (
                     <div className="space-y-8">
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        <div className="responsive-grid-2 gap-8">
                             {/* Left column */}
                             <div className="space-y-8">
                                 <SectionCard icon={Home} title="Basic Information">

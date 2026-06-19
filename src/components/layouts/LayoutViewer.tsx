@@ -148,7 +148,7 @@ export default function LayoutViewer({ layout, embedded = false, onBack, onEdit 
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="responsive-cards">
                             <div>
                                 <span className="text-xs font-medium text-[var(--muted-400)] uppercase tracking-wider">Type</span>
                                 <div className="mt-1">

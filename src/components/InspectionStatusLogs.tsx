@@ -285,8 +285,8 @@ const InspectionStatusLogs: React.FC = () => {
                             </div>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
+                        <div className="responsive-table-wrapper">
+                            <Table className="responsive-table">
                                 <TableHeader className="bg-gray-50/50">
                                     <TableRow>
                                         <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-500">

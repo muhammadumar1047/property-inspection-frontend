@@ -734,7 +734,7 @@ const QuickSuggestions: React.FC = () => {
           </div>
 
           {/* Suggestions List Table */}
-          <div className="flex-1 overflow-x-auto border border-gray-100 rounded-xl">
+          <div className="flex-1 responsive-table-wrapper border border-gray-100 rounded-xl">
             {state.loading && state.suggestions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
@@ -753,8 +753,8 @@ const QuickSuggestions: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="min-w-full inline-block align-middle">
-                <Table>
+              <div className="responsive-table-wrapper">
+                <Table className="responsive-table">
                   <TableHeader className="bg-gray-50/50">
                     <TableRow>
                       <TableHead className="w-[60%]">Phrase Text</TableHead>
@@ -782,14 +782,12 @@ const QuickSuggestions: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleToggleActive(item)}
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                              item.isActive ? "bg-green-500" : "bg-gray-200"
-                            }`}
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${item.isActive ? "bg-green-500" : "bg-gray-200"
+                              }`}
                           >
                             <span
-                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                item.isActive ? "translate-x-5" : "translate-x-0"
-                              }`}
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${item.isActive ? "translate-x-5" : "translate-x-0"
+                                }`}
                             />
                           </button>
                         </TableCell>
@@ -853,7 +851,7 @@ const QuickSuggestions: React.FC = () => {
                 Quick suggestions provide templates and shortcuts for typing inspection notes quickly. Customize your libraries here.
               </p>
             </div>
-            
+
             {/* Configure Toggles */}
             <div className="flex flex-wrap items-center gap-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm shrink-0">
               {/* Toggle Entry / Exit */}
@@ -862,14 +860,12 @@ const QuickSuggestions: React.FC = () => {
                   type="button"
                   onClick={() => handleUpdateSettings({ isEntryExitEnabled: !settings?.isEntryExitEnabled })}
                   disabled={savingSettings}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    settings?.isEntryExitEnabled ? "bg-primary" : "bg-gray-200"
-                  } ${savingSettings ? "opacity-50 pointer-events-none" : ""}`}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings?.isEntryExitEnabled ? "bg-primary" : "bg-gray-200"
+                    } ${savingSettings ? "opacity-50 pointer-events-none" : ""}`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings?.isEntryExitEnabled ? "translate-x-5" : "translate-x-0"
-                    }`}
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings?.isEntryExitEnabled ? "translate-x-5" : "translate-x-0"
+                      }`}
                   />
                 </button>
                 <div className="flex flex-col">
@@ -886,14 +882,12 @@ const QuickSuggestions: React.FC = () => {
                   type="button"
                   onClick={() => handleUpdateSettings({ isRoutineEnabled: !settings?.isRoutineEnabled })}
                   disabled={savingSettings}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    settings?.isRoutineEnabled ? "bg-primary" : "bg-gray-200"
-                  } ${savingSettings ? "opacity-50 pointer-events-none" : ""}`}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings?.isRoutineEnabled ? "bg-primary" : "bg-gray-200"
+                    } ${savingSettings ? "opacity-50 pointer-events-none" : ""}`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings?.isRoutineEnabled ? "translate-x-5" : "translate-x-0"
-                    }`}
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings?.isRoutineEnabled ? "translate-x-5" : "translate-x-0"
+                      }`}
                   />
                 </button>
                 <div className="flex flex-col">
@@ -912,14 +906,12 @@ const QuickSuggestions: React.FC = () => {
                       type="button"
                       onClick={() => handleUpdateSettings({ combineDictionaries: !settings?.combineDictionaries })}
                       disabled={savingSettings}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                        settings?.combineDictionaries ? "bg-primary" : "bg-gray-200"
-                      } ${savingSettings ? "opacity-50 pointer-events-none" : ""}`}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${settings?.combineDictionaries ? "bg-primary" : "bg-gray-200"
+                        } ${savingSettings ? "opacity-50 pointer-events-none" : ""}`}
                     >
                       <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          settings?.combineDictionaries ? "translate-x-5" : "translate-x-0"
-                        }`}
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${settings?.combineDictionaries ? "translate-x-5" : "translate-x-0"
+                          }`}
                       />
                     </button>
                     <div className="flex flex-col">
@@ -962,7 +954,7 @@ const QuickSuggestions: React.FC = () => {
         </div>
       ) : settings?.combineDictionaries ? (
         /* Side by side layout / Combined layout */
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+        <div className="responsive-grid-2">
           {settings.isEntryExitEnabled && (
             <div className="w-full">
               {renderLibraryPanel(
@@ -989,11 +981,10 @@ const QuickSuggestions: React.FC = () => {
             {settings.isEntryExitEnabled && (
               <button
                 onClick={() => setActiveLibraryTab(QuickSuggestionType.EntryExit)}
-                className={`py-3 px-6 font-semibold text-sm border-b-2 transition-all duration-150 ${
-                  activeLibraryTab === QuickSuggestionType.EntryExit
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-3 px-6 font-semibold text-sm border-b-2 transition-all duration-150 ${activeLibraryTab === QuickSuggestionType.EntryExit
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 Entry / Exit Suggestions
               </button>
@@ -1001,11 +992,10 @@ const QuickSuggestions: React.FC = () => {
             {settings.isRoutineEnabled && (
               <button
                 onClick={() => setActiveLibraryTab(QuickSuggestionType.Routine)}
-                className={`py-3 px-6 font-semibold text-sm border-b-2 transition-all duration-150 ${
-                  activeLibraryTab === QuickSuggestionType.Routine
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-3 px-6 font-semibold text-sm border-b-2 transition-all duration-150 ${activeLibraryTab === QuickSuggestionType.Routine
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 Routine Suggestions
               </button>
@@ -1069,14 +1059,12 @@ const QuickSuggestions: React.FC = () => {
             <button
               type="button"
               onClick={() => setEditForm(prev => ({ ...prev, isActive: !prev.isActive }))}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                editForm.isActive ? "bg-green-500" : "bg-gray-200"
-              }`}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${editForm.isActive ? "bg-green-500" : "bg-gray-200"
+                }`}
             >
               <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  editForm.isActive ? "translate-x-5" : "translate-x-0"
-                }`}
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${editForm.isActive ? "translate-x-5" : "translate-x-0"
+                  }`}
               />
             </button>
             <span className="text-sm font-semibold text-gray-700">Suggestion Active / Enabled</span>
@@ -1158,9 +1146,8 @@ const QuickSuggestions: React.FC = () => {
       <Modal
         isOpen={importModalOpen}
         onClose={resetImportWizard}
-        title={`Import ${
-          importType === QuickSuggestionType.EntryExit ? "Entry/Exit" : "Routine"
-        } Suggestions`}
+        title={`Import ${importType === QuickSuggestionType.EntryExit ? "Entry/Exit" : "Routine"
+          } Suggestions`}
         widthClassName={importStep === 2 ? "max-w-4xl" : "max-w-lg"}
       >
         {importStep === 1 && (
@@ -1184,18 +1171,17 @@ const QuickSuggestions: React.FC = () => {
               onDragOver={handleDrag}
               onDragLeave={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-all ${
-                dragActive
-                  ? "border-primary bg-primary/5 scale-[0.99]"
-                  : "border-gray-300 hover:border-primary/50 hover:bg-gray-50/50"
-              }`}
+              className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-all ${dragActive
+                ? "border-primary bg-primary/5 scale-[0.99]"
+                : "border-gray-300 hover:border-primary/50 hover:bg-gray-50/50"
+                }`}
             >
               <Upload className="h-10 w-10 text-gray-400 mb-4 animate-pulse" />
               <p className="font-semibold text-gray-800 text-sm">
                 Drag and drop your CSV file here, or click to browse
               </p>
               <p className="text-xs text-gray-400 mt-1">Accepts .csv files only</p>
-              
+
               <input
                 type="file"
                 id="csv-file-picker"
@@ -1272,8 +1258,8 @@ const QuickSuggestions: React.FC = () => {
             )}
 
             {/* Validation Rows Table */}
-            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-xl bg-gray-50/30">
-              <Table>
+            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-xl bg-gray-50/30 responsive-table-wrapper">
+              <Table className="responsive-table">
                 <TableHeader className="bg-gray-100 sticky top-0 z-10">
                   <TableRow>
                     <TableHead className="w-[10%]">Row</TableHead>
@@ -1286,11 +1272,10 @@ const QuickSuggestions: React.FC = () => {
                   {importPreview.rows.map((row) => (
                     <TableRow
                       key={row.rowNumber}
-                      className={`border-b transition-colors ${
-                        row.isValid
-                          ? "bg-green-50/40 hover:bg-green-50/70 border-green-100"
-                          : "bg-red-50/50 hover:bg-red-50/80 border-red-100"
-                      }`}
+                      className={`border-b transition-colors ${row.isValid
+                        ? "bg-green-50/40 hover:bg-green-50/70 border-green-100"
+                        : "bg-red-50/50 hover:bg-red-50/80 border-red-100"
+                        }`}
                     >
                       <TableCell className="font-mono text-xs font-semibold py-3 text-gray-500">
                         {row.rowNumber}

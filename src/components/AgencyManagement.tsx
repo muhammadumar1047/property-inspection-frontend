@@ -10,14 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Modal from './ui/Modal';
 import { notificationApi } from '@/lib/api/notification';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Send, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  UserPlus, 
-  Eye, 
-  Filter, 
+import {
+  Send,
+  Plus,
+  Edit,
+  Trash2,
+  UserPlus,
+  Eye,
+  Filter,
   X
 } from 'lucide-react';
 
@@ -633,7 +633,7 @@ const AgencyManagement: React.FC = () => {
             Clear All
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="responsive-filters">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
             <select
@@ -711,7 +711,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
               Basic Details
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Legal Business Name *</label>
                 <input
@@ -884,7 +884,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-secondary rounded-full mr-3"></span>
               Main contact
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Contact Person First Name</label>
                 <input
@@ -954,7 +954,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-chart-4 rounded-full mr-3"></span>
               Billing Details
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Billing Contact First Name</label>
                 <input
@@ -1023,7 +1023,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-chart-2 rounded-full mr-3"></span>
               Technical Contact
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Technical Contact First Name</label>
                 <input
@@ -1113,7 +1113,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
               Basic Details
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Legal Business Name *</label>
                 <input
@@ -1285,7 +1285,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-secondary rounded-full mr-3"></span>
               Agency Admin
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Admin Username *</label>
                 <input
@@ -1347,7 +1347,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-secondary rounded-full mr-3"></span>
               Main contact
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Contact Person First Name</label>
                 <input
@@ -1417,7 +1417,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-chart-4 rounded-full mr-3"></span>
               Billing Details
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Billing Contact First Name</label>
                 <input
@@ -1486,7 +1486,7 @@ const AgencyManagement: React.FC = () => {
               <span className="w-2 h-2 bg-chart-2 rounded-full mr-3"></span>
               Technical Contact
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="responsive-grid-3">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Technical Contact First Name</label>
                 <input
@@ -2117,8 +2117,8 @@ const AgencyManagement: React.FC = () => {
         {loading ? (
           <div className="px-4 py-5 sm:px-6 text-center">Loading...</div>
         ) : (
-          <div className="px-4 pb-6 sm:px-6 overflow-x-auto">
-            <Table>
+          <div className="px-4 pb-6 sm:px-6 responsive-table-wrapper">
+            <Table className="responsive-table">
               <TableHeader>
                 <TableRow>
                   <TableHead>Legal Business Name</TableHead>
@@ -2319,8 +2319,8 @@ const UsersTable: React.FC<{ agencyId: string | number }> = ({ agencyId }) => {
   if (!users.length) return <div className="text-sm text-muted-foreground">No users found.</div>;
 
   return (
-    <div className="bg-card border rounded-md overflow-x-auto">
-      <Table>
+    <div className="bg-card border rounded-md responsive-table-wrapper">
+      <Table className="responsive-table">
         <TableHeader>
           <TableRow>
             <TableHead>Username</TableHead>

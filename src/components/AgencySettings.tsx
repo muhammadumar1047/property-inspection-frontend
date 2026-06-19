@@ -515,7 +515,7 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
                 {/* Basic Details (mirrors create form) */}
                 <div className="bg-gray-50 p-6 rounded-lg">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Details</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="responsive-grid-3">
                     <div>
                       <Label>Agency Name *</Label>
                       <Input value={detailsForm.legalBusinessName || ''} onChange={(e) => setDetailsForm({ ...detailsForm, legalBusinessName: e.target.value })} required />
@@ -587,7 +587,7 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
                 {/* Main contact */}
                 <div className="bg-gray-50 p-6 rounded-lg">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Main contact</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="responsive-grid-3">
                     <div>
                       <Label>Contact Person First Name</Label>
                       <Input value={(detailsForm as any).contactPersonFirstName || ''} onChange={(e) => setDetailsForm({ ...detailsForm, contactPersonFirstName: e.target.value as any })} />
@@ -618,7 +618,7 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
                 {/* Billing Details */}
                 <div className="bg-gray-50 p-6 rounded-lg">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Billing Details</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="responsive-grid-3">
                     <div>
                       <Label>Billing Contact First Name</Label>
                       <Input value={(detailsForm as any).billingContactFirstName || ''} onChange={(e) => setDetailsForm({ ...detailsForm, billingContactFirstName: e.target.value as any })} />
@@ -649,7 +649,7 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
                 {/* Technical Contact */}
                 <div className="bg-gray-50 p-6 rounded-lg">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Technical Contact</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="responsive-grid-3">
                     <div>
                       <Label>Technical Contact First Name</Label>
                       <Input value={(detailsForm as any).technicalContactFirstName || ''} onChange={(e) => setDetailsForm({ ...detailsForm, technicalContactFirstName: e.target.value as any })} />
@@ -992,7 +992,7 @@ const AgencySettings: React.FC<AgencySettingsProps> = ({ view = 'agency' }) => {
             </CardHeader>
             <CardContent>
               {!isEditingTemplate ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="responsive-grid-3">
                   {templates.map(template => (
                     <div key={template.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white flex flex-col justify-between">
                       <div>
