@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Loader2, AlertCircle, ArrowLeft, Download, CheckCircle2, RotateCcw, Mail } from "lucide-react";
+import { Loader2, AlertCircle, ArrowLeft, CheckCircle2, RotateCcw, Mail, Pencil, Lock, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import InspectionReport from "@/components/InspectionReport";
 import SendEmailModal from "@/components/SendEmailModal";
+import CloseReportModal, { CloseReportData } from "@/components/CloseReportModal";
 import api from "@/lib/api/http";
 import { inspectionApi } from "@/lib/api/inspection";
-import type { InspectionReportData, InspectionReportResponse } from "@/types/report";
+import { propertyApi } from "@/lib/api/property";
+import type { InspectionReportData, InspectionReportResponse, ReportArea, ReportItem, ReportCondition, ReportMedia } from "@/types/report";
 import type { InspectionResponse } from "@/types/api";
 import { InspectionStatus } from "@/types/api";
 import axios from "axios";
@@ -24,12 +26,17 @@ export default function InspectionReportPage() {
   const [inspection, setInspection] = useState<InspectionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pdfDownloading, setPdfDownloading] = useState(false);
-  const [pdfMessage, setPdfMessage] = useState<string | null>(null);
   const [reopening, setReopening] = useState(false);
   const [showSendEmailModal, setShowSendEmailModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [closingLoading, setClosingLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isClosed = inspection?.inspectionStatus === InspectionStatus.Closed;
+  const isCompleted = inspection?.inspectionStatus === InspectionStatus.Completed;
 
   useEffect(() => {
     if (!id) return;
@@ -76,35 +83,261 @@ export default function InspectionReportPage() {
     loadData();
   }, [id]);
 
-  const handleDownloadPdf = useCallback(async () => {
-    if (!id || !isClosed || pdfDownloading) return;
+  const handleEdit = useCallback(() => {
+    if (!id || !isCompleted) return;
+    setIsEditing(true);
+  }, [id, isCompleted]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    // Reload report to discard any unsaved changes
+    if (id) {
+      setLoading(true);
+      api.get<InspectionReportResponse>(`/report/inspection/${id}`)
+        .then((reportResponse) => {
+          const envelope = reportResponse.data;
+          const reportData =
+            (envelope && "data" in envelope ? envelope.data : (envelope as any)?.Data ?? envelope) as
+            | InspectionReportData
+            | null;
+          if (reportData) setReport(reportData);
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [id]);
+
+  const handleSave = useCallback(async () => {
+    if (!id || !report) return;
     try {
-      setPdfDownloading(true);
-      setPdfMessage("Generating PDF...");
+      setSaving(true);
+      setSaveMessage(null);
 
-      const result = await inspectionApi.generatePdf(id);
+      // Build the ReportSyncDto from the current report state
+      const syncPayload = {
+        agencyId: inspection?.agencyId || null,
+        reportId: report.id,
+        inspectionId: report.inspectionId,
+        reportType: report.reportType,
+        notes: report.notes || "",
+        createdAt: report.createdAt,
+        reportAreas: (report.areas || []).map((area) => ({
+          reportAreaId: area.areaId,
+          name: area.areaName,
+          reportItems: (area.items || []).map((item) => ({
+            reportItemId: item.itemId,
+            name: item.itemName,
+            reportItemConditions: (item.conditions || []).map((condition) => ({
+              reportItemConditionId: condition.id,
+              reportItemId: item.itemId,
+              description: condition.description,
+              type: condition.type,
+              value: condition.value ?? null,
+            })),
+            reportItemComments: item.inspectorComments
+              ? item.inspectorComments
+                .split(/\r?\n/)
+                .filter((line) => line.trim())
+                .map((line) => ({
+                  reportItemCommentId: crypto.randomUUID(),
+                  reportItemId: item.itemId,
+                  text: line.trim(),
+                }))
+              : [],
+            reportMedia: (item.media || []).map((media) => ({
+              reportMediaId: media.mediaId,
+              reportItemId: item.itemId,
+              url: media.url,
+              type: media.type,
+              reportMediaComments: (media.comments || []).map((comment) => ({
+                reportMediaCommentId: crypto.randomUUID(),
+                reportMediaId: media.mediaId,
+                text: typeof comment === "string" ? comment : "",
+                x: null,
+                y: null,
+              })),
+            })),
+          })),
+        })),
+      };
 
-      if (result.pdfUrl) {
-        setPdfMessage(result.cached ? "PDF retrieved from storage." : "PDF generated successfully.");
-        // Append S3 response-content-disposition=inline to force the browser to
-        // display the PDF in-browser instead of auto-downloading it. Without this
-        // parameter, S3 serves PDFs with Content-Disposition: attachment which
-        // triggers an immediate file download.
-        const separator = result.pdfUrl.includes("?") ? "&" : "?";
-        window.open(result.pdfUrl + separator + "response-content-disposition=inline", "_blank");
-      }
+      await api.post(`/reportsync/sync`, syncPayload);
+      setSaveMessage("Report saved successfully.");
+
+      // Exit editing mode after successful save
+      setIsEditing(false);
     } catch (err: any) {
-      console.error("PDF download failed:", err);
+      console.error("Save failed:", err);
       const msg = axios.isAxiosError(err)
         ? err.response?.data?.message || err.response?.data?.Message || err.message
-        : err?.message || "Failed to generate PDF.";
-      setPdfMessage(msg);
+        : err?.message || "Failed to save report.";
+      setSaveMessage(msg);
     } finally {
-      setPdfDownloading(false);
-      // Clear message after 5 seconds
-      setTimeout(() => setPdfMessage(null), 5000);
+      setSaving(false);
     }
-  }, [id, isClosed, pdfDownloading]);
+  }, [id, report, inspection?.agencyId]);
+
+  // Auto-clear save message after 5 seconds
+  useEffect(() => {
+    if (!saveMessage) return;
+    const timer = setTimeout(() => setSaveMessage(null), 5000);
+    return () => clearTimeout(timer);
+  }, [saveMessage]);
+
+  // Update a single condition value in the report state (creates condition if missing)
+  const handleConditionChange = useCallback(
+    (areaId: string, itemId: string, conditionId: string, newValue: string, description?: string, type?: string) => {
+      setReport((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          areas: prev.areas.map((area) => {
+            if (area.areaId !== areaId) return area;
+            return {
+              ...area,
+              items: area.items.map((item) => {
+                if (item.itemId !== itemId) return item;
+                const existingCondition = item.conditions.find((c) => c.id === conditionId);
+                if (existingCondition) {
+                  return {
+                    ...item,
+                    conditions: item.conditions.map((condition) => {
+                      if (condition.id !== conditionId) return condition;
+                      return { ...condition, value: newValue };
+                    }),
+                  };
+                }
+                // Create new condition if it doesn't exist
+                return {
+                  ...item,
+                  conditions: [
+                    ...item.conditions,
+                    {
+                      id: conditionId,
+                      reportItemId: item.itemId,
+                      description: description || "",
+                      type: type || "boolean",
+                      value: newValue,
+                    },
+                  ],
+                };
+              }),
+            };
+          }),
+        };
+      });
+    },
+    []
+  );
+
+  // Update inspector comments for an item in the report state
+  const handleCommentsChange = useCallback(
+    (areaId: string, itemId: string, newComments: string) => {
+      setReport((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          areas: prev.areas.map((area) => {
+            if (area.areaId !== areaId) return area;
+            return {
+              ...area,
+              items: area.items.map((item) => {
+                if (item.itemId !== itemId) return item;
+                return { ...item, inspectorComments: newComments };
+              }),
+            };
+          }),
+        };
+      });
+    },
+    []
+  );
+
+  // Add new photos to a specific item
+  const handleAddPhotos = useCallback(
+    async (areaId: string, itemId: string, files: File[]) => {
+      if (!inspection?.propertyId || files.length === 0) return;
+
+      try {
+        const uploadedImages = await propertyApi.uploadImages(
+          inspection.propertyId.toString(),
+          files,
+          inspection.agencyId?.toString() || null
+        );
+
+        setReport((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            areas: prev.areas.map((area) => {
+              if (area.areaId !== areaId) return area;
+              return {
+                ...area,
+                items: area.items.map((item) => {
+                  if (item.itemId !== itemId) return item;
+                  const newMedia: ReportMedia[] = uploadedImages.map((img) => ({
+                    mediaId: crypto.randomUUID(),
+                    reportItemId: itemId,
+                    url: img.fileUrl || "",
+                    type: "photo",
+                    comments: [],
+                  }));
+                  return {
+                    ...item,
+                    media: [...(item.media || []), ...newMedia],
+                  };
+                }),
+              };
+            }),
+          };
+        });
+      } catch (err) {
+        console.error("Photo upload failed:", err);
+      }
+    },
+    [inspection?.propertyId, inspection?.agencyId]
+  );
+
+  const handleClose = useCallback(() => {
+    if (!id || !isCompleted) return;
+    setShowCloseModal(true);
+  }, [id, isCompleted]);
+
+  const handleCloseReportSubmit = useCallback(async (data: CloseReportData) => {
+    if (!id || !inspection) return;
+    try {
+      setClosingLoading(true);
+      const ok = await inspectionApi.update(id, {
+        id,
+        propertyId: inspection.propertyId,
+        agencyId: inspection.agencyId ?? null,
+        inspectionType: Number(inspection.inspectionType),
+        inspectionStatus: InspectionStatus.Closed,
+        inspectorId: inspection.inspectorId,
+        address: inspection.propertyAddress || '',
+        inspectionDate: inspection.inspectionDate,
+        inspectionTime: inspection.inspectionTime,
+        inspectionCompletedDate: data.inspectionCompletedDate || null,
+        inspectionCloseDate: data.inspectionCloseDate || null,
+        signatureImageUrl: data.signatureImageUrl || null,
+        signatureDate: data.signatureDate || null,
+      } as any);
+
+      if (!ok) throw new Error('Failed to close report');
+
+      setShowCloseModal(false);
+      // Reload to reflect the status change
+      window.location.reload();
+    } catch (err: any) {
+      console.error("Close failed:", err);
+      const msg = axios.isAxiosError(err)
+        ? err.response?.data?.message || err.response?.data?.Message || err.message
+        : err?.message || "Failed to close report.";
+      alert(msg);
+    } finally {
+      setClosingLoading(false);
+    }
+  }, [id, inspection]);
 
   const handleReopen = useCallback(async () => {
     if (!id || !isClosed || reopening) return;
@@ -201,72 +434,100 @@ export default function InspectionReportPage() {
         <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
           <div className="max-w-[1250px] mx-auto px-6 py-3 flex items-center justify-center gap-3 flex-wrap">
             {/* Status message */}
-            {pdfMessage && (
+            {saveMessage && (
               <span
-                className={`text-xs ${pdfMessage.includes("failed") || pdfMessage.includes("Failed")
+                className={`text-xs ${saveMessage.includes("failed") || saveMessage.includes("Failed")
                   ? "text-rose-500"
                   : "text-emerald-600"
                   }`}
               >
-                {pdfMessage.includes("successfully") || pdfMessage.includes("retrieved") ? (
+                {saveMessage.includes("successfully") || saveMessage.includes("saved") ? (
                   <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />
                 ) : null}
-                {pdfMessage}
+                {saveMessage}
               </span>
             )}
 
-            {/* Download PDF button */}
-            <Button
-              onClick={handleDownloadPdf}
-              disabled={!isClosed || pdfDownloading}
-              className="h-10 rounded-xl font-semibold gap-2 text-sm shadow-md"
-              variant={isClosed ? "default" : "secondary"}
-              title={
-                !isClosed
-                  ? "PDF download is only available for closed inspection reports"
-                  : "Download PDF"
-              }
-            >
-              {pdfDownloading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  Download PDF
-                </>
-              )}
-            </Button>
-
-            {/* Reopen button — only visible when report is closed */}
-            {isClosed && (
-              <Button
-                onClick={handleReopen}
-                disabled={reopening}
-                variant="outline"
-                className="h-10 rounded-xl font-semibold gap-2 text-sm"
-              >
-                {reopening ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <RotateCcw className="w-4 h-4" />
+            {/* Edit mode: Save and Cancel buttons */}
+            {isEditing ? (
+              <>
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="h-10 rounded-xl font-semibold gap-2 text-sm shadow-md"
+                >
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  Save Changes
+                </Button>
+                <Button
+                  onClick={handleCancelEdit}
+                  disabled={saving}
+                  variant="outline"
+                  className="h-10 rounded-xl font-semibold gap-2 text-sm"
+                >
+                  <X className="w-4 h-4" />
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Edit button — only visible when report is completed */}
+                {isCompleted && (
+                  <Button
+                    onClick={handleEdit}
+                    variant="outline"
+                    className="h-10 rounded-xl font-semibold gap-2 text-sm"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit
+                  </Button>
                 )}
-                Reopen
-              </Button>
-            )}
 
-            {/* Send Email button — only visible when report is closed */}
-            {isClosed && (
-              <Button
-                onClick={handleSendEmail}
-                variant="outline"
-                className="h-10 rounded-xl font-semibold gap-2 text-sm"
-              >
-                <Mail className="w-4 h-4" />
-                Send Email
-              </Button>
+                {/* Close button — only visible when report is completed */}
+                {isCompleted && (
+                  <Button
+                    onClick={handleClose}
+                    variant="outline"
+                    className="h-10 rounded-xl font-semibold gap-2 text-sm"
+                  >
+                    <Lock className="w-4 h-4" />
+                    Close
+                  </Button>
+                )}
+
+                {/* Reopen button — only visible when report is closed */}
+                {isClosed && (
+                  <Button
+                    onClick={handleReopen}
+                    disabled={reopening}
+                    variant="outline"
+                    className="h-10 rounded-xl font-semibold gap-2 text-sm"
+                  >
+                    {reopening ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" />
+                    )}
+                    Reopen
+                  </Button>
+                )}
+
+                {/* Send Email button — only visible when report is closed */}
+                {isClosed && (
+                  <Button
+                    onClick={handleSendEmail}
+                    variant="outline"
+                    className="h-10 rounded-xl font-semibold gap-2 text-sm"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Send Email
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -275,7 +536,13 @@ export default function InspectionReportPage() {
       {/* ── PDF-style Viewer ── */}
       <div className="flex justify-center py-8 px-4">
         <div className="report-pdf-viewer-wrapper report-pdf-mode">
-          <InspectionReport report={report} />
+          <InspectionReport
+            report={report}
+            isEditing={isEditing && isCompleted}
+            onConditionChange={handleConditionChange}
+            onCommentsChange={handleCommentsChange}
+            onAddPhotos={handleAddPhotos}
+          />
         </div>
       </div>
 
@@ -285,6 +552,15 @@ export default function InspectionReportPage() {
         onClose={() => setShowSendEmailModal(false)}
         inspectionId={id}
         inspectionType={inspection?.inspectionType!}
+      />
+
+      {/* ── Close Report Modal ── */}
+      <CloseReportModal
+        isOpen={showCloseModal}
+        onClose={() => setShowCloseModal(false)}
+        inspection={inspection}
+        onCloseReport={handleCloseReportSubmit}
+        loading={closingLoading}
       />
 
       {/* No bottom toolbar — removed to keep the UI clean */}

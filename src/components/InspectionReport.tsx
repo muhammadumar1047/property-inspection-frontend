@@ -1,9 +1,10 @@
 ﻿"use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import type { InspectionReportData, ReportCondition, ReportMedia } from "@/types/report";
 import { parsePropertyImages } from "@/lib/propertyImages";
 import { Button } from "@/components/ui/button";
+import { ImagePlus } from "lucide-react";
 
 const DEFAULT_ACCENT = "#f59e0b";
 
@@ -194,7 +195,19 @@ const resolveCoverImage = (report: InspectionReportData) => {
   return "/property-hero-bg.png";
 };
 
-export default function InspectionReport({ report }: { report: InspectionReportData }) {
+export default function InspectionReport({
+  report,
+  isEditing = false,
+  onConditionChange,
+  onCommentsChange,
+  onAddPhotos,
+}: {
+  report: InspectionReportData;
+  isEditing?: boolean;
+  onConditionChange?: (areaId: string, itemId: string, conditionId: string, newValue: string, description?: string, type?: string) => void;
+  onCommentsChange?: (areaId: string, itemId: string, newComments: string) => void;
+  onAddPhotos?: (areaId: string, itemId: string, files: File[]) => Promise<void>;
+}) {
   const header = report.header || ({} as InspectionReportData["header"]);
   const areas = report.areas || [];
   const utilitiesAreas = areas.filter((area) => area.areaName?.toString().trim().toLowerCase().includes("utilities"));
@@ -227,6 +240,8 @@ export default function InspectionReport({ report }: { report: InspectionReportD
   const totalPages = 1 + orderedAreas.length + (hasMediaSection ? 1 : 0);
   const [activeMediaIndex, setActiveMediaIndex] = React.useState<number | null>(null);
   const [mediaZoom, setMediaZoom] = React.useState(1.25);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadTarget, setUploadTarget] = React.useState<{ areaId: string; itemId: string } | null>(null);
 
   const scrollToMediaAnchor = (anchorId: string) => {
     const mediaAnchor = document.getElementById(anchorId);
@@ -274,6 +289,19 @@ export default function InspectionReport({ report }: { report: InspectionReportD
   const closeMediaViewer = () => {
     setActiveMediaIndex(null);
     setMediaZoom(1.25);
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !uploadTarget || !onAddPhotos) return;
+    await onAddPhotos(uploadTarget.areaId, uploadTarget.itemId, Array.from(files));
+    setUploadTarget(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const triggerPhotoUpload = (areaId: string, itemId: string) => {
+    setUploadTarget({ areaId, itemId });
+    fileInputRef.current?.click();
   };
 
   return (
@@ -470,10 +498,11 @@ export default function InspectionReport({ report }: { report: InspectionReportD
               </div>
               {area.areaName?.toString().trim().toLowerCase().includes("utilities") ? (
                 <>
-                  <div className="grid grid-cols-[2.2fr_0.9fr_2fr] gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  <div className={`grid ${isEditing ? "grid-cols-[2.2fr_0.9fr_2fr_0.5fr]" : "grid-cols-[2.2fr_0.9fr_2fr]"} gap-3 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600`}>
                     <div>Condition</div>
                     <div>Result</div>
                     <div>Inspector Comments</div>
+                    {isEditing && <div className="text-center">Photos</div>}
                   </div>
 
                   {area.items.map((item) => (
@@ -484,19 +513,59 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                       {(item.conditions || []).map((condition, conditionIndex) => (
                         <div
                           key={condition.id}
-                          className={`grid grid-cols-[2.2fr_0.9fr_2fr] gap-3 px-3 py-2 text-[12px] ${conditionIndex % 2 === 0 ? "bg-white" : "bg-slate-100/70"
+                          className={`grid ${isEditing ? "grid-cols-[2.2fr_0.9fr_2fr_0.5fr]" : "grid-cols-[2.2fr_0.9fr_2fr]"} gap-3 px-3 py-2 text-[12px] ${conditionIndex % 2 === 0 ? "bg-white" : "bg-slate-100/70"
                             }`}
                         >
                           <div className="text-slate-700">{displayValue(condition.description)}</div>
                           <div className="flex items-center gap-2">
                             {condition.type === "boolean" ? (
-                              <StatusBadge value={condition.value} />
+                              <button
+                                type="button"
+                                disabled={!isEditing}
+                                onClick={() => {
+                                  if (!isEditing) return;
+                                  const current = condition.value?.toString().trim() || "";
+                                  let newVal: string;
+                                  if (!current) {
+                                    newVal = "true";
+                                  } else if (isTruthy(current)) {
+                                    newVal = "false";
+                                  } else {
+                                    newVal = "";
+                                  }
+                                  onConditionChange?.(area.areaId, item.itemId, condition.id, newVal);
+                                }}
+                                className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold uppercase tracking-wide transition-colors ${isEditing
+                                  ? "cursor-pointer hover:ring-2 hover:ring-[var(--report-accent)]/50"
+                                  : "cursor-default"
+                                  } ${!condition.value?.toString().trim()
+                                    ? "bg-slate-100 text-slate-400 border border-slate-300"
+                                    : isTruthy(condition.value)
+                                      ? "bg-emerald-100 text-emerald-700"
+                                      : "bg-red-100 text-red-700"
+                                  }`}
+                                title={isEditing ? "Click to toggle (— → Y → N → —)" : undefined}
+                              >
+                                {!condition.value?.toString().trim() ? "—" : isTruthy(condition.value) ? "Y" : "N"}
+                              </button>
                             ) : (
                               <span className="text-slate-700">{formatValue(condition)}</span>
                             )}
                           </div>
                           <div className="text-slate-500">
-                            {conditionIndex === 0 ? displayValue(item.inspectorComments) : ""}
+                            {isEditing && conditionIndex === 0 ? (
+                              <textarea
+                                value={item.inspectorComments || ""}
+                                onChange={(e) => {
+                                  onCommentsChange?.(area.areaId, item.itemId, e.target.value);
+                                }}
+                                className="w-full min-h-[60px] rounded border border-slate-300 bg-white p-1.5 text-[11px] text-slate-700 focus:border-[var(--report-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--report-accent)] resize-y"
+                                placeholder="Enter inspector comments..."
+                                rows={3}
+                              />
+                            ) : !isEditing ? (
+                              <>{conditionIndex === 0 ? displayValue(item.inspectorComments) : ""}</>
+                            ) : null}
                             {conditionIndex === 0 && item.media?.length ? (
                               <div className="mt-1 flex flex-wrap gap-1">
                                 {item.media.map((m, mediaIndex) => {
@@ -519,6 +588,19 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                               </div>
                             ) : null}
                           </div>
+                          {isEditing && conditionIndex === 0 && (
+                            <div className="flex justify-center items-start pt-0.5">
+                              <button
+                                type="button"
+                                onClick={() => triggerPhotoUpload(area.areaId, item.itemId)}
+                                className="inline-flex items-center justify-center h-7 w-7 rounded-full border border-dashed border-slate-300 bg-slate-50 text-slate-400 hover:border-[var(--report-accent)] hover:text-[var(--report-accent)] hover:bg-[var(--report-accent)]/5 transition-colors"
+                                title="Add photos"
+                              >
+                                <ImagePlus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                          {isEditing && conditionIndex !== 0 && <div />}
                         </div>
                       ))}
                     </div>
@@ -526,7 +608,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                 </>
               ) : (
                 <>
-                  <div className="grid grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr] gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  <div className={`grid ${isEditing ? "grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr_0.5fr]" : "grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr]"} gap-2 border-b border-slate-200 bg-slate-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-600`}>
                     <div>Item</div>
                     {CONDITION_COLUMNS.map((column) => (
                       <div key={column.key} className="text-center">
@@ -534,6 +616,7 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                       </div>
                     ))}
                     <div>Inspector Comments</div>
+                    {isEditing && <div className="text-center">Photos</div>}
                   </div>
 
                   {area.items.map((item, itemIndex) => {
@@ -545,21 +628,62 @@ export default function InspectionReport({ report }: { report: InspectionReportD
 
                     return (
                       <div key={item.itemId} className="border-b border-slate-200 last:border-0 break-inside-avoid">
-                        <div className={`grid grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr] gap-2 px-3 py-2 text-[12px] ${rowBackground}`}>
+                        <div className={`grid ${isEditing ? "grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr_0.5fr]" : "grid-cols-[2.2fr_repeat(4,0.9fr)_2.4fr]"} gap-2 px-3 py-2 text-[12px] ${rowBackground}`}>
                           <div className="text-slate-700">{displayValue(item.itemName)}</div>
                           {CONDITION_COLUMNS.map((column) => {
                             const condition = conditionMap[column.key];
                             if (!condition) {
                               return (
                                 <div key={column.key} className="flex justify-center">
-                                  <StatusBadge value={null} />
+                                  {isEditing ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        onConditionChange?.(area.areaId, item.itemId, crypto.randomUUID(), "true", column.label, "boolean");
+                                      }}
+                                      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold uppercase tracking-wide transition-colors cursor-pointer hover:ring-2 hover:ring-[var(--report-accent)]/50 bg-slate-100 text-slate-400 border border-slate-300"
+                                      title="Click to set value"
+                                    >
+                                      —
+                                    </button>
+                                  ) : (
+                                    <StatusBadge value={null} />
+                                  )}
                                 </div>
                               );
                             }
                             if (condition.type === "boolean") {
                               return (
                                 <div key={column.key} className="flex justify-center">
-                                  <StatusBadge value={condition.value} />
+                                  <button
+                                    type="button"
+                                    disabled={!isEditing}
+                                    onClick={() => {
+                                      if (!isEditing) return;
+                                      const current = condition.value?.toString().trim() || "";
+                                      let newVal: string;
+                                      if (!current) {
+                                        newVal = "true";
+                                      } else if (isTruthy(current)) {
+                                        newVal = "false";
+                                      } else {
+                                        newVal = "";
+                                      }
+                                      onConditionChange?.(area.areaId, item.itemId, condition.id, newVal);
+                                    }}
+                                    className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold uppercase tracking-wide transition-colors ${isEditing
+                                      ? "cursor-pointer hover:ring-2 hover:ring-[var(--report-accent)]/50"
+                                      : "cursor-default"
+                                      } ${!condition.value?.toString().trim()
+                                        ? "bg-slate-100 text-slate-400 border border-slate-300"
+                                        : isTruthy(condition.value)
+                                          ? "bg-emerald-100 text-emerald-700"
+                                          : "bg-red-100 text-red-700"
+                                      }`}
+                                    title={isEditing ? "Click to toggle (— → Y → N → —)" : undefined}
+                                  >
+                                    {!condition.value?.toString().trim() ? "—" : isTruthy(condition.value) ? "Y" : "N"}
+                                  </button>
                                 </div>
                               );
                             }
@@ -570,16 +694,30 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                             );
                           })}
                           <div className="text-[11px] text-slate-500">
-                            {commentEntries.length ? (
-                              <div className="space-y-1">
-                                {commentEntries.map((entry, entryIndex) => (
-                                  <div key={`${item.itemId}-comment-${entryIndex}`}>
-                                    {entryIndex + 1}. {entry}
-                                  </div>
-                                ))}
-                              </div>
+                            {isEditing ? (
+                              <textarea
+                                value={item.inspectorComments || ""}
+                                onChange={(e) => {
+                                  onCommentsChange?.(area.areaId, item.itemId, e.target.value);
+                                }}
+                                className="w-full min-h-[60px] rounded border border-slate-300 bg-white p-1.5 text-[11px] text-slate-700 focus:border-[var(--report-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--report-accent)] resize-y"
+                                placeholder="Enter inspector comments..."
+                                rows={3}
+                              />
                             ) : (
-                              <span className="text-slate-400">N/A</span>
+                              <>
+                                {commentEntries.length ? (
+                                  <div className="space-y-1">
+                                    {commentEntries.map((entry, entryIndex) => (
+                                      <div key={`${item.itemId}-comment-${entryIndex}`}>
+                                        {entryIndex + 1}. {entry}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-400">N/A</span>
+                                )}
+                              </>
                             )}
                             {hasMedia ? (
                               <div className="mt-2 flex flex-wrap gap-1">
@@ -603,6 +741,18 @@ export default function InspectionReport({ report }: { report: InspectionReportD
                               </div>
                             ) : null}
                           </div>
+                          {isEditing && (
+                            <div className="flex justify-center items-start pt-0.5">
+                              <button
+                                type="button"
+                                onClick={() => triggerPhotoUpload(area.areaId, item.itemId)}
+                                className="inline-flex items-center justify-center h-7 w-7 rounded-full border border-dashed border-slate-300 bg-slate-50 text-slate-400 hover:border-[var(--report-accent)] hover:text-[var(--report-accent)] hover:bg-[var(--report-accent)]/5 transition-colors"
+                                title="Add photos"
+                              >
+                                <ImagePlus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -825,6 +975,16 @@ export default function InspectionReport({ report }: { report: InspectionReportD
           </div>
         </div>
       ) : null}
+
+      {/* Hidden file input for photo uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleFileSelect}
+      />
 
     </div>
   );
