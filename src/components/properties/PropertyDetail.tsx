@@ -364,8 +364,8 @@ export default function PropertyDetail({ id }: { id: string }) {
                 <option value="">Select inspector</option>
                 {inspectors.map((inspector) => (
                   <option
-                    key={String(inspector.id ?? inspector.userId ?? inspector.identityUserId ?? '')}
-                    value={String(inspector.id ?? inspector.userId ?? inspector.identityUserId ?? '')}
+                    key={String(inspector.id ?? inspector.identityUserId ?? '')}
+                    value={String(inspector.id ?? inspector.identityUserId ?? '')}
                   >
                     {getInspectorDisplayName(inspector)}
                   </option>
@@ -380,7 +380,7 @@ export default function PropertyDetail({ id }: { id: string }) {
                 onChange={(e) => setInspectionForm({ ...inspectionForm, inspectionType: parseInt(e.target.value) as any })}
               >
                 {inspectionTypes.map((t) => (
-                  <option key={String(t.id ?? t.Id ?? t.InspectionTypeId)} value={t.id ?? t.inspectionTypeId ?? t.InspectionTypeId}>
+                  <option key={String(t.id)} value={t.id}>
                     {t.name}
                   </option>
                 ))}

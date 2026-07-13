@@ -8,10 +8,10 @@ export const referenceApi = {
     const body = res.data?.Data ?? res.data?.data ?? res.data;
     const raw = Array.isArray(body) ? body : [];
     return raw.map((c) => ({
-      countryId: c.countryId ?? c.id ?? c.CountryId,
-      name: c.name ?? c.countryName ?? c.Name,
-      isoCode: c.isoCode ?? c.IsoCode,
-      isoCode2: c.isoCode2 ?? c.IsoCode2,
+      id: String(c.id ?? c.countryId ?? c.CountryId ?? ''),
+      name: String(c.name ?? c.countryName ?? c.Name ?? ''),
+      isoAlpha3: String(c.isoAlpha3 ?? c.isoCode ?? c.IsoCode ?? ''),
+      isoAlpha2: String(c.isoAlpha2 ?? c.isoCode2 ?? c.IsoCode2 ?? ''),
     }));
   },
 

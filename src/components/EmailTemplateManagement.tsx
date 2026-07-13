@@ -1016,7 +1016,7 @@ export const EmailTemplateManagement: React.FC = () => {
                     <textarea
                       value={formBody}
                       onChange={(e) => { setFormBody(e.target.value); setHasUnsavedChanges(true); }}
-                      style={{ fontFamily: formFontFamily, lineSpacing: formLineSpacing }}
+                      style={{ fontFamily: formFontFamily, lineHeight: formLineSpacing }}
                       className="w-full min-h-[250px] border-none text-slate-700 focus:outline-none resize-none text-sm placeholder-slate-300"
                       placeholder="Insert text layout or write body content here..."
                     />

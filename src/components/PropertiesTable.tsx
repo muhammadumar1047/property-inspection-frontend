@@ -927,7 +927,7 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
       const propertyId = createInspection.propertyId;
       setPropertyInspections(prev => ({
         ...prev,
-        [propertyId]: [enriched, ...(prev[propertyId] || [])],
+        [propertyId]: [enriched as unknown as InspectionResponse, ...(prev[propertyId] || [])],
       }));
 
       setShowCreateInspectionModal(false);
@@ -1050,12 +1050,24 @@ export default function PropertiesTable({ onCreateProperty, onEditProperty, sear
       alert('Inspection updated successfully');
 
       // Update the inspection in the property inspections list
-      setPropertyInspections(prev => ({
-        ...prev,
-        [editInspection.propertyId]: prev[editInspection.propertyId]?.map(inspection =>
-          inspection.id === editInspection.inspectionId.toString() ? updatedInspection : inspection
-        ) || []
-      }));
+      setPropertyInspections(prev => {
+        const inspections = prev[editInspection.propertyId] || [];
+        return {
+          ...prev,
+          [editInspection.propertyId]: inspections.map(inspection => {
+            if (inspection.id === editInspection.inspectionId.toString()) {
+              return {
+                ...inspection,
+                inspectionType: Number(editInspection.inspectionTypeId),
+                inspectorId: String(editInspection.inspectorId),
+                inspectionDate: new Date(editInspection.inspectionDate).toISOString(),
+                inspectionTime: ensureSeconds(editInspection.inspectionTime),
+              } as unknown as InspectionResponse;
+            }
+            return inspection;
+          })
+        };
+      });
 
       // Reset form and close modal
       setEditInspection({
